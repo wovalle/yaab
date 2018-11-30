@@ -12,9 +12,11 @@
     "@types/chai": "^4.1.7",
     "@types/mocha": "^5.2.5",
     "chai": "^4.2.0",
+    "concurrently": "^4.1.0",
     "firebase-tools": "^6.1.1",
     "mocha": "^5.2.0",
     "ngrok": "^3.1.0",
+    "telegram-typings": "^4.0.0-beta",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "typescript": "^3.2.1"
@@ -22,7 +24,9 @@
   "scripts": {
     "lint": "tslint --project tsconfig.json",
     "build": "tsc",
-    "serve": "npm run build && firebase serve --only functions",
+    "build:watch": "tsc -w",
+    "serve:firebase": "firebase serve --only functions",
+    "serve": "concurrently \"npm:build:watch\" \"npm run serve:firebase\"",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
