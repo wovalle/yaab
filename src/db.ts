@@ -39,17 +39,25 @@ class Db {
         const msgRef = chatRef.collection('messages').doc(`${m.update_id}`);
         batch.set(msgRef, m);
       });
-
-      // tslint:disable-next-line:no-shadowed-variable
-      const lastMessage = messagesInChat.slice(-1)[0];
-
-      if (lastMessage) {
-        const offsetRef = chatRef.collection('settings').doc('offset');
-        batch.set(offsetRef, { val: lastMessage.update_id });
-      }
     });
 
+    // tslint:disable-next-line:no-shadowed-variable
+    const lastMessage = messages.slice(-1)[0];
+
+    if (lastMessage) {
+      const settingsRef = this.db.collection('settings').doc('offset');
+      batch.set(settingsRef, { val: lastMessage.update_id + 1 });
+    }
+
     return batch.commit();
+  }
+
+  getOffset() {
+    return this.db
+      .collection('settings')
+      .doc('offset')
+      .get()
+      .then(d => d.data() || {});
   }
 }
 

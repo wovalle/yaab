@@ -13,27 +13,31 @@ const telegramKey = functions.config().telegram.key;
 const url = `https://api.telegram.org/bot${telegramKey}/getupdates`;
 
 export const getUpdates = functions.https.onRequest(async (_, res) => {
+  const currentOffset = await db.getOffset();
+
   const opts = {
     allowed_updates: ['message'],
     limit: 100,
+    offset: currentOffset.val,
   };
 
   const response = await axios.post(url, opts);
-  const updates: Update[] = response.data.result.slice(-1);
+  const updates: Update[] = response.data.result;
 
   if (!updates.length) {
-    logger.info('Info: no updates');
+    logger.info('Info: no updates.');
     return res.send();
   }
 
+  logger.info(`Info: Processing ${updates.length} updates`);
   const typedUpdates = updates.map(getUpdateWithType);
   const plainMessages = typedUpdates
     .filter(u => u.type === UpdateType.message)
     .map(getPlainMessage);
 
-  console.info('saving raw updates');
+  logger.info('Info: saving raw updates');
   await db.saveRawUpdates(typedUpdates);
-  console.info('saving messages');
+  logger.info('Info: saving messages');
   await db.saveMessages(plainMessages);
 
   return res.send();
