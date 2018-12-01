@@ -33,9 +33,7 @@ export default async (
     .filter(u => u.type === UpdateType.message)
     .map(getPlainMessage);
 
-  logger.info('Info: saving raw updates');
   await db.saveRawUpdates(typedUpdates);
-  logger.info('Info: saving messages');
   await db.saveMessages(plainMessages);
 
   return typedUpdates;

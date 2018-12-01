@@ -14,6 +14,9 @@ import {
   Voice,
   VideoNote,
   Invoice,
+  User,
+  Message,
+  SuccessfulPayment,
 } from 'telegram-typings';
 
 export enum UpdateType {
@@ -28,6 +31,48 @@ export enum UpdateType {
   pre_checkout_query = 'pre_checkout_query',
   unknown = 'unknown',
 }
+
+export enum EventType {
+  new_chat_members = 'new_chat_members',
+  left_chat_member = 'left_chat_member',
+  new_chat_title = 'new_chat_title',
+  new_chat_photo = 'new_chat_photo',
+  delete_chat_photo = 'delete_chat_photo',
+  group_chat_created = 'group_chat_created',
+  supergroup_chat_created = 'supergroup_chat_created',
+  channel_chat_created = 'channel_chat_created',
+  migrate_to_chat_id = 'migrate_to_chat_id',
+  migrate_from_chat_id = 'migrate_from_chat_id',
+  pinned_message = 'pinned_message',
+  successful_payment = 'successful_payment',
+}
+
+export type NewChatMembersEventData = User[];
+export type LeftChatMemberEventData = User;
+export type NewChatTitleEventData = string;
+export type NewChatPhotoEventData = PhotoSize[];
+export type DeleteChatPhotoEventData = boolean;
+export type GroupChatCreatedEventData = boolean;
+export type SuperGrupChatCreatedEventData = boolean;
+export type ChannelChatCreatedEventData = boolean;
+export type MigrateToChatIdEventData = Number;
+export type MigrateFromChatIdEventData = Number;
+export type PinnedMessageEventData = Message;
+export type SuccessfulPaymentEventData = SuccessfulPayment;
+
+export type EventData =
+  | NewChatMembersEventData
+  | LeftChatMemberEventData
+  | NewChatTitleEventData
+  | NewChatPhotoEventData
+  | DeleteChatPhotoEventData
+  | GroupChatCreatedEventData
+  | SuperGrupChatCreatedEventData
+  | ChannelChatCreatedEventData
+  | MigrateToChatIdEventData
+  | MigrateFromChatIdEventData
+  | PinnedMessageEventData
+  | SuccessfulPaymentEventData;
 
 export interface TypedUpdate extends Update {
   type: UpdateType;
@@ -97,4 +142,7 @@ export interface PlainMessage {
   reply_from_username?: string;
   is_plain_media: boolean;
   plain_media_type?: PlainMedia;
+  is_event: boolean;
+  event_type?: EventType;
+  event_data?: EventData;
 }

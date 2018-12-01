@@ -1,5 +1,12 @@
 import { Update } from 'telegram-typings';
-import { TypedUpdate, PlainMedia, PlainMessage, UpdateType } from './types';
+import {
+  TypedUpdate,
+  PlainMedia,
+  PlainMessage,
+  UpdateType,
+  EventType,
+  EventData,
+} from './types';
 
 export const getUpdateWithType = (update: Update): TypedUpdate => {
   let type: UpdateType;
@@ -71,6 +78,51 @@ export const getPlainMediaType = (update: TypedUpdate): PlainMedia => {
   else return null;
 };
 
+export const getUpdateEvent = (
+  // tslint:disable-next-line:no-shadowed-variable
+  update: TypedUpdate
+): { type: EventType; data: EventData } => {
+  let type: EventType = null;
+  let data: EventData = null;
+
+  if (update.message.new_chat_members) {
+    type = EventType.new_chat_members;
+    data = update.message.new_chat_members;
+  } else if (update.message.left_chat_member) {
+    type = EventType.left_chat_member;
+    data = update.message.left_chat_member;
+  } else if (update.message.new_chat_title) {
+    type = EventType.new_chat_title;
+    data = update.message.new_chat_title;
+  } else if (update.message.new_chat_photo) {
+    type = EventType.new_chat_photo;
+    data = update.message.new_chat_photo;
+  } else if (update.message.delete_chat_photo) {
+    type = EventType.delete_chat_photo;
+    data = update.message.delete_chat_photo;
+  } else if (update.message.supergroup_chat_created) {
+    type = EventType.supergroup_chat_created;
+    data = update.message.supergroup_chat_created;
+  } else if (update.message.channel_chat_created) {
+    type = EventType.channel_chat_created;
+    data = update.message.channel_chat_created;
+  } else if (update.message.migrate_to_chat_id) {
+    type = EventType.migrate_to_chat_id;
+    data = update.message.migrate_to_chat_id;
+  } else if (update.message.migrate_from_chat_id) {
+    type = EventType.migrate_from_chat_id;
+    data = update.message.migrate_from_chat_id;
+  } else if (update.message.pinned_message) {
+    type = EventType.pinned_message;
+    data = update.message.pinned_message;
+  } else if (update.message.successful_payment) {
+    type = EventType.successful_payment;
+    data = update.message.successful_payment;
+  }
+
+  return { type, data };
+};
+
 export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
   const msg = update.message;
   const is_entity = msg.entities && msg.entities.length > 0;
@@ -101,6 +153,11 @@ export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
 
   const plain_media_type = getPlainMediaType(update);
   const is_plain_media = plain_media_type !== null;
+
+  const update_event = getUpdateEvent(update);
+  const event_type = update_event.type;
+  const is_event = update_event !== null;
+  const event_data = update_event.data;
 
   return {
     update_id: update.update_id,
@@ -135,5 +192,8 @@ export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
     reply_from_username,
     is_plain_media,
     plain_media_type,
+    is_event,
+    event_type,
+    event_data,
   };
 };
