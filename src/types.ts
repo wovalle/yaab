@@ -1,9 +1,7 @@
 import {
   Update,
-  User,
   MessageEntity,
   Document,
-  Message,
   Audio,
   Animation,
   Game,

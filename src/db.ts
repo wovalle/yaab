@@ -11,7 +11,7 @@ const cleanUndefined = obj => {
   return obj;
 };
 
-class Db {
+export class Db {
   private db: FirebaseFirestore.Firestore;
 
   constructor() {
@@ -69,12 +69,14 @@ class Db {
   }
 }
 
-export default {
-  getInstance: () => {
-    if (!instance) {
-      instance = new Db();
-    }
+const getInstance: () => Db = () => {
+  if (!instance) {
+    instance = new Db();
+  }
 
-    return instance;
-  },
+  return instance;
+};
+
+export default {
+  getInstance,
 };
