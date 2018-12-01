@@ -81,23 +81,34 @@ export class Db {
 
       if (newInChatEvents.length) {
         const usersEventDoc = internalEventRef.doc();
+        const newUsersToAdd = newInChatEvents.reduce(
+          (acc, cur) => [
+            ...acc,
+            ...(cur.event_data as NewChatMembersEventData),
+          ],
+          []
+        );
+
         const usersAddedData = {
           event: 'users_added',
-          count: newInChatEvents.reduce(
-            (acc, cur) =>
-              acc + (cur.event_data as NewChatMembersEventData).length,
-            0
-          ),
+          count: newUsersToAdd.length,
+          ref: newUsersToAdd,
           date: new Date(),
         };
         batch.set(usersEventDoc, usersAddedData);
       }
 
-      if (newInChatEvents.length) {
+      if (leftChatEvents.length) {
         const userLeftDoc = internalEventRef.doc();
+        const leftChatUsers = leftChatEvents.reduce(
+          (acc, cur) => [...acc, cur.event_data],
+          []
+        );
+
         const userLeftData = {
           event: 'users_deleted',
           count: 1,
+          ref: leftChatUsers,
           date: new Date(),
         };
         batch.set(userLeftDoc, userLeftData);
