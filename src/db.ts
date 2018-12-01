@@ -1,5 +1,5 @@
 import * as admin from 'firebase-admin';
-import { TypedUpdate } from './types';
+import { TypedUpdate, PlainMessage } from './types';
 
 let instance = null;
 
@@ -23,17 +23,16 @@ class Db {
     return batch.commit();
   }
 
-  saveMessages(messages: TypedUpdate[]) {
+  saveMessages(messages: PlainMessage[]) {
     const batch = this.db.batch();
     const differentChats = messages.reduce((acc, cur) => {
-      if (acc.indexOf(cur.message.chat.id) === -1) {
-        acc.push(cur.message.chat.id);
+      if (acc.indexOf(cur.chat_id) === -1) {
+        acc.push(cur.chat_id);
       }
       return acc;
     }, []);
-
     differentChats.forEach(chatId => {
-      const messagesInChat = messages.filter(m => m.message.chat.id === chatId);
+      const messagesInChat = messages.filter(m => m.chat_id === chatId);
       const chatRef = this.db.collection(`chats`).doc(`${chatId}`);
 
       messagesInChat.forEach(m => {
