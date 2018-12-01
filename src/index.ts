@@ -13,7 +13,7 @@ export const processTelegramUpdatesFn = functions.https.onRequest(
   async (_, res) => {
     try {
       const updates = await processTelegramUpdates(db, logger, url);
-      return res.send({ ok: true, updates });
+      return res.send({ ok: true, updates: updates.length });
     } catch (error) {
       logger.error(error);
       return res.status(500).send({ ok: false });
