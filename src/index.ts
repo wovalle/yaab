@@ -1,9 +1,10 @@
 import * as functions from 'firebase-functions';
-import { Update } from 'telegram-typings';
-import { UpdateType } from './types';
-
 import axios from 'axios';
+import { Update } from 'telegram-typings';
+
 import Db from './db';
+import { UpdateType } from './types';
+import { getUpdateWithType, getPlainMessage } from './selectors';
 
 const logger = console;
 const db = Db.getInstance();
