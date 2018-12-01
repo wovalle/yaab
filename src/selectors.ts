@@ -1,8 +1,6 @@
 import { Update } from 'telegram-typings';
 import { TypedUpdate, PlainMedia, PlainMessage, UpdateType } from './types';
 
-const nullable = data => data || null;
-
 export const getUpdateWithType = (update: Update): TypedUpdate => {
   let type: UpdateType;
   let id: string;
@@ -75,12 +73,10 @@ export const getPlainMediaType = (update: TypedUpdate): PlainMedia => {
 
 export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
   const msg = update.message;
-  const is_entity = nullable(msg.entities) && msg.entities.length > 0;
+  const is_entity = msg.entities && msg.entities.length > 0;
   const entity_type = is_entity ? msg.entities[0].type : null;
-  const is_forward = nullable(msg.forward_from) && msg.forward_from.id > 0;
-  const forward_message_id = is_forward
-    ? nullable(msg.forward_from_message_id)
-    : null;
+  const is_forward = msg.forward_from && msg.forward_from.id > 0;
+  const forward_message_id = is_forward ? msg.forward_from_message_id : null;
   const forward_from_id = is_forward ? msg.forward_from.id : null;
   const forward_from_is_bot = is_forward ? msg.forward_from.is_bot : null;
   const forward_from_first_name = is_forward
@@ -88,8 +84,7 @@ export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
     : null;
   const forward_from_last_name = is_forward ? msg.forward_from.last_name : null;
   const forward_from_username = is_forward ? msg.forward_from.username : null;
-  const is_reply =
-    nullable(msg.reply_to_message) && msg.reply_to_message.message_id > 0;
+  const is_reply = msg.reply_to_message && msg.reply_to_message.message_id > 0;
   const reply_message_id = is_reply ? msg.reply_to_message.message_id : null;
   const reply_text = is_reply ? msg.reply_to_message.text : null;
   const reply_from_id = is_reply ? msg.reply_to_message.from.id : null;

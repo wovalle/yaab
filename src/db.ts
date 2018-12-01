@@ -3,6 +3,14 @@ import { TypedUpdate, PlainMessage } from './types';
 
 let instance = null;
 
+const cleanUndefined = obj => {
+  Object.keys(obj).forEach(key => {
+    if (obj[key] && typeof obj[key] === 'object') cleanUndefined(obj[key]);
+    else if (obj[key] === undefined) obj[key] = null;
+  });
+  return obj;
+};
+
 class Db {
   private db: FirebaseFirestore.Firestore;
 
@@ -17,7 +25,7 @@ class Db {
 
     updates.forEach(u => {
       const ref = this.db.collection('raw_updates').doc(u.id);
-      batch.set(ref, u);
+      batch.set(ref, cleanUndefined(u));
     });
 
     return batch.commit();
@@ -37,7 +45,7 @@ class Db {
 
       messagesInChat.forEach(m => {
         const msgRef = chatRef.collection('messages').doc(`${m.update_id}`);
-        batch.set(msgRef, m);
+        batch.set(msgRef, cleanUndefined(m));
       });
     });
 
