@@ -48,6 +48,15 @@ export class Db {
       .then(snap => snap.docs.map(d => parseDates(d.data()) as PlainMessage));
   }
 
+  retreiveUsersFromGroup(groupId: Number) {
+    return this.db
+      .collection('chats')
+      .doc(`${groupId}`)
+      .collection('users')
+      .get()
+      .then(snap => snap.docs.map(d => parseDates(d.data()) as User));
+  }
+
   saveRawUpdates(updates: TypedUpdate[]) {
     const batch = this.db.batch();
 
