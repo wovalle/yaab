@@ -18,6 +18,16 @@ const cleanUndefined = obj => {
   return obj;
 };
 
+const parseDates = obj => {
+  Object.keys(obj).forEach(key => {
+    if (obj[key] instanceof admin.firestore.Timestamp)
+      obj[key] = obj[key].toDate();
+    else if (obj[key] && typeof obj[key] === 'object') parseDates(obj[key]);
+  });
+
+  return obj;
+};
+
 export class Db {
   private db: FirebaseFirestore.Firestore;
 
@@ -25,6 +35,17 @@ export class Db {
     admin.initializeApp();
     this.db = admin.firestore();
     this.db.settings({ timestampsInSnapshots: true });
+  }
+
+  retreiveMessagesInRange(groupId: Number, from: Date, to: Date) {
+    return this.db
+      .collection('chats')
+      .doc(`${groupId}`)
+      .collection('messages')
+      .where('date', '>=', from)
+      .where('date', '<=', to)
+      .get()
+      .then(snap => snap.docs.map(d => parseDates(d.data()) as PlainMessage));
   }
 
   saveRawUpdates(updates: TypedUpdate[]) {
@@ -159,6 +180,7 @@ export class Db {
       ref: users,
       date: new Date(),
     };
+
     batch.set(usersEventDoc, usersAddedData);
     return batch.commit();
   }
