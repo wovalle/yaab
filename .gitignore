@@ -67,3 +67,7 @@ node_modules/
 dist
 
 .runtimeconfig.json
+
+testdata.json
+session_name.session
+users.json

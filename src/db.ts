@@ -6,7 +6,7 @@ import {
   EventType,
   LeftChatMemberEventData,
 } from './types';
-import { access } from 'fs';
+import { User } from 'telegram-typings';
 
 let instance = null;
 
@@ -136,6 +136,30 @@ export class Db {
       batch.set(settingsRef, { val: lastMessage.update_id + 1 });
     }
 
+    return batch.commit();
+  }
+
+  insertUsersInGroup(users: User[], groupId: Number) {
+    if (!users.length) return null;
+
+    const batch = this.db.batch();
+    const groupRef = this.db.collection(`chats`).doc(`${groupId}`);
+    const internalEventRef = groupRef.collection('internal_events');
+
+    users.forEach(u => {
+      const userRef = groupRef.collection('users').doc(`${u.id}`);
+      batch.set(userRef, u);
+    });
+
+    const usersEventDoc = internalEventRef.doc();
+
+    const usersAddedData = {
+      event: 'users_imported',
+      count: users.length,
+      ref: users,
+      date: new Date(),
+    };
+    batch.set(usersEventDoc, usersAddedData);
     return batch.commit();
   }
 
