@@ -1,0 +1,7 @@
+{
+  "actions": {
+    "users": {
+      "kick_inactive": "señore tAmo en vivo pero eta gente ya no: {{users}}"
+    }
+  }
+}

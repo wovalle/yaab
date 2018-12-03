@@ -37,7 +37,11 @@ export class Db {
     this.db.settings({ timestampsInSnapshots: true });
   }
 
-  retreiveMessagesInRange(groupId: Number, from: Date, to: Date) {
+  retreiveMessagesInRange(
+    groupId: Number,
+    from: Date,
+    to: Date
+  ): Promise<PlainMessage[]> {
     return this.db
       .collection('chats')
       .doc(`${groupId}`)
@@ -45,7 +49,7 @@ export class Db {
       .where('date', '>=', from)
       .where('date', '<=', to)
       .get()
-      .then(snap => snap.docs.map(d => parseDates(d.data()) as PlainMessage));
+      .then(snap => snap.docs.map(d => parseDates(d.data())));
   }
 
   retreiveUsersFromGroup(groupId: Number) {

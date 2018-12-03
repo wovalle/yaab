@@ -1,14 +1,13 @@
 import { Db } from '../db';
-
-interface IFetchInteractionBetweenDatesResponse {
-  [key: string]: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    messageCount: number;
-    lastMessageOn: Date;
-  };
+interface IUserInteraction {
+  id: number;
+  firstName: string;
+  lastName: string;
+  messageCount: number;
+  lastMessageOn: Date;
 }
+
+export type IFetchInteractionBetweenDatesResponse = IUserInteraction[];
 
 export default async (
   db: Db,
@@ -17,7 +16,7 @@ export default async (
   dateTo: Date
 ): Promise<IFetchInteractionBetweenDatesResponse> => {
   const messages = await db.retreiveMessagesInRange(groupId, dateFrom, dateTo);
-  const users = await db.retreiveUsersFromGroup(groupId);
+  const groupMembers = await db.retreiveUsersFromGroup(groupId);
 
   const hash = messages.reduce((acc, cur) => {
     acc[cur.from_id] = {
@@ -30,19 +29,17 @@ export default async (
     return acc;
   }, {});
 
-  const usersHash = users.reduce((acc, cur) => {
-    if (hash[cur.id]) acc[cur.id] = hash[cur.id];
-    else {
-      acc[cur.id] = {
-        id: cur.id,
-        firstName: cur.first_name,
-        lastName: cur.last_name,
-        messageCount: 0,
-        lastMessageOn: null,
-      };
-    }
-    return acc;
-  }, {});
+  const users = groupMembers.map(u => {
+    return hash[u.id]
+      ? hash[u.id]
+      : {
+          id: u.id,
+          firstName: u.first_name,
+          lastName: u.last_name,
+          messageCount: 0,
+          lastMessageOn: null,
+        };
+  });
 
-  return usersHash;
+  return users;
 };
