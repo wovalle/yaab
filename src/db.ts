@@ -177,12 +177,14 @@ export class Db {
     if (!users.length) return null;
 
     const batch = this.db.batch();
+    const batch_id = Date.now();
     const groupRef = this.db.collection(`chats`).doc(`${groupId}`);
     const internalEventRef = groupRef.collection('internal_events');
+    batch.set(groupRef, { current_user_batch: batch_id });
 
     users.forEach(u => {
       const userRef = groupRef.collection('users').doc(`${u.id}`);
-      batch.set(userRef, u);
+      batch.set(userRef, { ...u, batch_id });
     });
 
     const usersEventDoc = internalEventRef.doc();
@@ -190,7 +192,7 @@ export class Db {
     const usersAddedData = {
       event: 'users_imported',
       count: users.length,
-      ref: users,
+      ref: { batch_id, users },
       date: new Date(),
     };
 
