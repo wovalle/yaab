@@ -201,3 +201,18 @@ export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
     event_data,
   };
 };
+
+const BotCommands = [
+  { admin: true, command: 'thanos' },
+  { admin: true, command: 'delomio' },
+  { admin: true, command: 'lovegetadore' },
+];
+
+export const getBotCommand = (pm: PlainMessage) => {
+  const command = pm.text
+    .slice(pm.entities[0].offset + 1, pm.entities[0].length)
+    .replace('@benditobot', '') //TODO: generalize
+    .trim();
+
+  return BotCommands.find(c => c.command === command) || null;
+};

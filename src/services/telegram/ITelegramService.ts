@@ -6,7 +6,8 @@ export enum ParseMode {
 }
 
 export interface ISendMessageOpts {
-  parse_mode: ParseMode;
+  parse_mode?: ParseMode;
+  reply_to_message_id?: Number;
 }
 
 export interface ITelegramService {

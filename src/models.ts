@@ -1,6 +1,11 @@
-export enum Role {
+export enum UserRole {
   user = 'user',
   admin = 'admin',
+}
+
+export enum UserStatus {
+  active = 'active',
+  unsaved = 'unsaved',
 }
 
 export interface ChatUser {
@@ -9,6 +14,7 @@ export interface ChatUser {
   last_name?: string;
   username?: string;
   last_message: Date;
-  role: Role;
+  role: UserRole;
+  status: UserStatus;
   warnings: []; // TODO: Define model
 }

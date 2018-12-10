@@ -7,6 +7,10 @@
   "errors": {
     "private_conversation": {
       "not_implemented": "solo funciono en grupos por ahora ;)"
+    },
+    "commands": {
+      "invalid": "manito, que jodio comando fue ese",
+      "forbidden": "bi pero tu no tiene podere pa ejecuta eto"
     }
   }
 }

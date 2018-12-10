@@ -167,15 +167,9 @@ export const onTelegramUpdateFn = functions.https.onRequest(
     }
 
     try {
-      const payload = await onTelegramUpdate(
-        db,
-        update,
-        telegramService,
-        i18n,
-        getDate()
-      );
+      await onTelegramUpdate(db, update, telegramService, i18n, getDate());
 
-      return res.send({ ok: true, payload });
+      return res.send({ ok: true });
     } catch (error) {
       logger.error(error);
       return res.status(500).send({ ok: false, error });

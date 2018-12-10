@@ -7,7 +7,7 @@ import {
   LeftChatMemberEventData,
 } from './types';
 import { User } from 'telegram-typings';
-import { Role, ChatUser } from './models';
+import { UserRole, ChatUser, UserStatus } from './models';
 
 let instance = null;
 
@@ -174,7 +174,31 @@ export class Db {
     return batch.commit();
   }
 
-  async saveMessageStat(message: PlainMessage, today: Date) {
+  async getUserFromMessageOrDefault(
+    pm: PlainMessage,
+    today: Date
+  ): Promise<ChatUser> {
+    const chatRef = this.db.collection(`chats`).doc(`${pm.chat_id}`);
+    const userRef = chatRef.collection('users').doc(`${pm.from_id}`);
+    const userSnap = await userRef.get();
+
+    if (userSnap.exists) {
+      return userSnap.data() as ChatUser;
+    } else {
+      return {
+        id: pm.from_id,
+        first_name: pm.from_first_name,
+        last_name: pm.from_last_name,
+        role: UserRole.user,
+        last_message: today,
+        username: pm.from_username,
+        warnings: [],
+        status: UserStatus.unsaved,
+      };
+    }
+  }
+
+  async saveChatStat(message: PlainMessage, user: ChatUser, today: Date) {
     const batch = this.db.batch();
 
     const chatRef = this.db.collection(`chats`).doc(`${message.chat_id}`);
@@ -182,21 +206,12 @@ export class Db {
     batch.set(msgRef, cleanUndefined(message));
 
     const userRef = chatRef.collection('users').doc(`${message.from_id}`);
-    const userSnap = await userRef.get();
 
-    if (userSnap.exists) {
-      batch.update(userRef, { last_message: today });
-    } else {
-      const user: ChatUser = {
-        id: message.from_id,
-        first_name: message.from_first_name,
-        last_name: message.from_last_name,
-        role: Role.user,
-        last_message: today,
-        username: message.from_username,
-        warnings: [],
-      };
+    if (user.status === UserStatus.unsaved) {
+      user.status = UserStatus.active;
       batch.set(userRef, user);
+    } else {
+      batch.update(userRef, { last_message: today });
     }
 
     return batch.commit();
