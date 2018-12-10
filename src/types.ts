@@ -123,6 +123,7 @@ export interface PlainMessage {
   chat_type: string;
   chat_title?: string;
   is_entity: boolean;
+  entity_should_process: boolean;
   entity_type?: string;
   entities?: MessageEntity[];
   is_forward: boolean;

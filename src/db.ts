@@ -7,6 +7,7 @@ import {
   LeftChatMemberEventData,
 } from './types';
 import { User } from 'telegram-typings';
+import { Role, ChatUser } from './models';
 
 let instance = null;
 
@@ -168,6 +169,34 @@ export class Db {
     if (lastMessage) {
       const settingsRef = this.db.collection('settings').doc('offset');
       batch.set(settingsRef, { val: lastMessage.update_id + 1 });
+    }
+
+    return batch.commit();
+  }
+
+  async saveMessageStat(message: PlainMessage, today: Date) {
+    const batch = this.db.batch();
+
+    const chatRef = this.db.collection(`chats`).doc(`${message.chat_id}`);
+    const msgRef = chatRef.collection('messages').doc(`${message.update_id}`);
+    batch.set(msgRef, cleanUndefined(message));
+
+    const userRef = chatRef.collection('users').doc(`${message.from_id}`);
+    const userSnap = await userRef.get();
+
+    if (userSnap.exists) {
+      batch.update(userRef, { last_message: today });
+    } else {
+      const user: ChatUser = {
+        id: message.from_id,
+        first_name: message.from_first_name,
+        last_name: message.from_last_name,
+        role: Role.user,
+        last_message: today,
+        username: message.from_username,
+        warnings: [],
+      };
+      batch.set(userRef, user);
     }
 
     return batch.commit();

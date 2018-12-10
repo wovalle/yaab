@@ -4,11 +4,13 @@ import importUsers from './functions/importUsers';
 import fetchMessagesByDate from './functions/fetchMessagesByDate';
 import fetchInteractionsBetweenDates from './functions/fetchInteractionsBetweenDates';
 import kickUsersWithinTimeframe from './functions/kickUsersWithinTimeframe';
+import onTelegramUpdate from './functions/onTelegramUpdate';
 import TelegramService from './services/telegram';
 import Db from './db';
 import Http from './Http';
 import I18nProvider from './I18nProvider';
 import * as translations from './translations.json';
+import { Update } from 'telegram-typings';
 
 const logger = console;
 const db = Db.getInstance();
@@ -151,6 +153,31 @@ export const kickUsersWithinTimeframeFn = functions.https.onRequest(
       return res.send({ ok: true, originalUsers: users, ...response });
     } catch (error) {
       logger.error(error.message);
+      return res.status(500).send({ ok: false, error });
+    }
+  }
+);
+
+export const onTelegramUpdateFn = functions.https.onRequest(
+  async (req, res) => {
+    const update: Update = req.body;
+
+    if (!update) {
+      return res.status(400).send('`message` parameter is required');
+    }
+
+    try {
+      const payload = await onTelegramUpdate(
+        db,
+        update,
+        telegramService,
+        i18n,
+        getDate()
+      );
+
+      return res.send({ ok: true, payload });
+    } catch (error) {
+      logger.error(error);
       return res.status(500).send({ ok: false, error });
     }
   }

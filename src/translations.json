@@ -3,5 +3,10 @@
     "users": {
       "kick_inactive": "señore tAmo en vivo pero eta gente ya no: {{users}}"
     }
+  },
+  "errors": {
+    "private_conversation": {
+      "not_implemented": "solo funciono en grupos por ahora ;)"
+    }
   }
 }

@@ -34,7 +34,8 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "test": "mocha --compilers ts:ts-node/register ./test/*.spec.ts"
+    "test": "mocha --compilers ts:ts-node/register ./test/*.spec.ts",
+    "ngrok": "ngrok http 5000"
   },
   "author": "Willy Ovalle <willyovalle16@gmail.com>",
   "license": "ISC",

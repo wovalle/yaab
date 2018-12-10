@@ -123,10 +123,13 @@ export const getUpdateEvent = (
   return { type, data };
 };
 
+// TODO: extract class and add convenient methods like isGroup, isCommand
 export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
   const msg = update.message;
-  const is_entity = msg.entities && msg.entities.length > 0;
+  const is_entity = !!msg.entities && msg.entities.length > 0;
   const entity_type = is_entity ? msg.entities[0].type : null;
+  const entity_should_process =
+    entity_type === 'bot_command' && msg.text.endsWith('benditobot'); // TODO: generalize, separate environments
   const is_forward = msg.forward_from && msg.forward_from.id > 0;
   const forward_message_id = is_forward ? msg.forward_from_message_id : null;
   const forward_from_id = is_forward ? msg.forward_from.id : null;
@@ -174,6 +177,7 @@ export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
     chat_title: msg.chat.title,
     is_entity,
     entity_type,
+    entity_should_process,
     entities: msg.entities,
     is_forward,
     forward_message_id,
