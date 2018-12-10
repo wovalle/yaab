@@ -133,7 +133,12 @@ export const kickUsersWithinTimeframeFn = functions.https.onRequest(
     }
 
     try {
-      const users = await fetchInteractionsBetweenDates(db, groupId, from, to);
+      const users = await fetchInteractionsBetweenDates(
+        db,
+        groupId,
+        new Date(from),
+        new Date(to)
+      );
 
       const response = await kickUsersWithinTimeframe(
         groupId,

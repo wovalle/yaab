@@ -1,9 +1,7 @@
-import { Db } from '../db';
 import { IFetchInteractionBetweenDatesResponse } from './fetchInteractionsBetweenDates';
 import { ITelegramService, ParseMode } from '../services/telegram';
 import { ITranslationProvider } from '../I18nProvider';
 import { addHours } from 'date-fns';
-import { asyncForEach } from '../utils';
 
 export default async (
   groupId: Number,
@@ -23,8 +21,6 @@ export default async (
       usersWithError.push(u);
     }
   }
-
-  console.log({ usersWithError, userWithNoInteraction });
 
   const usersKicked = userWithNoInteraction.filter(
     u => !usersWithError.some(uwe => uwe.id === u.id)
