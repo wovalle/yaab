@@ -68,6 +68,7 @@ dist
 
 .runtimeconfig.json
 
-testdata.json
-session_name.session
 users.json
+session.json
+secrets.py
+

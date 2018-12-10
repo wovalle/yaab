@@ -1,17 +1,18 @@
 from telethon.tl.functions.channels import GetParticipantsRequest
 from telethon.tl.types import ChannelParticipantsSearch
 from time import sleep
+from secrets import api_hash, api_id, group_id
 import json
+
 
 
 from telethon import TelegramClient, sync
 
 # These example values won't work. You must get your own api_id and
 # api_hash from https://my.telegram.org, under API Development.
-api_id = 19677
-api_hash = '148799d4c2ae7d203027529617c5146d'
+# create a secrets.py file and store them.
 
-client = TelegramClient('session_name', api_id, api_hash).start()
+client = TelegramClient('session', api_id, api_hash).start()
 
 offset = 0
 limit = 100
@@ -20,13 +21,12 @@ all_participants = []
 # Getting information about yourself
 me = client.get_me()
 
-group = -1001376022771
 dialogs = client.get_dialogs()
 
-#Get  the participants
+# #Get  the participants
 while True:
     participants = client(GetParticipantsRequest(
-        group, ChannelParticipantsSearch(''), offset, limit, hash=0
+        group_id, ChannelParticipantsSearch(''), offset, limit, hash=0
     ))
     if not participants.users:
         break
