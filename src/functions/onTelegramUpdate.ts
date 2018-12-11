@@ -175,6 +175,7 @@ export default async (
         });
         return;
       }
+
       const usersWithError = [];
       for (const u of inactiveUsers) {
         try {
@@ -183,6 +184,9 @@ export default async (
             pm.chat_id,
             addHours(currentDate, hours)
           );
+
+          u.status = 'kicked';
+          await db.updateChatUser(pm.chat_id, u);
         } catch (error) {
           console.error('Error while kicking user:', error.description);
           usersWithError.push(u);
