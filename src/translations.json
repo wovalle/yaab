@@ -12,6 +12,9 @@
       "empty": "en velda nadie vegetó en las últimas {{hours}} horas",
       "successful": "señore tAmo en vivo y eta gente vegetando: {{mentions}}"
     },
+    "remove_inactive": {
+      "successful": "señore tAmo en vivo pero eta gente ya no: {{mentions}}"
+    },
     "errors": {
       "invalid": "manito, que jodio comando fue ese",
       "forbidden": "bi pero tu no tiene podere pa ejecuta el comando `{{cmd}}`",

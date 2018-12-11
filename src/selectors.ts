@@ -229,6 +229,7 @@ export const getUserChatFromMember = (u: ChatMember): ChatUser => {
     id: u.user.id,
     first_name: u.user.first_name,
     last_name: u.user.last_name,
+    is_bot: u.user.is_bot,
     role: u.status === 'administrator' ? UserRole.admin : UserRole.user,
     last_message: null,
     username: u.user.username,
