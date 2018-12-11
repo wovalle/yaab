@@ -38,17 +38,15 @@ print('Participants #:', len(all_participants))
 def map_user(u):
   return {
       'id': u.id,
-      'is_self': u.is_self,
-      'bot': u.bot,
-      'bot_chat_history': u.bot_chat_history,
-      'bot_nochats': u.bot_nochats,
-      'verified': u.verified,
-      'restricted': u.restricted,
-      'access_hash': u.access_hash,
+      'is_bot': u.bot,
       'first_name': u.first_name,
       'last_name': u.last_name,
       'username': u.username,
-      'phone': u.phone 
+      'last_message': None,
+      'role': 'user',
+      'status': 'active',
+      'protected': False,
+      'warnings': []
       }
 
 users = []
@@ -56,5 +54,7 @@ users = []
 for p in all_participants:
     users.append(map_user(p))
 
+users_json = json.dumps(users)
+
 with open("users.json", "w") as write_file:
-    json.dump(users, write_file)
+    write_file.write(users_json)

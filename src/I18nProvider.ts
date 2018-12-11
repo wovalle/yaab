@@ -4,7 +4,7 @@ export interface ITranslationProvider {
   t(id: string, params?: any): string;
 }
 interface ITranslationParams {
-  [id: string]: string;
+  [id: string]: string | number;
 }
 
 export default class I18nProvider implements ITranslationProvider {

@@ -4,11 +4,17 @@ import {
   getPlainMessage,
   getUpdateWithType,
   getBotCommand,
+  BotCommands,
+  getUserChatFromMember,
 } from '../selectors';
 
 import I18nProvider from '../I18nProvider';
-import { ITelegramService } from '../services/telegram';
+import telegramService, {
+  ITelegramService,
+  ParseMode,
+} from '../services/telegram';
 import { UserRole } from '../models';
+import { addHours } from 'date-fns';
 
 export default async (
   db: Db,
@@ -18,39 +24,142 @@ export default async (
   currentDate: Date
 ): Promise<void> => {
   const typedUpdate = getUpdateWithType(update);
-  const plainMessage = getPlainMessage(typedUpdate);
+  const pm = getPlainMessage(typedUpdate);
 
   const isGroup = chatType => ['group', 'supergroup'].includes(chatType);
 
-  if (!isGroup(plainMessage.chat_type)) {
-    const errorId = 'errors.private_conversation.not_implemented';
-    service.sendChat(plainMessage.chat_id, i18n.t(errorId));
-
+  if (!isGroup(pm.chat_type)) {
+    const errorId = 'commands.errors.pm_not_implemented';
+    await service.sendChat(pm.chat_id, i18n.t(errorId));
     return;
   }
 
-  const user = await db.getUserFromMessageOrDefault(plainMessage, currentDate);
-  await db.saveChatStat(plainMessage, user, currentDate);
+  const user = await db.getUserFromGroup(pm.chat_id, pm.from_id);
 
-  if (plainMessage.entity_should_process) {
-    const command = getBotCommand(plainMessage);
+  if (!user) {
+    const tgUser = await service.getChatMember(pm.from_id, pm.chat_id);
+    await db.saveChatUser(
+      pm.chat_id,
+      getUserChatFromMember(tgUser),
+      currentDate
+    );
+  }
+
+  await db.saveChatStat(pm, user, currentDate);
+
+  if (pm.entity_should_process) {
+    const command = getBotCommand(pm);
     if (!command) {
-      const errorId = 'errors.commands.invalid';
-      await service.sendChat(plainMessage.chat_id, i18n.t(errorId), {
-        reply_to_message_id: plainMessage.message_id,
+      const errorId = 'commands.errors.invalid';
+      await service.sendChat(pm.chat_id, i18n.t(errorId), {
+        reply_to_message_id: pm.message_id,
       });
 
       return;
     } else if (command.admin && user.role !== UserRole.admin) {
-      const errorId = 'errors.commands.forbidden';
-      await service.sendChat(plainMessage.chat_id, i18n.t(errorId), {
-        reply_to_message_id: plainMessage.message_id,
-      });
+      const errorId = 'commands.errors.forbidden';
+      await service.sendChat(
+        pm.chat_id,
+        i18n.t(errorId, { cmd: command.key }),
+        {
+          reply_to_message_id: pm.message_id,
+        }
+      );
       return;
-    }
+    } else if (command.key === BotCommands.protect_user) {
+      let userIdToProtect = null;
+      if (pm.is_reply) {
+        userIdToProtect = pm.reply_from_id;
+      } else {
+        const text = pm.text.trim().split(' ');
 
-    await service.sendChat(plainMessage.chat_id, 'tamo trabajando en eso bi', {
-      reply_to_message_id: plainMessage.message_id,
-    });
+        if (text.length !== 2) {
+          await service.sendChat(
+            pm.chat_id,
+            i18n.t('commands.errors.nothing_to_do'),
+            {
+              reply_to_message_id: pm.message_id,
+              parse_mode: ParseMode.Markdown,
+            }
+          );
+          return;
+        }
+
+        userIdToProtect = text.slice(-1)[0];
+      }
+
+      let userToProtect = await db.getUserFromGroup(
+        pm.chat_id,
+        userIdToProtect
+      );
+
+      if (userToProtect) {
+        await db.protectUser(pm.chat_id, userToProtect.id, currentDate);
+      } else {
+        const chatMember = await service.getChatMember(
+          userIdToProtect,
+          pm.chat_id
+        );
+
+        userToProtect = getUserChatFromMember(chatMember);
+        userToProtect.protected = true;
+        await db.saveChatUser(pm.chat_id, userToProtect, currentDate);
+      }
+
+      await service.sendChat(
+        pm.chat_id,
+        i18n.t('commands.protect_user.successful', {
+          name: service.getMentionFromId(
+            userToProtect.id,
+            userToProtect.first_name
+          ),
+        }),
+        {
+          reply_to_message_id: pm.message_id,
+          parse_mode: ParseMode.Markdown,
+        }
+      );
+    } else if (command.key === BotCommands.list_inactives) {
+      const commandText = pm.text.split(' ');
+      const hours = Number.parseInt(commandText[1]);
+
+      if (commandText.length !== 2 || Number.isNaN(hours)) {
+        const errorId = 'commands.errors.invalid';
+        await service.sendChat(pm.chat_id, i18n.t(errorId), {
+          reply_to_message_id: pm.message_id,
+        });
+        return;
+      }
+
+      const sinceDate = addHours(currentDate, -hours);
+      const users = await db.getInactiveUsers(pm.chat_id, sinceDate);
+
+      if (!users.length) {
+        const errorId = 'commands.list_inactive.empty';
+        await service.sendChat(pm.chat_id, i18n.t(errorId, { hours }), {
+          parse_mode: ParseMode.Markdown,
+          reply_to_message_id: pm.message_id,
+        });
+        return;
+      }
+
+      const mentions = users
+        .map(u => service.getMentionFromId(u.id, u.first_name))
+        .join(', ');
+
+      await service.sendChat(
+        pm.chat_id,
+        i18n.t('commands.list_inactive.successful', { mentions }),
+        { parse_mode: ParseMode.Markdown }
+      );
+    } else {
+      await service.sendChat(
+        pm.chat_id,
+        i18n.t('commands.errors.not_implemented'),
+        {
+          reply_to_message_id: pm.message_id,
+        }
+      );
+    }
   }
 };

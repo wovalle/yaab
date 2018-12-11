@@ -26,6 +26,7 @@
   },
   "scripts": {
     "lint": "tslint --project tsconfig.json",
+    "copy-statics": "cp package.json dist/package.json",
     "build": "tsc",
     "build:watch": "tsc -w",
     "serve:firebase": "firebase serve --only functions",

@@ -1,4 +1,4 @@
-import { IFetchInteractionBetweenDatesResponse } from './fetchInteractionsBetweenDates';
+import { IFetchInteractionBetweenDatesResponse } from './updateLastMessageBetweenDates';
 import { ITelegramService, ParseMode } from '../services/telegram';
 import { ITranslationProvider } from '../I18nProvider';
 import { addHours } from 'date-fns';
@@ -8,9 +8,11 @@ export default async (
   telegramService: ITelegramService,
   currentDate: Date,
   i18n: ITranslationProvider,
-  users: IFetchInteractionBetweenDatesResponse
+  fetchInteractionsResponse: IFetchInteractionBetweenDatesResponse
 ): Promise<any> => {
-  const userWithNoInteraction = users.filter(u => u.messageCount === 0);
+  const userWithNoInteraction = fetchInteractionsResponse.users.filter(
+    u => u.messageCount === 0
+  );
 
   const usersWithError = [];
   for (const u of userWithNoInteraction) {

@@ -69,6 +69,7 @@ dist
 .runtimeconfig.json
 
 users.json
-session.json
+session.session
 secrets.py
+__pycache__
 

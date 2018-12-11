@@ -1,4 +1,4 @@
-import { Update } from 'telegram-typings';
+import { Update, User, ChatMember } from 'telegram-typings';
 import {
   TypedUpdate,
   PlainMedia,
@@ -7,6 +7,7 @@ import {
   EventType,
   EventData,
 } from './types';
+import { ChatUser, UserRole, UserStatus } from './models';
 
 export const getUpdateWithType = (update: Update): TypedUpdate => {
   let type: UpdateType;
@@ -129,7 +130,7 @@ export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
   const is_entity = !!msg.entities && msg.entities.length > 0;
   const entity_type = is_entity ? msg.entities[0].type : null;
   const entity_should_process =
-    entity_type === 'bot_command' && msg.text.endsWith('benditobot'); // TODO: generalize, separate environments
+    entity_type === 'bot_command' && msg.text.includes('@benditobot');
   const is_forward = msg.forward_from && msg.forward_from.id > 0;
   const forward_message_id = is_forward ? msg.forward_from_message_id : null;
   const forward_from_id = is_forward ? msg.forward_from.id : null;
@@ -202,10 +203,16 @@ export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
   };
 };
 
-const BotCommands = [
-  { admin: true, command: 'thanos' },
-  { admin: true, command: 'delomio' },
-  { admin: true, command: 'lovegetadore' },
+export enum BotCommands {
+  remove_inactives = 'thanos',
+  protect_user = 'delomio',
+  list_inactives = 'lovegetadore',
+}
+
+const BotCommandsPermissions = [
+  { admin: true, key: 'thanos' },
+  { admin: true, key: 'delomio' },
+  { admin: true, key: 'lovegetadore' },
 ];
 
 export const getBotCommand = (pm: PlainMessage) => {
@@ -214,5 +221,18 @@ export const getBotCommand = (pm: PlainMessage) => {
     .replace('@benditobot', '') //TODO: generalize
     .trim();
 
-  return BotCommands.find(c => c.command === command) || null;
+  return BotCommandsPermissions.find(c => c.key === command) || null;
+};
+
+export const getUserChatFromMember = (u: ChatMember): ChatUser => {
+  return {
+    id: u.user.id,
+    first_name: u.user.first_name,
+    last_name: u.user.last_name,
+    role: u.status === 'administrator' ? UserRole.admin : UserRole.user,
+    last_message: null,
+    username: u.user.username,
+    warnings: [],
+    status: u.status,
+  };
 };

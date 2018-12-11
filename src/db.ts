@@ -7,7 +7,7 @@ import {
   LeftChatMemberEventData,
 } from './types';
 import { User } from 'telegram-typings';
-import { UserRole, ChatUser, UserStatus } from './models';
+import { ChatUser, UserStatus, UserRole } from './models';
 
 let instance = null;
 
@@ -174,28 +174,77 @@ export class Db {
     return batch.commit();
   }
 
-  async getUserFromMessageOrDefault(
-    pm: PlainMessage,
-    today: Date
+  getUserFromGroup(
+    groupId: Number,
+    userId: Number | string
   ): Promise<ChatUser> {
-    const chatRef = this.db.collection(`chats`).doc(`${pm.chat_id}`);
-    const userRef = chatRef.collection('users').doc(`${pm.from_id}`);
-    const userSnap = await userRef.get();
+    const chatRef = this.db.collection(`chats`).doc(`${groupId}`);
+    const userRef = chatRef.collection('users').doc(`${userId}`);
 
-    if (userSnap.exists) {
-      return userSnap.data() as ChatUser;
-    } else {
-      return {
-        id: pm.from_id,
-        first_name: pm.from_first_name,
-        last_name: pm.from_last_name,
-        role: UserRole.user,
-        last_message: today,
-        username: pm.from_username,
-        warnings: [],
-        status: UserStatus.unsaved,
-      };
-    }
+    return userRef
+      .get()
+      .then(snap => (snap.exists ? (snap.data() as ChatUser) : null));
+  }
+
+  async getInactiveUsers(groupId: Number, since: Date): Promise<ChatUser[]> {
+    console.log({ groupId, since });
+    const chatRef = this.db.collection(`chats`).doc(`${groupId}`);
+    const userRef = chatRef.collection('users');
+
+    const inactives = await userRef
+      .where('last_message', '<=', since)
+      .get()
+      .then(snap => snap.docs.map(d => parseDates(d.data()) as ChatUser));
+
+    const nullUsers = await userRef
+      .where('last_message', '==', null)
+      .get()
+      .then(snap => snap.docs.map(d => parseDates(d.data() as ChatUser)));
+
+    return inactives
+      .concat(nullUsers)
+      .filter(u => !u.is_bot)
+      .filter(u => !u.protected)
+      .filter(u => !['kicked', 'left', 'creator'].includes(u.status))
+      .filter(u => u.role !== UserRole.admin);
+  }
+
+  async saveChatUser(chatId: Number, user: ChatUser, today: Date) {
+    const batch = this.db.batch();
+
+    const chatRef = this.db.collection('chats').doc(`${chatId}`);
+    const userRef = chatRef.collection('users').doc(`${user.id}`);
+    const internalEventRef = chatRef.collection('internal_events');
+    const internalEventDoc = internalEventRef.doc();
+
+    const event = {
+      event: 'user_updated',
+      ref: { user },
+      date: today,
+    };
+
+    batch.set(userRef, cleanUndefined(user));
+    batch.set(internalEventDoc, cleanUndefined(event));
+    return batch.commit();
+  }
+
+  async protectUser(chatId: Number, userId: Number, today: Date) {
+    const batch = this.db.batch();
+
+    const chatRef = this.db.collection('chats').doc(`${chatId}`);
+    const userRef = chatRef.collection('users').doc(`${userId}`);
+    const internalEventRef = chatRef.collection('internal_events');
+    const internalEventDoc = internalEventRef.doc();
+
+    const event = {
+      event: 'user_protected',
+      ref: { userId },
+      date: today,
+    };
+
+    batch.update(userRef, { protected: true });
+    batch.set(internalEventDoc, event);
+    return batch.commit();
   }
 
   async saveChatStat(message: PlainMessage, user: ChatUser, today: Date) {
@@ -207,36 +256,36 @@ export class Db {
 
     const userRef = chatRef.collection('users').doc(`${message.from_id}`);
 
-    if (user.status === UserStatus.unsaved) {
-      user.status = UserStatus.active;
-      batch.set(userRef, user);
-    } else {
-      batch.update(userRef, { last_message: today });
-    }
-
+    batch.update(userRef, { last_message: today, status: 'active' });
     return batch.commit();
   }
 
-  insertUsersInGroup(users: User[], groupId: Number) {
-    if (!users.length) return null;
+  async insertUsersInGroup(usersToImport: ChatUser[], groupId: Number) {
+    if (!usersToImport.length) return null;
 
     const batch = this.db.batch();
     const batch_id = Date.now();
     const groupRef = this.db.collection(`chats`).doc(`${groupId}`);
     const internalEventRef = groupRef.collection('internal_events');
-    batch.set(groupRef, { current_user_batch: batch_id });
 
-    users.forEach(u => {
-      const userRef = groupRef.collection('users').doc(`${u.id}`);
-      batch.set(userRef, { ...u, batch_id });
-    });
+    const existingUsers = await groupRef
+      .collection('users')
+      .get()
+      .then(snap => snap.docs.map(d => parseDates(d.data() as ChatUser)));
+
+    for (const user of usersToImport) {
+      if (!existingUsers.some(u => u.id === user.id)) {
+        const userRef = groupRef.collection('users').doc(`${user.id}`);
+        batch.set(userRef, user);
+      }
+    }
 
     const usersEventDoc = internalEventRef.doc();
 
     const usersAddedData = {
       event: 'users_imported',
-      count: users.length,
-      ref: { batch_id, users },
+      count: usersToImport.length,
+      ref: { batch_id, usersToImport },
       date: new Date(),
     };
 

@@ -1,4 +1,4 @@
-import { Message } from 'telegram-typings';
+import { Message, User, ChatMember } from 'telegram-typings';
 
 export enum ParseMode {
   Markdown = 'Markdown',
@@ -17,5 +17,6 @@ export interface ITelegramService {
     opts?: ISendMessageOpts
   ): Promise<Message>;
   kickUser(userId: Number, chatId: Number, until: Date): Promise<void>;
+  getChatMember(userId: Number, chatId: Number): Promise<ChatMember>;
   getMentionFromId(id: Number, name: string): string;
 }

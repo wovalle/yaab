@@ -2,7 +2,7 @@ import * as functions from 'firebase-functions';
 import processTelegramUpdates from './functions/processTelegramUpdates';
 import importUsers from './functions/importUsers';
 import fetchMessagesByDate from './functions/fetchMessagesByDate';
-import fetchInteractionsBetweenDates from './functions/fetchInteractionsBetweenDates';
+import updateLastMessageBetweenDates from './functions/updateLastMessageBetweenDates';
 import kickUsersWithinTimeframe from './functions/kickUsersWithinTimeframe';
 import onTelegramUpdate from './functions/onTelegramUpdate';
 import TelegramService from './services/telegram';
@@ -87,7 +87,7 @@ export const fetchMessagesByDateFn = functions.https.onRequest(
   }
 );
 
-export const fetchInteractionsBetweenDatesFn = functions.https.onRequest(
+export const updateLastMessageBetweenDatesFn = functions.https.onRequest(
   async (req, res) => {
     const { groupId, from, to } = req.body;
 
@@ -104,8 +104,9 @@ export const fetchInteractionsBetweenDatesFn = functions.https.onRequest(
     }
 
     try {
-      const payload = await fetchInteractionsBetweenDates(
+      const payload = await updateLastMessageBetweenDates(
         db,
+        telegramService,
         groupId,
         new Date(from),
         new Date(to)
@@ -135,8 +136,9 @@ export const kickUsersWithinTimeframeFn = functions.https.onRequest(
     }
 
     try {
-      const users = await fetchInteractionsBetweenDates(
+      const users = await updateLastMessageBetweenDates(
         db,
+        telegramService,
         groupId,
         new Date(from),
         new Date(to)

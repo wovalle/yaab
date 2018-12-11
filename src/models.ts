@@ -10,11 +10,13 @@ export enum UserStatus {
 
 export interface ChatUser {
   id: Number;
+  is_bot: boolean;
   first_name: string;
   last_name?: string;
   username?: string;
   last_message: Date;
   role: UserRole;
-  status: UserStatus;
+  status: string; // “creator”, “administrator”, “member”, “restricted”, “left” or “kicked”
+  protected?: boolean;
   warnings: []; // TODO: Define model
 }

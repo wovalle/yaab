@@ -1,5 +1,5 @@
 import { ITelegramService, ISendMessageOpts } from './ITelegramService';
-import { Message } from 'telegram-typings';
+import { Message, User, ChatMember } from 'telegram-typings';
 import { getUnixTimeFromDate } from '../../utils';
 import { IHttp } from '../../Http';
 
@@ -34,6 +34,17 @@ export default class TelegramService implements ITelegramService {
     };
 
     await this.http.post(url, payload);
+  }
+
+  async getChatMember(userId: Number, chatId: Number): Promise<ChatMember> {
+    const url = this.buildUrl('getChatMember');
+    const payload = {
+      chat_id: chatId,
+      user_id: userId,
+    };
+
+    const response = await this.http.post(url, payload);
+    return response.result as ChatMember;
   }
 
   getMentionFromId(id: Number, name: string) {
