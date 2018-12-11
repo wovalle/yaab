@@ -10,7 +10,7 @@
     },
     "list_inactive": {
       "empty": "en velda nadie vegetó en las últimas {{hours}} horas",
-      "successful": "señore tAmo en vivo y eta gente vegetando: {{mentions}}"
+      "successful": "señore tAmo en vivo y eta gente lleva {{hours}} horas vegetando: {{mentions}}"
     },
     "remove_inactive": {
       "successful": "señore tAmo en vivo pero eta gente ya no: {{mentions}}"

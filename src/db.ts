@@ -59,7 +59,7 @@ export class Db {
       .doc(`${groupId}`)
       .collection('users')
       .get()
-      .then(snap => snap.docs.map(d => parseDates(d.data()) as User));
+      .then(snap => snap.docs.map(d => parseDates(d.data()) as ChatUser));
   }
 
   saveRawUpdates(updates: TypedUpdate[]) {
@@ -226,6 +226,13 @@ export class Db {
     batch.set(userRef, cleanUndefined(user));
     batch.set(internalEventDoc, cleanUndefined(event));
     return batch.commit();
+  }
+
+  async updateChatUser(chatId: Number, user: ChatUser) {
+    const chatRef = this.db.collection('chats').doc(`${chatId}`);
+    const userRef = chatRef.collection('users').doc(`${user.id}`);
+
+    return userRef.update(user);
   }
 
   async protectUser(chatId: Number, userId: Number, today: Date) {

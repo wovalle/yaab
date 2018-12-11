@@ -3,7 +3,7 @@ import processTelegramUpdates from './functions/processTelegramUpdates';
 import importUsers from './functions/importUsers';
 import fetchMessagesByDate from './functions/fetchMessagesByDate';
 import updateLastMessageBetweenDates from './functions/updateLastMessageBetweenDates';
-import kickUsersWithinTimeframe from './functions/kickUsersWithinTimeframe';
+import fetchInactiveUsersWithinTimeframe from './functions/fetchInactiveUsersWithinTimeframe';
 import onTelegramUpdate from './functions/onTelegramUpdate';
 import TelegramService from './services/telegram';
 import Db from './db';
@@ -119,43 +119,28 @@ export const updateLastMessageBetweenDatesFn = functions.https.onRequest(
   }
 );
 
-export const kickUsersWithinTimeframeFn = functions.https.onRequest(
+export const fetchInactiveUsersWithinTimeframeFn = functions.https.onRequest(
   async (req, res) => {
-    const { groupId, from, to } = req.body;
+    const { groupId, hours } = req.body;
 
     if (!groupId) {
       return res.status(400).send('`groupId` parameter is required');
     }
 
-    if (!from) {
-      return res.status(400).send('invalid parameter `from`');
+    if (!hours) {
+      return res.status(400).send('invalid parameter `hours`');
     }
-
-    if (!to) {
-      return res.status(400).send('invalid parameter `to`');
-    }
-
     try {
-      const users = await updateLastMessageBetweenDates(
+      const payload = await fetchInactiveUsersWithinTimeframe(
         db,
-        telegramService,
         groupId,
-        new Date(from),
-        new Date(to)
+        hours,
+        getDate()
       );
-
-      const response = await kickUsersWithinTimeframe(
-        groupId,
-        telegramService,
-        getDate(),
-        i18n,
-        users
-      );
-
-      return res.send({ ok: true, originalUsers: users, ...response });
+      return res.send({ ok: true, payload });
     } catch (error) {
-      logger.error(error.message);
-      return res.status(500).send({ ok: false, error });
+      logger.error(error);
+      return res.status(500).send({ ok: false });
     }
   }
 );

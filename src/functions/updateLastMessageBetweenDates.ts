@@ -14,6 +14,8 @@ interface IUserInteraction {
 export type IFetchInteractionBetweenDatesResponse = {
   users: IUserInteraction[];
   createdUsers: ChatUser[];
+  updatedUsers: ChatUser[];
+  usersWithError: any[];
 };
 
 export default async (
@@ -46,17 +48,35 @@ export default async (
   console.info('Inserting new users');
 
   const createdUsers = [];
+  const usersWithError = [];
   for (const uid of usersWithMsgsNotInGroup) {
-    const tgUser = await service.getChatMember(uid, groupId);
-    const chatUser = getUserChatFromMember(tgUser);
-    chatUser.last_message = hash[uid].last_message;
-    createdUsers.push(chatUser);
-    await db.saveChatUser(groupId, chatUser, new Date());
+    try {
+      const tgUser = await service.getChatMember(uid, groupId);
+      const chatUser = getUserChatFromMember(tgUser);
+      chatUser.last_message = hash[uid].last_message;
+      await db.saveChatUser(groupId, chatUser, new Date());
+      createdUsers.push(chatUser);
+    } catch (e) {
+      usersWithError.push({ uid, error: e });
+    }
+  }
+
+  const updatedUsers = [];
+  for (const chatUser of groupMembers) {
+    const id = `${chatUser.id}`;
+    if (!hash[id]) {
+      usersWithError.push({ uid: id, error: 'not in hash', chatUser });
+      continue;
+    }
+    chatUser.last_message = hash[id].last_message;
+    await db.updateChatUser(groupId, chatUser);
+    updatedUsers.push(chatUser);
   }
 
   const users = groupMembers.map(u => {
-    return hash[u.id]
-      ? hash[u.id]
+    const id = `${u.id}`;
+    return hash[id]
+      ? hash[id]
       : {
           id: u.id,
           first_name: u.first_name,
@@ -66,5 +86,5 @@ export default async (
         };
   });
 
-  return { users, createdUsers };
+  return { users, createdUsers, updatedUsers, usersWithError };
 };

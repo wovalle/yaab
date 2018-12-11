@@ -149,7 +149,7 @@ export default async (
 
       await service.sendChat(
         pm.chat_id,
-        i18n.t('commands.list_inactive.successful', { mentions }),
+        i18n.t('commands.list_inactive.successful', { hours, mentions }),
         { parse_mode: ParseMode.Markdown }
       );
     } else if (command.key === BotCommands.remove_inactives) {
