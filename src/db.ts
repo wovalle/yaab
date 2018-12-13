@@ -186,8 +186,17 @@ export class Db {
       .then(snap => (snap.exists ? (snap.data() as ChatUser) : null));
   }
 
+  getProtectedUsers(groupId: Number): Promise<ChatUser[]> {
+    const chatRef = this.db.collection(`chats`).doc(`${groupId}`);
+    const userRef = chatRef.collection('users');
+
+    return userRef
+      .where('protected', '==', true)
+      .get()
+      .then(snap => snap.docs.map(d => parseDates(d.data()) as ChatUser));
+  }
+
   async getInactiveUsers(groupId: Number, since: Date): Promise<ChatUser[]> {
-    console.log({ groupId, since });
     const chatRef = this.db.collection(`chats`).doc(`${groupId}`);
     const userRef = chatRef.collection('users');
 
@@ -235,7 +244,12 @@ export class Db {
     return userRef.update(user);
   }
 
-  async protectUser(chatId: Number, userId: Number, today: Date) {
+  async setProtectedUser(
+    chatId: Number,
+    userId: Number,
+    today: Date,
+    _protected: boolean
+  ) {
     const batch = this.db.batch();
 
     const chatRef = this.db.collection('chats').doc(`${chatId}`);
@@ -249,7 +263,7 @@ export class Db {
       date: today,
     };
 
-    batch.update(userRef, { protected: true });
+    batch.update(userRef, { protected: _protected });
     batch.set(internalEventDoc, event);
     return batch.commit();
   }

@@ -207,12 +207,16 @@ export enum BotCommands {
   remove_inactives = 'thanos',
   protect_user = 'delomio',
   list_inactives = 'lovegetadore',
+  list_protected = 'lodichoso',
+  remove_protected = 'baraja',
 }
 
 const BotCommandsPermissions = [
-  { admin: true, key: 'thanos' },
-  { admin: true, key: 'delomio' },
-  { admin: true, key: 'lovegetadore' },
+  { admin: true, key: BotCommands.list_inactives },
+  { admin: true, key: BotCommands.remove_inactives },
+  { admin: true, key: BotCommands.protect_user },
+  { admin: true, key: BotCommands.remove_protected },
+  { admin: true, key: BotCommands.list_protected },
 ];
 
 export const getBotCommand = (pm: PlainMessage) => {

@@ -47,7 +47,8 @@ export default class TelegramService implements ITelegramService {
     return response.result as ChatMember;
   }
 
-  getMentionFromId(id: Number, name: string) {
-    return `[${name}](tg://user?id=${id})`;
+  getMentionFromId(id: Number, name: string, lastName?: string) {
+    const fullName = [name, lastName].join(' ');
+    return `[${fullName}](tg://user?id=${id})`;
   }
 }

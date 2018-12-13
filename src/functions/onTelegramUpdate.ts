@@ -66,8 +66,14 @@ export default async (
         }
       );
       return;
-    } else if (command.key === BotCommands.protect_user) {
+    } else if (
+      [BotCommands.protect_user, BotCommands.remove_protected].includes(
+        command.key
+      )
+    ) {
+      const _protected = command.key === BotCommands.protect_user;
       let userIdToProtect = null;
+
       if (pm.is_reply) {
         userIdToProtect = pm.reply_from_id;
       } else {
@@ -94,7 +100,12 @@ export default async (
       );
 
       if (userToProtect) {
-        await db.protectUser(pm.chat_id, userToProtect.id, currentDate);
+        await db.setProtectedUser(
+          pm.chat_id,
+          userToProtect.id,
+          currentDate,
+          _protected
+        );
       } else {
         const chatMember = await service.getChatMember(
           userIdToProtect,
@@ -106,9 +117,11 @@ export default async (
         await db.saveChatUser(pm.chat_id, userToProtect, currentDate);
       }
 
+      const action = _protected ? 'protect_user' : 'remove_protected';
+
       await service.sendChat(
         pm.chat_id,
-        i18n.t('commands.protect_user.successful', {
+        i18n.t(`commands.${action}.successful`, {
           name: service.getMentionFromId(
             userToProtect.id,
             userToProtect.first_name
@@ -120,6 +133,7 @@ export default async (
         }
       );
     } else if (command.key === BotCommands.list_inactives) {
+      // TODO: send pm summary with users tagged, bots and protected
       const commandText = pm.text.split(' ');
       const hours = Number.parseInt(commandText[1]);
 
@@ -150,6 +164,18 @@ export default async (
       await service.sendChat(
         pm.chat_id,
         i18n.t('commands.list_inactive.successful', { hours, mentions }),
+        { parse_mode: ParseMode.Markdown }
+      );
+    } else if (command.key === BotCommands.list_protected) {
+      const users = await db.getProtectedUsers(pm.chat_id);
+
+      const mentions = users
+        .map(u => service.getMentionFromId(u.id, u.first_name, u.last_name))
+        .join(', ');
+
+      await service.sendChat(
+        pm.chat_id,
+        i18n.t('commands.list_protected.successful', { mentions }),
         { parse_mode: ParseMode.Markdown }
       );
     } else if (command.key === BotCommands.remove_inactives) {

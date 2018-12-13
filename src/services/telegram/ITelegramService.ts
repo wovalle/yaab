@@ -18,5 +18,5 @@ export interface ITelegramService {
   ): Promise<Message>;
   kickUser(userId: Number, chatId: Number, until: Date): Promise<void>;
   getChatMember(userId: Number, chatId: Number): Promise<ChatMember>;
-  getMentionFromId(id: Number, name: string): string;
+  getMentionFromId(id: Number, name: string, lastName?: string): string;
 }

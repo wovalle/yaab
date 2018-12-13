@@ -8,9 +8,15 @@
     "protect_user": {
       "successful": "ufff, ya no le voy a da mocha a {{name}}"
     },
+    "remove_protected": {
+      "successful": "ya si me puedo llevar a {{name}}"
+    },
     "list_inactive": {
       "empty": "en velda nadie vegetó en las últimas {{hours}} horas",
       "successful": "señore tAmo en vivo y eta gente lleva {{hours}} horas vegetando: {{mentions}}"
+    },
+    "list_protected": {
+      "successful": "lo que tan pegao de la teta son: {{mentions}}"
     },
     "remove_inactive": {
       "successful": "señore tAmo en vivo pero eta gente ya no: {{mentions}}"
