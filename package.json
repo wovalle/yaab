@@ -36,6 +36,7 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "test": "mocha --compilers ts:ts-node/register ./test/*.spec.ts",
+    "test:watch": "mocha --compilers ts:ts-node/register ./test/*.spec.ts -w",
     "ngrok": "ngrok http 5000"
   },
   "author": "Willy Ovalle <willyovalle16@gmail.com>",
