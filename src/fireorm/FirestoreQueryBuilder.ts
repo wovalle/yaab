@@ -1,5 +1,6 @@
 import QueryBuilder from './QueryBuilder';
 import { IFirestoreVal } from './types';
+import { WhereFilterOp, QuerySnapshot } from '@google-cloud/firestore';
 
 export default class FirestoreQueryBuilder<T> extends QueryBuilder<T> {
   constructor(
@@ -7,6 +8,11 @@ export default class FirestoreQueryBuilder<T> extends QueryBuilder<T> {
     protected colName: string
   ) {
     super();
+  }
+
+  // TODO: this isn't the place for this
+  private extractTFromColSnap(q: QuerySnapshot): T[] {
+    return q.docs.map(d => d.data() as T);
   }
 
   whereEqualTo(prop: string, val: IFirestoreVal): QueryBuilder<T> {
@@ -54,8 +60,10 @@ export default class FirestoreQueryBuilder<T> extends QueryBuilder<T> {
   find(): Promise<T[]> {
     return this.queries
       .reduce((acc, cur) => {
-        return acc.where(cur.prop, cur.operator, cur.val);
+        const op = cur.operator as WhereFilterOp;
+        return acc.where(cur.prop, op, cur.val);
       }, this.db.collection(this.colName))
-      .get(); //TODO: limpiar (devolver T y cambiar la fecha)
+      .get()
+      .then(this.extractTFromColSnap);
   }
 }

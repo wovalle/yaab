@@ -1,4 +1,4 @@
-import { FirestoreQueryBuilder } from './QueryBuilder';
+import FirestoreQueryBuilder from './FirestoreQueryBuilder';
 import { QuerySnapshot } from '@google-cloud/firestore';
 import { DocumentSnapshot } from 'firebase-functions/lib/providers/firestore';
 import { IRepository } from './types';
@@ -14,10 +14,6 @@ export default abstract class BaseFirestoreRepository<T extends { id: string }>
 
   private extractTFromDocSnap(doc: DocumentSnapshot): T {
     return doc.exists ? (doc.data() as T) : null;
-  }
-
-  private extractTFromColSnap(q: QuerySnapshot): T[] {
-    return q.docs.map(d => d.data() as T);
   }
 
   findById(id: string): Promise<T> {
