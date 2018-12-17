@@ -1,16 +1,18 @@
-import FirestoreQueryBuilder from './FirestoreQueryBuilder';
-import { QuerySnapshot } from '@google-cloud/firestore';
 import { DocumentSnapshot } from 'firebase-functions/lib/providers/firestore';
-import { IRepository } from './types';
+import { IRepository, IFirestoreVal, IQueryBuilder } from './types';
+import QueryBuilder from './QueryBuilder';
 
 // TODO: pub/sub for realtime updates
 export default abstract class BaseFirestoreRepository<T extends { id: string }>
-  extends FirestoreQueryBuilder<T>
-  implements IRepository<T> {
+  implements IRepository<T>, IQueryBuilder<T> {
   // TODO: Ordering
   // TODO: limit
   // TODO: open transactions? (probably in uof)
-  // TODO: had to remove constructor since is implemented in FirestoreQueryBuilder. Good shot?
+
+  constructor(
+    protected db: FirebaseFirestore.Firestore,
+    protected colName: string
+  ) {}
 
   private extractTFromDocSnap(doc: DocumentSnapshot): T {
     return doc.exists ? (doc.data() as T) : null;
@@ -46,5 +48,45 @@ export default abstract class BaseFirestoreRepository<T extends { id: string }>
   async delete(id: string): Promise<void> {
     // TODO: handle errors
     await this.db.doc(id).delete();
+  }
+
+  find(): Promise<T[]> {
+    return new QueryBuilder<T>(this.db, this.colName).find();
+  }
+
+  whereEqualTo(prop: string, val: IFirestoreVal): QueryBuilder<T> {
+    return new QueryBuilder<T>(this.db, this.colName).whereEqualTo(prop, val);
+  }
+
+  whereGreaterThan(prop: string, val: IFirestoreVal): QueryBuilder<T> {
+    return new QueryBuilder<T>(this.db, this.colName).whereGreaterThan(
+      prop,
+      val
+    );
+  }
+
+  whereGreaterOrEqualThan(prop: string, val: IFirestoreVal): QueryBuilder<T> {
+    return new QueryBuilder<T>(this.db, this.colName).whereGreaterOrEqualThan(
+      prop,
+      val
+    );
+  }
+
+  whereLessThan(prop: string, val: IFirestoreVal): QueryBuilder<T> {
+    return new QueryBuilder<T>(this.db, this.colName).whereLessThan(prop, val);
+  }
+
+  whereLessOrEqualThan(prop: string, val: IFirestoreVal): QueryBuilder<T> {
+    return new QueryBuilder<T>(this.db, this.colName).whereLessOrEqualThan(
+      prop,
+      val
+    );
+  }
+
+  whereArrayCointain(prop: string, val: IFirestoreVal): QueryBuilder<T> {
+    return new QueryBuilder<T>(this.db, this.colName).whereArrayCointain(
+      prop,
+      val
+    );
   }
 }

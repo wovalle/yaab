@@ -5,10 +5,15 @@ import {
   FirestoreOperators,
   IQueryBuilderResult,
 } from './types';
+import { WhereFilterOp, QuerySnapshot } from '@google-cloud/firestore';
 
-export default abstract class QueryBuilder<T> implements IQueryBuilder<T> {
+export default class QueryBuilder<T> implements IQueryBuilder<T> {
   // TODO: validate prop is in T
   // TODO: validate not doing range fields in different fields
+  constructor(
+    protected db: FirebaseFirestore.Firestore,
+    protected colName: string
+  ) {}
 
   protected queries: Array<IFireOrmQueryLine> = [];
 
@@ -58,5 +63,18 @@ export default abstract class QueryBuilder<T> implements IQueryBuilder<T> {
     return this.queries;
   }
 
-  abstract find(): Promise<T[]>;
+  // TODO: this isn't the place for this
+  private extractTFromColSnap(q: QuerySnapshot): T[] {
+    return q.docs.map(d => d.data() as T);
+  }
+
+  find(): Promise<T[]> {
+    return this.queries
+      .reduce((acc, cur) => {
+        const op = cur.operator as WhereFilterOp;
+        return acc.where(cur.prop, op, cur.val);
+      }, this.db.collection(this.colName))
+      .get()
+      .then(this.extractTFromColSnap);
+  }
 }
