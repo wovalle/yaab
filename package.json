@@ -19,6 +19,7 @@
     "concurrently": "^4.1.0",
     "firebase-tools": "^6.1.1",
     "mocha": "^5.2.0",
+    "mock-cloud-firestore": "^0.9.0",
     "ngrok": "^3.1.0",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",

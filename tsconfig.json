@@ -6,7 +6,8 @@
     "outDir": "dist",
     "sourceMap": true,
     "target": "es6",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "experimentalDecorators": true
   },
   "compileOnSave": true,
   "include": ["src"]
