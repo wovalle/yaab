@@ -209,6 +209,7 @@ export enum BotCommands {
   list_inactives = 'lovegetadore',
   list_protected = 'lodichoso',
   remove_protected = 'baraja',
+  enable_crush_mode = 'benditocrush',
 }
 
 const BotCommandsPermissions = [
@@ -217,6 +218,7 @@ const BotCommandsPermissions = [
   { admin: true, key: BotCommands.protect_user },
   { admin: true, key: BotCommands.remove_protected },
   { admin: true, key: BotCommands.list_protected },
+  { admin: false, key: BotCommands.enable_crush_mode },
 ];
 
 export const getBotCommand = (pm: PlainMessage) => {
