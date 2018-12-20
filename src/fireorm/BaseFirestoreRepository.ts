@@ -8,6 +8,7 @@ export default abstract class BaseFirestoreRepository<T extends { id: string }>
   // TODO: Ordering
   // TODO: limit
   // TODO: open transactions? (probably in uof)
+  // TODO: colname = classname unless param is passed
 
   constructor(
     protected db: FirebaseFirestore.Firestore,
@@ -54,36 +55,36 @@ export default abstract class BaseFirestoreRepository<T extends { id: string }>
     return new QueryBuilder<T>(this.db, this.colName).find();
   }
 
-  whereEqualTo(prop: string, val: IFirestoreVal): QueryBuilder<T> {
+  whereEqualTo(prop: keyof T, val: IFirestoreVal): QueryBuilder<T> {
     return new QueryBuilder<T>(this.db, this.colName).whereEqualTo(prop, val);
   }
 
-  whereGreaterThan(prop: string, val: IFirestoreVal): QueryBuilder<T> {
+  whereGreaterThan(prop: keyof T, val: IFirestoreVal): QueryBuilder<T> {
     return new QueryBuilder<T>(this.db, this.colName).whereGreaterThan(
       prop,
       val
     );
   }
 
-  whereGreaterOrEqualThan(prop: string, val: IFirestoreVal): QueryBuilder<T> {
+  whereGreaterOrEqualThan(prop: keyof T, val: IFirestoreVal): QueryBuilder<T> {
     return new QueryBuilder<T>(this.db, this.colName).whereGreaterOrEqualThan(
       prop,
       val
     );
   }
 
-  whereLessThan(prop: string, val: IFirestoreVal): QueryBuilder<T> {
+  whereLessThan(prop: keyof T, val: IFirestoreVal): QueryBuilder<T> {
     return new QueryBuilder<T>(this.db, this.colName).whereLessThan(prop, val);
   }
 
-  whereLessOrEqualThan(prop: string, val: IFirestoreVal): QueryBuilder<T> {
+  whereLessOrEqualThan(prop: keyof T, val: IFirestoreVal): QueryBuilder<T> {
     return new QueryBuilder<T>(this.db, this.colName).whereLessOrEqualThan(
       prop,
       val
     );
   }
 
-  whereArrayCointain(prop: string, val: IFirestoreVal): QueryBuilder<T> {
+  whereArrayCointain(prop: keyof T, val: IFirestoreVal): QueryBuilder<T> {
     return new QueryBuilder<T>(this.db, this.colName).whereArrayCointain(
       prop,
       val

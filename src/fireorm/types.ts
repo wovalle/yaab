@@ -26,11 +26,11 @@ export interface IFireOrmQueryLine {
 export type IQueryBuilderResult = IFireOrmQueryLine[];
 
 export interface IQueryBuilder<T> {
-  whereEqualTo(prop: string, val: IFirestoreVal): IQueryBuilder<T>;
-  whereGreaterThan(prop: string, val: IFirestoreVal): IQueryBuilder<T>;
-  whereGreaterOrEqualThan(prop: string, val: IFirestoreVal): IQueryBuilder<T>;
-  whereLessThan(prop: string, val: IFirestoreVal): IQueryBuilder<T>;
-  whereLessOrEqualThan(prop: string, val: IFirestoreVal): IQueryBuilder<T>;
-  whereArrayCointain(prop: string, val: IFirestoreVal): IQueryBuilder<T>;
+  whereEqualTo(prop: keyof T, val: IFirestoreVal): IQueryBuilder<T>;
+  whereGreaterThan(prop: keyof T, val: IFirestoreVal): IQueryBuilder<T>;
+  whereGreaterOrEqualThan(prop: keyof T, val: IFirestoreVal): IQueryBuilder<T>;
+  whereLessThan(prop: keyof T, val: IFirestoreVal): IQueryBuilder<T>;
+  whereLessOrEqualThan(prop: keyof T, val: IFirestoreVal): IQueryBuilder<T>;
+  whereArrayCointain(prop: keyof T, val: IFirestoreVal): IQueryBuilder<T>;
   find(): Promise<T[]>;
 }

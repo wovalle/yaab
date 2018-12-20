@@ -8,7 +8,6 @@ import {
 import { WhereFilterOp, QuerySnapshot } from '@google-cloud/firestore';
 
 export default class QueryBuilder<T> implements IQueryBuilder<T> {
-  // TODO: validate prop is in T
   // TODO: validate not doing range fields in different fields
   constructor(
     protected db: FirebaseFirestore.Firestore,
@@ -17,42 +16,54 @@ export default class QueryBuilder<T> implements IQueryBuilder<T> {
 
   protected queries: Array<IFireOrmQueryLine> = [];
 
-  whereEqualTo(prop: string, val: IFirestoreVal): QueryBuilder<T> {
-    this.queries.push({ prop, val, operator: FirestoreOperators.equal });
-    return this;
-  }
-
-  whereGreaterThan(prop: string, val: IFirestoreVal): QueryBuilder<T> {
-    this.queries.push({ prop, val, operator: FirestoreOperators.greaterThan });
-    return this;
-  }
-
-  whereGreaterOrEqualThan(prop: string, val: IFirestoreVal): QueryBuilder<T> {
+  whereEqualTo(prop: keyof T, val: IFirestoreVal): QueryBuilder<T> {
     this.queries.push({
-      prop,
+      prop: prop.toString(),
+      val,
+      operator: FirestoreOperators.equal,
+    });
+    return this;
+  }
+
+  whereGreaterThan(prop: keyof T, val: IFirestoreVal): QueryBuilder<T> {
+    this.queries.push({
+      prop: prop.toString(),
+      val,
+      operator: FirestoreOperators.greaterThan,
+    });
+    return this;
+  }
+
+  whereGreaterOrEqualThan(prop: keyof T, val: IFirestoreVal): QueryBuilder<T> {
+    this.queries.push({
+      prop: prop.toString(),
       val,
       operator: FirestoreOperators.greaterThanEqual,
     });
     return this;
   }
 
-  whereLessThan(prop: string, val: IFirestoreVal): QueryBuilder<T> {
-    this.queries.push({ prop, val, operator: FirestoreOperators.lessThan });
+  whereLessThan(prop: keyof T, val: IFirestoreVal): QueryBuilder<T> {
+    this.queries.push({
+      prop: prop.toString(),
+      val,
+      operator: FirestoreOperators.lessThan,
+    });
     return this;
   }
 
-  whereLessOrEqualThan(prop: string, val: IFirestoreVal): QueryBuilder<T> {
+  whereLessOrEqualThan(prop: keyof T, val: IFirestoreVal): QueryBuilder<T> {
     this.queries.push({
-      prop,
+      prop: prop.toString(),
       val,
       operator: FirestoreOperators.lessThanEqual,
     });
     return this;
   }
 
-  whereArrayCointain(prop: string, val: IFirestoreVal): QueryBuilder<T> {
+  whereArrayCointain(prop: keyof T, val: IFirestoreVal): QueryBuilder<T> {
     this.queries.push({
-      prop,
+      prop: prop.toString(),
       val,
       operator: FirestoreOperators.arrayContains,
     });
