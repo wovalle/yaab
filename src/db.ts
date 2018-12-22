@@ -1,13 +1,6 @@
 import * as admin from 'firebase-admin';
-import {
-  TypedUpdate,
-  PlainMessage,
-  NewChatMembersEventData,
-  EventType,
-  LeftChatMemberEventData,
-} from './types';
-import { User } from 'telegram-typings';
-import { ChatUser, UserStatus, UserRole } from './models';
+import { PlainMessage } from './types';
+import { ChatUser, UserRole } from './models';
 
 let instance = null;
 

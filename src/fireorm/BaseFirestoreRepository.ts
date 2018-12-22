@@ -1,6 +1,6 @@
-import { DocumentSnapshot } from 'firebase-functions/lib/providers/firestore';
 import { IRepository, IFirestoreVal, IQueryBuilder } from './types';
 import QueryBuilder from './QueryBuilder';
+import { Firestore, DocumentSnapshot } from '@google-cloud/firestore';
 
 // TODO: pub/sub for realtime updates
 export default abstract class BaseFirestoreRepository<T extends { id: string }>
@@ -10,14 +10,23 @@ export default abstract class BaseFirestoreRepository<T extends { id: string }>
   // TODO: open transactions? (probably in uof)
   // TODO: colname = classname unless param is passed
 
-  constructor(
-    protected db: FirebaseFirestore.Firestore,
-    protected colName: string
-  ) {}
+  constructor(protected db: Firestore, protected colName: string) {}
 
-  private extractTFromDocSnap(doc: DocumentSnapshot): T {
-    return doc.exists ? (doc.data() as T) : null;
-  }
+  private extractTFromDocSnap = (doc: DocumentSnapshot): T => {
+    return doc.exists ? this.parseTimestamp(doc.data() as T) : null;
+  };
+
+  private parseTimestamp = (obj: T): T => {
+    Object.keys(obj).forEach(key => {
+      if (typeof obj[key] === 'object' && 'toDate' in obj[key]) {
+        obj[key] = obj[key].toDate();
+      } else if (typeof obj[key] === 'object') {
+        this.parseTimestamp(obj[key]);
+      }
+    });
+
+    return obj;
+  };
 
   findById(id: string): Promise<T> {
     return this.db
@@ -48,7 +57,10 @@ export default abstract class BaseFirestoreRepository<T extends { id: string }>
 
   async delete(id: string): Promise<void> {
     // TODO: handle errors
-    await this.db.doc(id).delete();
+    await this.db
+      .collection(this.colName)
+      .doc(id)
+      .delete();
   }
 
   find(): Promise<T[]> {
