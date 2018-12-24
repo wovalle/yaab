@@ -9,6 +9,7 @@
     "firebase-admin": "^6.3.0",
     "firebase-functions": "^2.1.0",
     "lodash": "^4.17.11",
+    "reflect-metadata": "^0.1.12",
     "telegram-typings": "^4.0.0-beta"
   },
   "devDependencies": {

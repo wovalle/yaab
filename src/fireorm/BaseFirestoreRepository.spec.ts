@@ -1,17 +1,17 @@
 import * as MockFirebase from 'mock-cloud-firestore';
-import BaseFirestoreRepository from './BaseFirestoreRepository';
+import BaseCollectionRepository from './BaseCollectionRepository';
 import { fixtureData, User } from './fixture';
 import { expect } from 'chai';
 
 // TODO: getRepository<User>()?
-// TODO: enforce entities to extend {id: string}
+// TODO: explicitely enforce entities to extend {id: string}
 
-class UserRepository extends BaseFirestoreRepository<User> {}
+class UserRepository extends BaseCollectionRepository<User> {}
 
 describe('Repository', () => {
   let firebase = null;
   let firestore = null;
-  let userRep: BaseFirestoreRepository<User> = null;
+  let userRep: BaseCollectionRepository<User> = null;
 
   beforeEach(() => {
     firebase = new MockFirebase(fixtureData, {
@@ -22,7 +22,7 @@ describe('Repository', () => {
     userRep = new UserRepository(firestore, 'users');
   });
 
-  describe('findById', () => {
+  describe.only('findById', () => {
     it('must find by id', async () => {
       const roy = await userRep.findById('roy');
       expect(roy.id).to.equal('roy');

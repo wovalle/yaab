@@ -1,19 +1,49 @@
+// tslint:disable-next-line:no-import-side-effect
+import 'reflect-metadata';
 import { IRepository, IFirestoreVal, IQueryBuilder } from './types';
 import QueryBuilder from './QueryBuilder';
 import { Firestore, DocumentSnapshot } from '@google-cloud/firestore';
+import { getMetadataStorage } from '.';
+import BaseSubCollectionRepository from './BaseSubCollectionRepository';
 
 // TODO: pub/sub for realtime updates
+
 export default abstract class BaseFirestoreRepository<T extends { id: string }>
   implements IRepository<T>, IQueryBuilder<T> {
   // TODO: Ordering
   // TODO: limit
   // TODO: open transactions? (probably in uof)
   // TODO: colname = classname unless param is passed
+  // TODO: @createdOnField, @updatedOnField
+  // TODO: well defined types, investigate
 
   constructor(protected db: Firestore, protected colName: string) {}
 
   private extractTFromDocSnap = (doc: DocumentSnapshot): T => {
-    return doc.exists ? this.parseTimestamp(doc.data() as T) : null;
+    if (!doc.exists) {
+      return null;
+    }
+
+    const entity = this.parseTimestamp(doc.data() as T);
+
+    const subcollections = getMetadataStorage().subCollections.filter(
+      sc => sc.collection === this.colName
+    );
+
+    subcollections.forEach(subCol => {
+      // tslint:disable-next-line:no-shadowed-variable
+      const T = subCol.entity;
+      Object.assign(entity, {
+        [subCol.attribute]: new BaseSubCollectionRepository2<T>(
+          this.db,
+          this.colName,
+          doc.id,
+          subCol.subcollection
+        ),
+      });
+    });
+
+    return entity;
   };
 
   private parseTimestamp = (obj: T): T => {
@@ -103,3 +133,11 @@ export default abstract class BaseFirestoreRepository<T extends { id: string }>
     );
   }
 }
+
+class BaseCollectionRepository<
+  T extends { id: string }
+> extends BaseFirestoreRepository<T> {}
+
+class BaseSubCollectionRepository2<
+  T extends { id: string }
+> extends BaseSubCollectionRepository<T> {}

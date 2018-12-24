@@ -1,14 +1,20 @@
+import { Collection, SubCollection } from './';
+import { IRepository } from './types';
+
 export class Message {
   id: string;
   date: Date;
   text: string;
 }
 
+@Collection('users')
 export class User {
   id: string;
   firstName: string;
   lastName?: string;
   birthDate: Date;
+  @SubCollection(Message, 'message', 'users')
+  readonly messages?: IRepository<Message>;
 }
 
 const users = new Array<User>();
