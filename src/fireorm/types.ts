@@ -17,6 +17,10 @@ export enum FirestoreOperators {
   arrayContains = 'array-contains',
 }
 
+export enum FirestoreCollectionType {
+  collection,
+  subcollection,
+}
 export interface IFireOrmQueryLine {
   prop: string;
   val: IFirestoreVal;

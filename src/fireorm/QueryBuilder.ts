@@ -5,14 +5,16 @@ import {
   FirestoreOperators,
   IQueryBuilderResult,
 } from './types';
-import { WhereFilterOp, QuerySnapshot } from '@google-cloud/firestore';
+
+import {
+  WhereFilterOp,
+  QuerySnapshot,
+  CollectionReference,
+} from '@google-cloud/firestore';
 
 export default class QueryBuilder<T> implements IQueryBuilder<T> {
   // TODO: validate not doing range fields in different fields
-  constructor(
-    protected db: FirebaseFirestore.Firestore,
-    protected colName: string
-  ) {}
+  constructor(protected firestoreCollection: CollectionReference) {}
 
   protected queries: Array<IFireOrmQueryLine> = [];
 
@@ -84,7 +86,7 @@ export default class QueryBuilder<T> implements IQueryBuilder<T> {
       .reduce((acc, cur) => {
         const op = cur.operator as WhereFilterOp;
         return acc.where(cur.prop, op, cur.val);
-      }, this.db.collection(this.colName))
+      }, this.firestoreCollection)
       .get()
       .then(this.extractTFromColSnap);
   }
