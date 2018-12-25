@@ -15,11 +15,10 @@ import {
 } from '@google-cloud/firestore';
 
 import QueryBuilder from './QueryBuilder';
-import { getMetadataStorage } from '.';
+import { getMetadataStorage } from './MetadataStorage';
 
-export default abstract class BaseAbstractFirestoreRepository<
-  T extends { id: string }
-> implements IRepository<T>, IQueryBuilder<T> {
+export default class BaseFirestoreRepository<T extends { id: string }>
+  implements IRepository<T>, IQueryBuilder<T> {
   // TODO: Ordering
   // TODO: pub/sub for realtime updates
   // TODO: limit
@@ -73,7 +72,7 @@ export default abstract class BaseAbstractFirestoreRepository<
       // tslint:disable-next-line:no-shadowed-variable
       const T = subCol.entity;
       Object.assign(entity, {
-        [subCol.attribute]: new BaseCollectionRepository<T>(
+        [subCol.attribute]: new BaseFirestoreRepository<T>(
           this.db,
           this.colName,
           doc.id,
@@ -170,6 +169,11 @@ export default abstract class BaseAbstractFirestoreRepository<
   }
 }
 
-export class BaseCollectionRepository<
-  T extends { id: string }
-> extends BaseAbstractFirestoreRepository<T> {}
+// TODO: after registering repositories in metadata storage, return single instance
+// TODO: or make it singleton?
+export function getRepository<T extends { id: string }>(
+  db: Firestore,
+  dbCol: string
+) {
+  return new BaseFirestoreRepository<T>(db, dbCol);
+}

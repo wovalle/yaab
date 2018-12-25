@@ -1,5 +1,5 @@
 import * as MockFirebase from 'mock-cloud-firestore';
-import BaseFirestoreRepository from './BaseAbstractFirestoreRepository';
+import BaseFirestoreRepository from './BaseFirestoreRepository';
 import { getFixture, User } from './fixture';
 import { expect } from 'chai';
 
