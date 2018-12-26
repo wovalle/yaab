@@ -43,8 +43,10 @@ Container.set('getCurrentDate', getDate);
 // Section: initialize commands
 import { ListProtectedHandler } from './functions/Commands/ListProtectedHandler';
 import { ListInactiveHandler } from './functions/Commands/ListInactiveHandler';
+import { SetProtectedHandler } from './functions/Commands/SetProtectedHandler';
 ListProtectedHandler.name;
 ListInactiveHandler.name;
+SetProtectedHandler.name;
 Chat.name;
 
 export const importUsersInternalFn = functions.https.onRequest(

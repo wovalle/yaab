@@ -64,28 +64,37 @@ export default class BaseFirestoreRepository<T extends { id: string }>
 
     const entity = this.parseTimestamp(doc.data() as T);
 
-    const subcollections = getMetadataStorage().subCollections.filter(
-      sc => sc.collection === this.colName
-    );
+    // TODO: This wont be required after implementing https://github.com/typestack/class-transformer
+    entity.id = `${entity.id}`;
 
-    subcollections.forEach(subCol => {
-      // tslint:disable-next-line:no-shadowed-variable
-      const T = subCol.entity;
-      Object.assign(entity, {
-        [subCol.attribute]: new BaseFirestoreRepository<T>(
-          this.db,
-          this.colName,
-          doc.id,
-          subCol.subcollection
-        ),
+    //If you're a subcollection, you don't have to check for other subcollections
+    // TODO: Write tests
+    // TODO: remove subcollections when saving to db
+    if (this.collectionType === FirestoreCollectionType.collection) {
+      const subcollections = getMetadataStorage().subCollections.filter(
+        sc => sc.collection === this.colName
+      );
+
+      subcollections.forEach(subCol => {
+        // tslint:disable-next-line:no-shadowed-variable
+        const T = subCol.entity;
+        Object.assign(entity, {
+          [subCol.attribute]: new BaseFirestoreRepository<T>(
+            this.db,
+            this.colName,
+            doc.id,
+            subCol.subcollection
+          ),
+        });
       });
-    });
+    }
 
     return entity;
   };
 
   private parseTimestamp = (obj: T): T => {
     Object.keys(obj).forEach(key => {
+      if (!obj[key]) return;
       if (typeof obj[key] === 'object' && 'toDate' in obj[key]) {
         obj[key] = obj[key].toDate();
       } else if (typeof obj[key] === 'object') {

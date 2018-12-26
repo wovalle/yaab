@@ -65,72 +65,16 @@ export default async (
         }
       );
       return;
-    } else if (
-      [BotCommands.protect_user, BotCommands.remove_protected].includes(
-        command.key
-      )
-    ) {
-      const _protected = command.key === BotCommands.protect_user;
-      let userIdToProtect = null;
-
-      if (pm.is_reply) {
-        userIdToProtect = pm.reply_from_id;
-      } else {
-        const text = pm.text.trim().split(' ');
-
-        if (text.length !== 2) {
-          await service.sendChat(
-            pm.chat_id,
-            i18n.t('commands.errors.nothing_to_do'),
-            {
-              reply_to_message_id: pm.message_id,
-              parse_mode: ParseMode.Markdown,
-            }
-          );
-          return;
-        }
-
-        userIdToProtect = text.slice(-1)[0];
-      }
-
-      let userToProtect = await db.getUserFromGroup(
-        pm.chat_id,
-        userIdToProtect
-      );
-
-      if (userToProtect) {
-        await db.setProtectedUser(
-          pm.chat_id,
-          userToProtect.id,
-          currentDate,
-          _protected
-        );
-      } else {
-        const chatMember = await service.getChatMember(
-          userIdToProtect,
-          pm.chat_id
-        );
-
-        userToProtect = getUserChatFromMember(chatMember);
-        userToProtect.protected = true;
-        await db.saveChatUser(pm.chat_id, userToProtect, currentDate);
-      }
-
-      const action = _protected ? 'protect_user' : 'remove_protected';
-
-      await service.sendChat(
-        pm.chat_id,
-        i18n.t(`commands.${action}.successful`, {
-          name: service.getMentionFromId(
-            userToProtect.id,
-            userToProtect.first_name
-          ),
-        }),
-        {
-          reply_to_message_id: pm.message_id,
-          parse_mode: ParseMode.Markdown,
-        }
-      );
+    } else if (command.key === BotCommands.protect_user) {
+      mediator.Send(BotCommands.protect_user, {
+        plainMessage: pm,
+        protect: true,
+      });
+    } else if (command.key === BotCommands.remove_protected) {
+      mediator.Send(BotCommands.remove_protected, {
+        plainMessage: pm,
+        protect: false,
+      });
     } else if (command.key === BotCommands.list_inactives) {
       mediator.Send(BotCommands.list_inactives, { plainMessage: pm });
     } else if (command.key === BotCommands.list_protected) {
