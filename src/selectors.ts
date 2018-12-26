@@ -2,12 +2,12 @@ import { Update, User, ChatMember } from 'telegram-typings';
 import {
   TypedUpdate,
   PlainMedia,
-  PlainMessage,
   UpdateType,
   EventType,
   EventData,
+  UserRole,
 } from './types';
-import { ChatUser, UserRole, UserStatus } from './models';
+import { PlainMessage, ChatMember as ModelChatMember } from './models';
 
 export const getUpdateWithType = (update: Update): TypedUpdate => {
   let type: UpdateType;
@@ -164,6 +164,7 @@ export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
   const event_data = update_event.data;
 
   return {
+    id: `${update.id}`,
     update_id: update.update_id,
     message_id: msg.message_id,
     date: new Date(msg.date * 1000),
@@ -204,21 +205,21 @@ export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
 };
 
 export enum BotCommands {
-  remove_inactives = 'thanos',
-  protect_user = 'delomio',
-  list_inactives = 'lovegetadore',
-  list_protected = 'lodichoso',
-  remove_protected = 'baraja',
-  enable_crush_mode = 'benditocrush',
+  remove_inactives = 'remove_inactives',
+  protect_user = 'protect_user',
+  list_inactives = 'list_inactives',
+  list_protected = 'list_protected',
+  remove_protected = 'remove_protected',
+  enable_crush_mode = 'enable_crush_mode',
 }
 
-const BotCommandsPermissions = [
-  { admin: true, key: BotCommands.list_inactives },
-  { admin: true, key: BotCommands.remove_inactives },
-  { admin: true, key: BotCommands.protect_user },
-  { admin: true, key: BotCommands.remove_protected },
-  { admin: true, key: BotCommands.list_protected },
-  { admin: false, key: BotCommands.enable_crush_mode },
+const BotCommandsDetails = [
+  { admin: true, key: BotCommands.list_inactives, keyword: 'lobrechadore' },
+  { admin: true, key: BotCommands.remove_inactives, keyword: 'thanos' },
+  { admin: true, key: BotCommands.protect_user, keyword: 'delomio' },
+  { admin: true, key: BotCommands.remove_protected, keyword: 'baraja' },
+  { admin: true, key: BotCommands.list_protected, keyword: 'lodichoso' },
+  { admin: false, key: BotCommands.enable_crush_mode, keyword: 'benditocrush' },
 ];
 
 export const getBotCommand = (pm: PlainMessage) => {
@@ -227,12 +228,12 @@ export const getBotCommand = (pm: PlainMessage) => {
     .replace('@benditobot', '') //TODO: generalize
     .trim();
 
-  return BotCommandsPermissions.find(c => c.key === command) || null;
+  return BotCommandsDetails.find(c => c.keyword === command) || null;
 };
 
-export const getUserChatFromMember = (u: ChatMember): ChatUser => {
+export const getUserChatFromMember = (u: ChatMember): ModelChatMember => {
   return {
-    id: u.user.id,
+    id: `${u.user.id}`,
     first_name: u.user.first_name,
     last_name: u.user.last_name,
     is_bot: u.user.is_bot,

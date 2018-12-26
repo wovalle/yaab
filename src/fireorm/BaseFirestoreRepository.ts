@@ -171,6 +171,7 @@ export default class BaseFirestoreRepository<T extends { id: string }>
 
 // TODO: after registering repositories in metadata storage, return single instance
 // TODO: or make it singleton?
+// TODO: since you have to register a collection, we can deduct dbcol from metadata
 export function getRepository<T extends { id: string }>(
   db: Firestore,
   dbCol: string

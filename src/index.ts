@@ -1,23 +1,47 @@
+// tslint:disable-next-line:no-import-side-effect
+import 'reflect-metadata';
+
 import * as functions from 'firebase-functions';
 import importUsers from './functions/importUsers';
 import updateLastMessageBetweenDates from './functions/updateLastMessageBetweenDates';
 import fetchInactiveUsersWithinTimeframe from './functions/fetchInactiveUsersWithinTimeframe';
 import onTelegramUpdate from './functions/onTelegramUpdate';
 import TelegramService from './services/telegram';
-import Db from './db';
+import DbSingleton, { Db } from './db';
 import Http from './Http';
 import I18nProvider from './I18nProvider';
 import * as translations from './translations.json';
 import { Update } from 'telegram-typings';
+import { Container, Token } from 'typedi';
 
 const logger = console;
-const db = Db.getInstance();
+const db = DbSingleton.getInstance();
 const telegramKey = functions.config().telegram.key;
 const http = new Http();
 const i18n = new I18nProvider(translations);
-const telegramService = new TelegramService(telegramKey, http);
+const key = require('../.runtimeconfig.json').telegram.key;
+const telegramService = new TelegramService(key, http);
 
-const url = `https://api.telegram.org/bot${telegramKey}/getupdates`;
+// Section: fireorm
+import { Chat } from './models/Chat';
+import { getRepository, BaseFirestoreRepository } from './fireorm';
+
+const chatRepository = getRepository<Chat>(db._db, 'chats');
+export const ChatRepositoryToken = new Token<BaseFirestoreRepository<Chat>>(
+  'ChatRepository'
+);
+
+// Section: initialize ioc
+Container.set(TelegramService, telegramService);
+Container.set(Db, db);
+Container.set(I18nProvider, i18n);
+Container.set(ChatRepositoryToken, chatRepository);
+
+// Section: initialize commands
+import { ListProtectedHandler } from './functions/Commands/ListProtectedHandler';
+ListProtectedHandler.name;
+Chat.name;
+
 const getDate = () => new Date();
 
 export const importUsersInternalFn = functions.https.onRequest(

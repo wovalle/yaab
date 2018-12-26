@@ -9,12 +9,10 @@ import {
 } from '../selectors';
 
 import I18nProvider from '../I18nProvider';
-import telegramService, {
-  ITelegramService,
-  ParseMode,
-} from '../services/telegram';
-import { UserRole } from '../models';
+import { ITelegramService, ParseMode } from '../services/telegram';
 import { addHours } from 'date-fns';
+import { Mediator } from 'tsmediator';
+import { UserRole } from '../types';
 
 export default async (
   db: Db,
@@ -25,6 +23,7 @@ export default async (
 ): Promise<void> => {
   const typedUpdate = getUpdateWithType(update);
   const pm = getPlainMessage(typedUpdate);
+  const mediator = new Mediator();
 
   const isGroup = chatType => ['group', 'supergroup'].includes(chatType);
 
@@ -167,17 +166,7 @@ export default async (
         { parse_mode: ParseMode.Markdown }
       );
     } else if (command.key === BotCommands.list_protected) {
-      const users = await db.getProtectedUsers(pm.chat_id);
-
-      const mentions = users
-        .map(u => service.getMentionFromId(u.id, u.first_name, u.last_name))
-        .join(', ');
-
-      await service.sendChat(
-        pm.chat_id,
-        i18n.t('commands.list_protected.successful', { mentions }),
-        { parse_mode: ParseMode.Markdown }
-      );
+      mediator.Send(BotCommands.list_protected, { plainMessage: pm });
     } else if (command.key === BotCommands.remove_inactives) {
       const commandText = pm.text.split(' ');
       const hours = Number.parseInt(commandText[1]);

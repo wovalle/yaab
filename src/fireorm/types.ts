@@ -6,7 +6,7 @@ export interface IRepository<T extends { id: string }> {
   delete(id: string): Promise<void>;
 }
 
-export type IFirestoreVal = string | number | Date;
+export type IFirestoreVal = string | number | Date | Boolean;
 
 export enum FirestoreOperators {
   equal = '==',
@@ -38,3 +38,6 @@ export interface IQueryBuilder<T> {
   whereArrayCointain(prop: keyof T, val: IFirestoreVal): IQueryBuilder<T>;
   find(): Promise<T[]>;
 }
+
+export type ISubCollection<T extends { id: string }> = IRepository<T> &
+  IQueryBuilder<T>;

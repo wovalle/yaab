@@ -1,10 +1,10 @@
 import { Db } from '../db';
-import { ChatUser } from '../models';
+import { ChatMember } from '../models';
 import { addHours } from 'date-fns';
 
 export type IFetchInactiveUsersWithinTimeframeResponse = {
   count: Number;
-  users: ChatUser[];
+  users: ChatMember[];
 };
 
 export default async (

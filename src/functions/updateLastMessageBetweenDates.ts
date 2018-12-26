@@ -1,7 +1,7 @@
 import { Db } from '../db';
 import { ITelegramService } from '../services/telegram';
 import { getUserChatFromMember } from '../selectors';
-import { ChatUser } from '../models';
+import { ChatMember } from '../models';
 
 interface IUserInteraction {
   id: number;
@@ -13,8 +13,8 @@ interface IUserInteraction {
 
 export type IFetchInteractionBetweenDatesResponse = {
   users: IUserInteraction[];
-  createdUsers: ChatUser[];
-  updatedUsers: ChatUser[];
+  createdUsers: ChatMember[];
+  updatedUsers: ChatMember[];
   usersWithError: any[];
 };
 
@@ -42,7 +42,7 @@ export default async (
 
   const usersWithMsgsNotInGroup = Object.entries(hash)
     .map(u => Number(u[0]))
-    .filter(uid => !groupMembers.find(gmu => gmu.id === uid));
+    .filter(uid => !groupMembers.find(gmu => gmu.id === `${uid}`));
 
   console.info('Total new users: ', usersWithMsgsNotInGroup);
   console.info('Inserting new users');

@@ -16,7 +16,11 @@ export interface ITelegramService {
     message: string,
     opts?: ISendMessageOpts
   ): Promise<Message>;
-  kickUser(userId: Number, chatId: Number, until: Date): Promise<void>;
-  getChatMember(userId: Number, chatId: Number): Promise<ChatMember>;
-  getMentionFromId(id: Number, name: string, lastName?: string): string;
+  kickUser(userId: Number | string, chatId: Number, until: Date): Promise<void>;
+  getChatMember(userId: Number | string, chatId: Number): Promise<ChatMember>;
+  getMentionFromId(
+    id: Number | string,
+    name: string,
+    lastName?: string
+  ): string;
 }
