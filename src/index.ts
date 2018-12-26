@@ -22,6 +22,8 @@ const i18n = new I18nProvider(translations);
 const key = require('../.runtimeconfig.json').telegram.key;
 const telegramService = new TelegramService(key, http);
 
+const getDate = () => new Date();
+
 // Section: fireorm
 import { Chat } from './models/Chat';
 import { getRepository, BaseFirestoreRepository } from './fireorm';
@@ -36,13 +38,14 @@ Container.set(TelegramService, telegramService);
 Container.set(Db, db);
 Container.set(I18nProvider, i18n);
 Container.set(ChatRepositoryToken, chatRepository);
+Container.set('getCurrentDate', getDate);
 
 // Section: initialize commands
 import { ListProtectedHandler } from './functions/Commands/ListProtectedHandler';
+import { ListInactiveHandler } from './functions/Commands/ListInactiveHandler';
 ListProtectedHandler.name;
+ListInactiveHandler.name;
 Chat.name;
-
-const getDate = () => new Date();
 
 export const importUsersInternalFn = functions.https.onRequest(
   async (req, res) => {

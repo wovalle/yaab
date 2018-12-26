@@ -132,39 +132,7 @@ export default async (
         }
       );
     } else if (command.key === BotCommands.list_inactives) {
-      // TODO: send pm summary with users tagged, bots and protected
-      const commandText = pm.text.split(' ');
-      const hours = Number.parseInt(commandText[1]);
-
-      if (commandText.length !== 2 || Number.isNaN(hours)) {
-        const errorId = 'commands.errors.invalid';
-        await service.sendChat(pm.chat_id, i18n.t(errorId), {
-          reply_to_message_id: pm.message_id,
-        });
-        return;
-      }
-
-      const sinceDate = addHours(currentDate, -hours);
-      const users = await db.getInactiveUsers(pm.chat_id, sinceDate);
-
-      if (!users.length) {
-        const errorId = 'commands.list_inactive.empty';
-        await service.sendChat(pm.chat_id, i18n.t(errorId, { hours }), {
-          parse_mode: ParseMode.Markdown,
-          reply_to_message_id: pm.message_id,
-        });
-        return;
-      }
-
-      const mentions = users
-        .map(u => service.getMentionFromId(u.id, u.first_name))
-        .join(', ');
-
-      await service.sendChat(
-        pm.chat_id,
-        i18n.t('commands.list_inactive.successful', { hours, mentions }),
-        { parse_mode: ParseMode.Markdown }
-      );
+      mediator.Send(BotCommands.list_inactives, { plainMessage: pm });
     } else if (command.key === BotCommands.list_protected) {
       mediator.Send(BotCommands.list_protected, { plainMessage: pm });
     } else if (command.key === BotCommands.remove_inactives) {
