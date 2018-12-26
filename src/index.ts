@@ -113,8 +113,8 @@ export const onTelegramUpdateFn = functions.https.onRequest(
 
       return res.send({ ok: true });
     } catch (error) {
-      logger.error(error);
-      return res.status(500).send({ ok: false, error });
+      logger.error(error, update);
+      return res.status(200).send({ ok: false, error });
     }
   }
 );
