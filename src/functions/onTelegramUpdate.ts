@@ -232,6 +232,12 @@ export default async (
         i18n.t('commands.remove_inactive.successful', { mentions }),
         { parse_mode: ParseMode.Markdown }
       );
+    } else if (command.key === BotCommands.enable_crush_mode) {
+      await service.sendChat(
+        pm.chat_id,
+        i18n.t('commands.enable_crush_mode.successful'),
+        { parse_mode: ParseMode.Markdown, reply_to_message_id: pm.message_id }
+      );
     }
   }
 };

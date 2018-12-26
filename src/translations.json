@@ -15,6 +15,9 @@
       "empty": "en velda nadie vegetó en las últimas {{hours}} horas",
       "successful": "señore tAmo en vivo y eta gente lleva {{hours}} horas vegetando: {{mentions}}"
     },
+    "enable_crush_mode": {
+      "successful": "Estamos trabajando por el bienestar de tu queso.\nBendito Crush #ComingSoon"
+    },
     "list_protected": {
       "successful": "lo que tan pegao de la teta son: {{mentions}}"
     },

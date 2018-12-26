@@ -9,6 +9,7 @@
     "firebase-admin": "^6.3.0",
     "firebase-functions": "^2.1.0",
     "lodash": "^4.17.11",
+    "reflect-metadata": "^0.1.12",
     "telegram-typings": "^4.0.0-beta"
   },
   "devDependencies": {
@@ -19,6 +20,7 @@
     "concurrently": "^4.1.0",
     "firebase-tools": "^6.1.1",
     "mocha": "^5.2.0",
+    "mock-cloud-firestore": "^0.9.0",
     "ngrok": "^3.1.0",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
@@ -35,7 +37,8 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "test": "mocha --compilers ts:ts-node/register ./test/*.spec.ts",
+    "test": "mocha --require ts-node/register ./**/**/*.spec.ts",
+    "test:watch": "mocha --require ts-node/register ./**/**/*.spec.ts -w",
     "ngrok": "ngrok http 5000"
   },
   "author": "Willy Ovalle <willyovalle16@gmail.com>",
