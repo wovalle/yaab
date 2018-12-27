@@ -1,7 +1,7 @@
 import * as admin from 'firebase-admin';
 import { ChatMember } from './models';
 import { PlainMessage } from './models/PlainMessage';
-import { UserRole } from './types';
+import { UserRole, EventType } from './types';
 
 let instance = null;
 
@@ -160,6 +160,20 @@ export class Db {
     const userRef = chatRef.collection('users').doc(`${message.from_id}`);
 
     batch.update(userRef, { last_message: today, status: 'active' });
+
+    if (message.event_type === EventType.new_chat_members) {
+      const events = message.event_data as Array<any>;
+      if (events.length) {
+        events.forEach(e => {
+          if (!e.id) {
+            return;
+          }
+
+          const eventUser = chatRef.collection('users').doc(`${e.id}`);
+          batch.update(eventUser, { last_message: today, status: 'active' });
+        });
+      }
+    }
     return batch.commit();
   }
 

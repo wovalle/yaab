@@ -9,6 +9,5 @@ export class ChatMember {
   last_message: Date;
   role: UserRole;
   status: string; // “creator”, “administrator”, “member”, “restricted”, “left” or “kicked”
-  protected?: boolean;
-  warnings: []; // TODO: Define model
+  protected: boolean;
 }

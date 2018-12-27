@@ -9,18 +9,16 @@ import { PlainMessage, Chat } from '../../models';
 import { BaseFirestoreRepository } from '../../fireorm';
 import { ChatRepositoryToken } from '../..';
 import { addHours } from 'date-fns';
-import { Db } from '../../db';
 import { UserRole } from '../../types';
 
-interface IListInactivePayload {
+interface RemoveInactivesPayload {
   plainMessage: PlainMessage;
 }
 
-// TODO: implement custom repositories to implement inactive users
 // TODO: send pm summary with users tagged, bots and protected
-@Handler(BotCommands.list_inactives)
-export class ListInactiveHandler
-  implements ICommandHandler<IListInactivePayload, void> {
+@Handler(BotCommands.remove_inactives)
+export class RemoveInactivesHandler
+  implements ICommandHandler<RemoveInactivesPayload, void> {
   private telegramService: TelegramService;
   private i18n: I18nProvider;
   private chatRepository: BaseFirestoreRepository<Chat>;
@@ -33,7 +31,7 @@ export class ListInactiveHandler
     this.getCurrentDate = Container.get('getCurrentDate');
   }
 
-  async Handle(payload: IListInactivePayload) {
+  async Handle(payload: RemoveInactivesPayload) {
     const pm = payload.plainMessage;
     const commandText = pm.text.split(' ');
     const hours = Number.parseInt(commandText[1]);
@@ -46,7 +44,6 @@ export class ListInactiveHandler
       return;
     }
 
-    //TODO: This will be done inside a custom repository but for now, here is it
     const sinceDate = addHours(this.getCurrentDate(), -hours);
 
     const chat = await this.chatRepository.findById(`${pm.chat_id}`);
@@ -79,19 +76,40 @@ export class ListInactiveHandler
       return;
     }
 
-    const mentions = users
+    const usersWithError = [];
+    for (const u of users) {
+      try {
+        await this.telegramService.kickUser(
+          u.id,
+          pm.chat_id,
+          addHours(this.getCurrentDate(), 12)
+        );
+
+        u.status = 'kicked';
+        await chat.users.update(u);
+      } catch (error) {
+        console.error('Error while kicking user:', error.description);
+        usersWithError.push(u);
+      }
+    }
+
+    const usersKicked = users.filter(
+      u => !usersWithError.some(uwe => uwe.id === u.id)
+    );
+
+    const mentions = usersKicked
       .map(u => this.telegramService.getMentionFromId(u.id, u.first_name))
       .join(', ');
 
     await this.telegramService.sendChat(
       pm.chat_id,
-      this.i18n.t('commands.list_inactive.successful', { hours, mentions }),
+      this.i18n.t('commands.remove_inactive.successful', { mentions }),
       { parse_mode: ParseMode.Markdown }
     );
   }
 
   // tslint:disable-next-line:no-empty
-  Validate(payload: IListInactivePayload): void {}
+  Validate(payload: RemoveInactivesPayload): void {}
   // tslint:disable-next-line:no-empty
   Log(): void {}
 }

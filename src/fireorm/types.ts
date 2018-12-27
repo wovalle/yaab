@@ -13,7 +13,7 @@ export enum FirestoreOperators {
   lessThan = '<',
   greaterThan = '>',
   lessThanEqual = '<=',
-  greaterThanEqual = '=>',
+  greaterThanEqual = '>=',
   arrayContains = 'array-contains',
 }
 

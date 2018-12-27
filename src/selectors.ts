@@ -237,10 +237,10 @@ export const getUserChatFromMember = (u: ChatMember): ModelChatMember => {
     first_name: u.user.first_name,
     last_name: u.user.last_name,
     is_bot: u.user.is_bot,
+    protected: false,
     role: u.status === 'administrator' ? UserRole.admin : UserRole.user,
     last_message: null,
     username: u.user.username,
-    warnings: [],
     status: u.status,
   };
 };
