@@ -19,8 +19,7 @@ const db = DbSingleton.getInstance();
 const telegramKey = functions.config().telegram.key;
 const http = new Http();
 const i18n = new I18nProvider(translations);
-const key = require('../.runtimeconfig.json').telegram.key;
-const telegramService = new TelegramService(key, http);
+const telegramService = new TelegramService(telegramKey, http);
 
 const getDate = () => new Date();
 
