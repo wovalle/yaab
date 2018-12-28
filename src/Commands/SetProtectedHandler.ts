@@ -1,25 +1,20 @@
 import { Handler, ICommandHandler } from 'tsmediator';
 import Container from 'typedi';
 
-import TelegramService from '../../services/telegram/TelegramService';
-import { BotCommands, getUserChatFromMember } from '../../selectors';
-import I18nProvider from '../../I18nProvider';
-import { ParseMode } from '../../services/telegram';
-import { PlainMessage, Chat } from '../../models';
-import { BaseFirestoreRepository } from '../../fireorm';
-import { ChatRepositoryToken } from '../..';
-import { user } from 'firebase-functions/lib/providers/auth';
-
-interface IListSetProtectedPayload {
-  plainMessage: PlainMessage;
-  protect: boolean;
-}
+import TelegramService from '../services/telegram/TelegramService';
+import { BotCommands, getUserChatFromMember } from '../selectors';
+import I18nProvider from '../I18nProvider';
+import { ParseMode } from '../services/telegram';
+import { PlainMessage, Chat } from '../models';
+import { BaseFirestoreRepository } from '../fireorm';
+import { ChatRepositoryToken } from '../';
+import { ITelegramHandlerPayload } from '../types';
 
 // TODO: send pm summary with users tagged, bots and protected
 @Handler(BotCommands.protect_user)
 @Handler(BotCommands.remove_protected)
 export class SetProtectedHandler
-  implements ICommandHandler<IListSetProtectedPayload, void> {
+  implements ICommandHandler<ITelegramHandlerPayload, void> {
   private telegramService: TelegramService;
   private i18n: I18nProvider;
   private chatRepository: BaseFirestoreRepository<Chat>;
@@ -30,8 +25,9 @@ export class SetProtectedHandler
     this.chatRepository = Container.get(ChatRepositoryToken);
   }
 
-  async Handle(payload: IListSetProtectedPayload) {
+  async Handle(payload: ITelegramHandlerPayload) {
     const pm = payload.plainMessage;
+    const shouldProtect = payload.command.key === BotCommands.protect_user;
 
     const chat = await this.chatRepository.findById(`${pm.chat_id}`);
 
@@ -61,7 +57,7 @@ export class SetProtectedHandler
 
     // TODO: Write in system events
     if (userToProtect) {
-      userToProtect.protected = payload.protect;
+      userToProtect.protected = shouldProtect;
       await chat.users.update(userToProtect);
     } else {
       const chatMember = await this.telegramService.getChatMember(
@@ -74,7 +70,7 @@ export class SetProtectedHandler
       await chat.users.create(userToProtect);
     }
 
-    const action = payload.protect ? 'protect_user' : 'remove_protected';
+    const action = shouldProtect ? 'protect_user' : 'remove_protected';
 
     await this.telegramService.sendChat(
       pm.chat_id,
@@ -92,7 +88,7 @@ export class SetProtectedHandler
   }
 
   // tslint:disable-next-line:no-empty
-  Validate(payload: IListSetProtectedPayload): void {}
+  Validate(payload: ITelegramHandlerPayload): void {}
   // tslint:disable-next-line:no-empty
   Log(): void {}
 }

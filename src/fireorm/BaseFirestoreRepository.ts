@@ -27,6 +27,7 @@ export default class BaseFirestoreRepository<T extends { id: string }>
   // TODO: @createdOnField, @updatedOnField
   // TODO: well defined types, investigate
   // TODO: register repository in metadata
+  // TODO: remove functions in models
 
   public collectionType: FirestoreCollectionType;
   private firestoreCollection: CollectionReference;

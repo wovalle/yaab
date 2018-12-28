@@ -1,22 +1,19 @@
 import { Handler, ICommandHandler } from 'tsmediator';
 import Container from 'typedi';
 
-import TelegramService from '../../services/telegram/TelegramService';
-import { BotCommands } from '../../selectors';
-import I18nProvider from '../../I18nProvider';
-import { ParseMode } from '../../services/telegram';
-import { PlainMessage, Chat } from '../../models';
-import { BaseFirestoreRepository } from '../../fireorm';
-import { ChatRepositoryToken } from '../..';
-
-interface IListProtectedPayload {
-  plainMessage: PlainMessage;
-}
+import TelegramService from '../services/telegram/TelegramService';
+import { BotCommands } from '../selectors';
+import I18nProvider from '../I18nProvider';
+import { ParseMode } from '../services/telegram';
+import { Chat } from '../models';
+import { BaseFirestoreRepository } from '../fireorm';
+import { ChatRepositoryToken } from '..';
+import { ITelegramHandlerPayload } from '../types';
 
 // TODO: send pm summary with users tagged, bots and protected
 @Handler(BotCommands.list_protected)
 export class ListProtectedHandler
-  implements ICommandHandler<IListProtectedPayload, void> {
+  implements ICommandHandler<ITelegramHandlerPayload, void> {
   private telegramService: TelegramService;
   private i18n: I18nProvider;
   private chatRepository: BaseFirestoreRepository<Chat>;
@@ -27,7 +24,7 @@ export class ListProtectedHandler
     this.chatRepository = Container.get(ChatRepositoryToken);
   }
 
-  async Handle(payload: IListProtectedPayload) {
+  async Handle(payload: ITelegramHandlerPayload) {
     const pm = payload.plainMessage;
 
     const chat = await this.chatRepository.findById(`${pm.chat_id}`);
@@ -47,7 +44,7 @@ export class ListProtectedHandler
   }
 
   // tslint:disable-next-line:no-empty
-  Validate(payload: IListProtectedPayload): void {}
+  Validate(payload: ITelegramHandlerPayload): void {}
   // tslint:disable-next-line:no-empty
   Log(): void {}
 }

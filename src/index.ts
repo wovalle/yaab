@@ -41,14 +41,20 @@ Container.set(ChatRepositoryToken, chatRepository);
 Container.set('getCurrentDate', getDate);
 
 // Section: initialize commands
-import { ListProtectedHandler } from './functions/Commands/ListProtectedHandler';
-import { ListInactiveHandler } from './functions/Commands/ListInactiveHandler';
-import { SetProtectedHandler } from './functions/Commands/SetProtectedHandler';
-import { RemoveInactivesHandler } from './functions/Commands/RemoveInactivesHandler';
+import { ListProtectedHandler } from './Commands/ListProtectedHandler';
+import { ListInactiveHandler } from './Commands/ListInactiveHandler';
+import { SetProtectedHandler } from './Commands/SetProtectedHandler';
+import { RemoveInactivesHandler } from './Commands/RemoveInactivesHandler';
+import { EnableCrushModeHandler } from './Commands/EnableCrushModeHandler';
+import { StartHandler } from './Commands/StartHandler';
+import { HelpHandler } from './Commands/HelpHandler';
 ListProtectedHandler.name;
 ListInactiveHandler.name;
 SetProtectedHandler.name;
 RemoveInactivesHandler.name;
+EnableCrushModeHandler.name;
+StartHandler.name;
+HelpHandler.name;
 Chat.name;
 
 export const importUsersInternalFn = functions.https.onRequest(

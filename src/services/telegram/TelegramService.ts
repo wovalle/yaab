@@ -55,7 +55,7 @@ export default class TelegramService implements ITelegramService {
   }
 
   getMentionFromId(id: Number | string, name: string, lastName?: string) {
-    const fullName = [name, lastName].join(' ');
+    const fullName = lastName ? `${name} ${lastName}` : name;
     return `[${fullName}](tg://user?id=${id})`;
   }
 }

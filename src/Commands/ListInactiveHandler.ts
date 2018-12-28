@@ -1,26 +1,21 @@
 import { Handler, ICommandHandler } from 'tsmediator';
 import Container from 'typedi';
 
-import TelegramService from '../../services/telegram/TelegramService';
-import { BotCommands } from '../../selectors';
-import I18nProvider from '../../I18nProvider';
-import { ParseMode } from '../../services/telegram';
-import { PlainMessage, Chat } from '../../models';
-import { BaseFirestoreRepository } from '../../fireorm';
-import { ChatRepositoryToken } from '../..';
+import TelegramService from '../services/telegram/TelegramService';
+import { BotCommands } from '../selectors';
+import I18nProvider from '../I18nProvider';
+import { ParseMode } from '../services/telegram';
+import { Chat } from '../models';
+import { BaseFirestoreRepository } from '../fireorm';
+import { ChatRepositoryToken } from '..';
 import { addHours } from 'date-fns';
-import { Db } from '../../db';
-import { UserRole } from '../../types';
-
-interface IListInactivePayload {
-  plainMessage: PlainMessage;
-}
+import { UserRole, ITelegramHandlerPayload } from '../types';
 
 // TODO: implement custom repositories to implement inactive users
 // TODO: send pm summary with users tagged, bots and protected
 @Handler(BotCommands.list_inactives)
 export class ListInactiveHandler
-  implements ICommandHandler<IListInactivePayload, void> {
+  implements ICommandHandler<ITelegramHandlerPayload, void> {
   private telegramService: TelegramService;
   private i18n: I18nProvider;
   private chatRepository: BaseFirestoreRepository<Chat>;
@@ -33,13 +28,13 @@ export class ListInactiveHandler
     this.getCurrentDate = Container.get('getCurrentDate');
   }
 
-  async Handle(payload: IListInactivePayload) {
+  async Handle(payload: ITelegramHandlerPayload) {
     const pm = payload.plainMessage;
     const commandText = pm.text.split(' ');
     const hours = Number.parseInt(commandText[1]);
 
     if (commandText.length !== 2 || Number.isNaN(hours)) {
-      const errorId = 'commands.errors.invalid';
+      const errorId = 'commands.list_inactive.wrong_command';
       await this.telegramService.sendChat(pm.chat_id, this.i18n.t(errorId), {
         reply_to_message_id: pm.message_id,
       });
@@ -91,7 +86,7 @@ export class ListInactiveHandler
   }
 
   // tslint:disable-next-line:no-empty
-  Validate(payload: IListInactivePayload): void {}
+  Validate(payload: ITelegramHandlerPayload): void {}
   // tslint:disable-next-line:no-empty
   Log(): void {}
 }

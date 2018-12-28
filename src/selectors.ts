@@ -129,8 +129,6 @@ export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
   const msg = update.message;
   const is_entity = !!msg.entities && msg.entities.length > 0;
   const entity_type = is_entity ? msg.entities[0].type : null;
-  const entity_should_process =
-    entity_type === 'bot_command' && msg.text.includes('@benditobot');
   const is_forward = msg.forward_from && msg.forward_from.id > 0;
   const forward_message_id = is_forward ? msg.forward_from_message_id : null;
   const forward_from_id = is_forward ? msg.forward_from.id : null;
@@ -162,6 +160,15 @@ export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
   const event_type = update_event.type;
   const is_event = update_event !== null;
   const event_data = update_event.data;
+
+  const group_types = ['group', 'supergroup', 'channels'];
+
+  const command_directed_to_bot = group_types.includes(update.message.chat.type)
+    ? /bendito(beta)?bot/i.test(msg.text)
+    : true;
+
+  const entity_should_process =
+    entity_type === 'bot_command' && command_directed_to_bot;
 
   return {
     id: `${update.id}`,
@@ -211,21 +218,83 @@ export enum BotCommands {
   list_protected = 'list_protected',
   remove_protected = 'remove_protected',
   enable_crush_mode = 'enable_crush_mode',
+  start = 'start',
+  help = 'help',
 }
 
-const BotCommandsDetails = [
-  { admin: true, key: BotCommands.list_inactives, keyword: 'lobrechadore' },
-  { admin: true, key: BotCommands.remove_inactives, keyword: 'thanos' },
-  { admin: true, key: BotCommands.protect_user, keyword: 'delomio' },
-  { admin: true, key: BotCommands.remove_protected, keyword: 'baraja' },
-  { admin: true, key: BotCommands.list_protected, keyword: 'lodichoso' },
-  { admin: false, key: BotCommands.enable_crush_mode, keyword: 'benditocrush' },
+export enum BotCommandScope {
+  group = 'group',
+  supergroup = 'supergroup',
+  private = 'private',
+  channel = 'channel',
+}
+
+export interface IDetailedBotCommand {
+  admin: boolean;
+  key: BotCommands;
+  keyword: string;
+  scopes: Array<BotCommandScope>;
+}
+
+const BotCommandsDetails: IDetailedBotCommand[] = [
+  {
+    admin: true,
+    key: BotCommands.list_inactives,
+    keyword: 'lobrechadore',
+    scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+  },
+  {
+    admin: true,
+    key: BotCommands.remove_inactives,
+    keyword: 'thanos',
+    scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+  },
+  {
+    admin: true,
+    key: BotCommands.protect_user,
+    keyword: 'delomio',
+    scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+  },
+  {
+    admin: true,
+    key: BotCommands.remove_protected,
+    keyword: 'baraja',
+    scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+  },
+  {
+    admin: true,
+    key: BotCommands.list_protected,
+    keyword: 'lodichoso',
+    scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+  },
+  {
+    admin: false,
+    key: BotCommands.enable_crush_mode,
+    keyword: 'benditocrush',
+    scopes: [
+      BotCommandScope.group,
+      BotCommandScope.supergroup,
+      BotCommandScope.private,
+    ],
+  },
+  {
+    admin: false,
+    key: BotCommands.start,
+    keyword: 'start',
+    scopes: [BotCommandScope.private],
+  },
+  {
+    admin: false,
+    key: BotCommands.help,
+    keyword: 'help',
+    scopes: [BotCommandScope.private],
+  },
 ];
 
 export const getBotCommand = (pm: PlainMessage) => {
   const command = pm.text
     .slice(pm.entities[0].offset + 1, pm.entities[0].length)
-    .replace('@benditobot', '') //TODO: generalize
+    .replace(/@bendito(beta)?bot/i, '') //TODO: generalize
     .trim();
 
   return BotCommandsDetails.find(c => c.keyword === command) || null;

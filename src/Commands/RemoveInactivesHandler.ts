@@ -1,24 +1,20 @@
 import { Handler, ICommandHandler } from 'tsmediator';
 import Container from 'typedi';
 
-import TelegramService from '../../services/telegram/TelegramService';
-import { BotCommands } from '../../selectors';
-import I18nProvider from '../../I18nProvider';
-import { ParseMode } from '../../services/telegram';
-import { PlainMessage, Chat } from '../../models';
-import { BaseFirestoreRepository } from '../../fireorm';
-import { ChatRepositoryToken } from '../..';
+import TelegramService from '../services/telegram/TelegramService';
+import { BotCommands } from '../selectors';
+import I18nProvider from '../I18nProvider';
+import { ParseMode } from '../services/telegram';
+import { Chat } from '../models';
+import { BaseFirestoreRepository } from '../fireorm';
+import { ChatRepositoryToken } from '..';
 import { addHours } from 'date-fns';
-import { UserRole } from '../../types';
-
-interface RemoveInactivesPayload {
-  plainMessage: PlainMessage;
-}
+import { UserRole, ITelegramHandlerPayload } from '../types';
 
 // TODO: send pm summary with users tagged, bots and protected
 @Handler(BotCommands.remove_inactives)
 export class RemoveInactivesHandler
-  implements ICommandHandler<RemoveInactivesPayload, void> {
+  implements ICommandHandler<ITelegramHandlerPayload, void> {
   private telegramService: TelegramService;
   private i18n: I18nProvider;
   private chatRepository: BaseFirestoreRepository<Chat>;
@@ -31,7 +27,7 @@ export class RemoveInactivesHandler
     this.getCurrentDate = Container.get('getCurrentDate');
   }
 
-  async Handle(payload: RemoveInactivesPayload) {
+  async Handle(payload: ITelegramHandlerPayload) {
     const pm = payload.plainMessage;
     const commandText = pm.text.split(' ');
     const hours = Number.parseInt(commandText[1]);
@@ -103,13 +99,13 @@ export class RemoveInactivesHandler
 
     await this.telegramService.sendChat(
       pm.chat_id,
-      this.i18n.t('commands.remove_inactive.successful', { mentions }),
+      this.i18n.t('commands.remove_inactives.successful', { mentions }),
       { parse_mode: ParseMode.Markdown }
     );
   }
 
   // tslint:disable-next-line:no-empty
-  Validate(payload: RemoveInactivesPayload): void {}
+  Validate(payload: ITelegramHandlerPayload): void {}
   // tslint:disable-next-line:no-empty
   Log(): void {}
 }

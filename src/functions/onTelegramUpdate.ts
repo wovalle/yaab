@@ -6,11 +6,11 @@ import {
   getBotCommand,
   BotCommands,
   getUserChatFromMember,
+  BotCommandScope,
 } from '../selectors';
 
 import I18nProvider from '../I18nProvider';
-import { ITelegramService, ParseMode } from '../services/telegram';
-import { addHours } from 'date-fns';
+import { ITelegramService } from '../services/telegram';
 import { Mediator } from 'tsmediator';
 import { UserRole } from '../types';
 
@@ -21,18 +21,13 @@ export default async (
   i18n: I18nProvider,
   currentDate: Date
 ): Promise<void> => {
-  //TODO: get rid of typedUpdate
+  // TODO: get rid of typedUpdate
+  // TODO: Add mediator middleware: scopes
+  // TODO: Add mediator middleware: permissions
+
   const typedUpdate = getUpdateWithType(update);
   const pm = getPlainMessage(typedUpdate);
   const mediator = new Mediator();
-
-  const isGroup = chatType => ['group', 'supergroup'].includes(chatType);
-
-  if (!isGroup(pm.chat_type)) {
-    const errorId = 'commands.errors.pm_not_implemented';
-    await service.sendChat(pm.chat_id, i18n.t(errorId));
-    return;
-  }
 
   const user = await db.getUserFromGroup(pm.chat_id, pm.from_id);
 
@@ -49,12 +44,29 @@ export default async (
 
   if (pm.entity_should_process) {
     const command = getBotCommand(pm);
+    const commandScope = pm.chat_type as BotCommandScope;
+
     if (!command) {
       const errorId = 'commands.errors.invalid';
       await service.sendChat(pm.chat_id, i18n.t(errorId), {
         reply_to_message_id: pm.message_id,
       });
 
+      return;
+    } else if (!command.scopes.includes(commandScope)) {
+      const errorId = 'commands.errors.wrong_scope';
+
+      const scopes = command.scopes
+        .map(s => i18n.t(`enums.scopes.${s}`))
+        .join(', ');
+
+      await service.sendChat(
+        pm.chat_id,
+        i18n.t(errorId, { scopes, command: command.keyword }),
+        {
+          reply_to_message_id: pm.message_id,
+        }
+      );
       return;
     } else if (command.admin && user.role !== UserRole.admin) {
       const errorId = 'commands.errors.forbidden';
@@ -66,28 +78,11 @@ export default async (
         }
       );
       return;
-    } else if (command.key === BotCommands.protect_user) {
-      mediator.Send(BotCommands.protect_user, {
+    } else {
+      mediator.Send(command.key, {
         plainMessage: pm,
-        protect: true,
+        command,
       });
-    } else if (command.key === BotCommands.remove_protected) {
-      mediator.Send(BotCommands.remove_protected, {
-        plainMessage: pm,
-        protect: false,
-      });
-    } else if (command.key === BotCommands.list_inactives) {
-      mediator.Send(BotCommands.list_inactives, { plainMessage: pm });
-    } else if (command.key === BotCommands.list_protected) {
-      mediator.Send(BotCommands.list_protected, { plainMessage: pm });
-    } else if (command.key === BotCommands.remove_inactives) {
-      mediator.Send(BotCommands.remove_inactives, { plainMessage: pm });
-    } else if (command.key === BotCommands.enable_crush_mode) {
-      await service.sendChat(
-        pm.chat_id,
-        i18n.t('commands.enable_crush_mode.successful'),
-        { parse_mode: ParseMode.Markdown, reply_to_message_id: pm.message_id }
-      );
     }
   }
 };

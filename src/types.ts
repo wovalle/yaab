@@ -17,6 +17,8 @@ import {
   Message,
   SuccessfulPayment,
 } from 'telegram-typings';
+import { IDetailedBotCommand } from './selectors';
+import { PlainMessage } from './models';
 
 export enum UpdateType {
   message = 'message',
@@ -117,4 +119,9 @@ export enum UserRole {
 export enum UserStatus {
   active = 'active',
   unsaved = 'unsaved',
+}
+
+export interface ITelegramHandlerPayload {
+  plainMessage: PlainMessage;
+  command: IDetailedBotCommand;
 }
