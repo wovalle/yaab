@@ -84,7 +84,7 @@ export class RemoveInactivesHandler
         u.status = 'kicked';
         await chat.users.update(u);
       } catch (error) {
-        console.error('Error while kicking user:', error.description);
+        console.error('Error while kicking user:', error);
         usersWithError.push(u);
       }
     }

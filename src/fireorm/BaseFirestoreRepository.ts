@@ -66,7 +66,7 @@ export default class BaseFirestoreRepository<T extends { id: string }>
     const entity = this.parseTimestamp(doc.data() as T);
 
     // TODO: This wont be required after implementing https://github.com/typestack/class-transformer
-    entity.id = `${entity.id}`;
+    entity.id = `${doc.id}`;
 
     //If you're a subcollection, you don't have to check for other subcollections
     // TODO: Write tests
