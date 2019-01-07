@@ -69,8 +69,8 @@ export const importUsersInternalFn = functions.https.onRequest(
     }
 
     try {
-      await importUsers(db, groupId, users);
-      return res.send({ ok: true, usersAdded: users.length });
+      const response = await importUsers(groupId, users);
+      return res.send({ ok: true, ...response });
     } catch (error) {
       logger.error(error);
       return res.status(500).send({ ok: false });
