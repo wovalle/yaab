@@ -29,7 +29,7 @@ export interface IFireOrmQueryLine {
 
 export type IQueryBuilderResult = IFireOrmQueryLine[];
 
-export interface IQueryBuilder<T> {
+export interface IQueryBuilder<T extends { id: string }> {
   whereEqualTo(prop: keyof T, val: IFirestoreVal): IQueryBuilder<T>;
   whereGreaterThan(prop: keyof T, val: IFirestoreVal): IQueryBuilder<T>;
   whereGreaterOrEqualThan(prop: keyof T, val: IFirestoreVal): IQueryBuilder<T>;

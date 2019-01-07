@@ -12,7 +12,8 @@ import {
   CollectionReference,
 } from '@google-cloud/firestore';
 
-export default class QueryBuilder<T> implements IQueryBuilder<T> {
+export default class QueryBuilder<T extends { id: string }>
+  implements IQueryBuilder<T> {
   // TODO: validate not doing range fields in different fields
   constructor(protected firestoreCollection: CollectionReference) {}
 
@@ -78,7 +79,13 @@ export default class QueryBuilder<T> implements IQueryBuilder<T> {
 
   // TODO: this isn't the place for this
   private extractTFromColSnap(q: QuerySnapshot): T[] {
-    return q.docs.map(d => d.data() as T);
+    return q.docs
+      .map(d => d.data() as T)
+      .map(t => {
+        // HACK: id sanity check
+        t.id = `${t.id}`;
+        return t;
+      });
   }
 
   find(): Promise<T[]> {

@@ -4,7 +4,6 @@ import {
   getPlainMessage,
   getUpdateWithType,
   getBotCommand,
-  BotCommands,
   getUserChatFromMember,
   BotCommandScope,
 } from '../selectors';
@@ -79,10 +78,18 @@ export default async (
       );
       return;
     } else {
-      mediator.Send(command.key, {
-        plainMessage: pm,
-        command,
-      });
+      try {
+        await mediator.Send(command.key, {
+          plainMessage: pm,
+          command,
+        });
+      } catch (error) {
+        console.error('Error on Telegram Update', error);
+
+        await service.sendChat(pm.chat_id, i18n.t('commands.errors.internal'), {
+          reply_to_message_id: pm.message_id,
+        });
+      }
     }
   }
 };

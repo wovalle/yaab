@@ -33,7 +33,7 @@ export class Db {
   }
 
   retreiveMessagesInRange(
-    groupId: Number,
+    groupId: string,
     from: Date,
     to: Date
   ): Promise<PlainMessage[]> {
@@ -47,7 +47,7 @@ export class Db {
       .then(snap => snap.docs.map(d => parseDates(d.data())));
   }
 
-  retreiveUsersFromGroup(groupId: Number) {
+  retreiveUsersFromGroup(groupId: string) {
     return this._db
       .collection('chats')
       .doc(`${groupId}`)
@@ -56,10 +56,7 @@ export class Db {
       .then(snap => snap.docs.map(d => parseDates(d.data()) as ChatMember));
   }
 
-  getUserFromGroup(
-    groupId: Number,
-    userId: Number | string
-  ): Promise<ChatMember> {
+  getUserFromGroup(groupId: string, userId: string): Promise<ChatMember> {
     const chatRef = this._db.collection(`chats`).doc(`${groupId}`);
     const userRef = chatRef.collection('users').doc(`${userId}`);
 
@@ -100,7 +97,7 @@ export class Db {
       .filter(u => u.role !== UserRole.admin);
   }
 
-  async saveChatUser(chatId: Number, user: ChatMember, today: Date) {
+  async saveChatUser(chatId: string, user: ChatMember, today: Date) {
     const batch = this._db.batch();
 
     const chatRef = this._db.collection('chats').doc(`${chatId}`);
@@ -119,7 +116,7 @@ export class Db {
     return batch.commit();
   }
 
-  async updateChatUser(chatId: Number, user: ChatMember) {
+  async updateChatUser(chatId: string, user: ChatMember) {
     const chatRef = this._db.collection('chats').doc(`${chatId}`);
     const userRef = chatRef.collection('users').doc(`${user.id}`);
 
@@ -127,8 +124,8 @@ export class Db {
   }
 
   async setProtectedUser(
-    chatId: Number,
-    userId: Number | string,
+    chatId: string,
+    userId: string,
     today: Date,
     _protected: boolean
   ) {
