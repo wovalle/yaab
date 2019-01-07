@@ -113,13 +113,28 @@ export default class BaseFirestoreRepository<T extends { id: string }>
       .then(this.extractTFromDocSnap);
   }
 
-  create(item: T): Promise<T> {
+  async create(item: T): Promise<T> {
     // TODO: Double operation here. Should construct T myself with ref.id?
+    // TODO: add tests
 
-    return this.firestoreCollection
-      .add(item)
-      .then(ref => ref.get())
-      .then(this.extractTFromDocSnap);
+    if (item.id) {
+      const found = await this.findById(`${item.id}`);
+      if (found) {
+        return Promise.reject(
+          new Error('Trying to create an already existing document')
+        );
+      }
+    }
+
+    const doc = item.id
+      ? this.firestoreCollection.doc(`${item.id}`)
+      : this.firestoreCollection.doc();
+
+    await doc.set(item);
+
+    item.id = doc.id;
+
+    return item;
   }
 
   async update(item: T): Promise<T> {
