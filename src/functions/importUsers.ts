@@ -1,5 +1,4 @@
 // NOTE: This is not intended to be an external function
-import { Db } from '../db.js';
 import { ChatMember } from '../models/index.js';
 import Container from 'typedi';
 import { ChatRepositoryToken } from '../index.js';
@@ -30,14 +29,14 @@ export default async (
 
     if (user) {
       console.log(
-        `User ${user.id}: ${user.first_name} ${user.last_message} not imported`
+        `User ${user.id}: ${user.first_name} ${user.last_name} not imported`
       );
       existingUsers.push(user);
     } else {
       await group.users.create(userToImport);
       console.log(
         `User ${userToImport.id}: ${userToImport.first_name} ${
-          userToImport.last_message
+          userToImport.last_name
         } imported`
       );
       importedUsers.push(userToImport);
