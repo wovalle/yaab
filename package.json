@@ -11,7 +11,7 @@
     "lodash": "^4.17.11",
     "reflect-metadata": "^0.1.12",
     "telegram-typings": "^4.0.0-beta",
-    "tsmediator": "0.0.4",
+    "tsmediator": "0.0.5",
     "typedi": "^0.8.0"
   },
   "devDependencies": {

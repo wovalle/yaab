@@ -27,9 +27,4 @@ export class StartHandler
       }
     );
   }
-
-  // tslint:disable-next-line:no-empty
-  Validate(payload: ITelegramHandlerPayload): void {}
-  // tslint:disable-next-line:no-empty
-  Log(): void {}
 }

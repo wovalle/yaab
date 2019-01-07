@@ -28,6 +28,7 @@
     },
     "errors": {
       "invalid": "manito, que jodio comando fue ese",
+      "internal": "bi toy chipiando, tirale a un adm",
       "wrong_scope": "el comando `{{command}}` solo se puede usar en: {{scopes}}",
       "forbidden": "bi pero tu no tiene podere pa ejecuta el comando `{{cmd}}`",
       "user_not_found": "bi, ete usuario no existe",

@@ -84,9 +84,4 @@ export class ListInactiveHandler
       { parse_mode: ParseMode.Markdown }
     );
   }
-
-  // tslint:disable-next-line:no-empty
-  Validate(payload: ITelegramHandlerPayload): void {}
-  // tslint:disable-next-line:no-empty
-  Log(): void {}
 }
