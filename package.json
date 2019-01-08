@@ -10,7 +10,9 @@
     "firebase-functions": "^2.1.0",
     "lodash": "^4.17.11",
     "reflect-metadata": "^0.1.12",
-    "telegram-typings": "^4.0.0-beta"
+    "telegram-typings": "^4.0.0-beta",
+    "tsmediator": "0.0.5",
+    "typedi": "^0.8.0"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
@@ -39,7 +41,8 @@
     "logs": "firebase functions:log",
     "test": "mocha --require ts-node/register ./**/**/*.spec.ts",
     "test:watch": "mocha --require ts-node/register ./**/**/*.spec.ts -w",
-    "ngrok": "ngrok http 5000"
+    "ngrok": "ngrok http 5000",
+    "tunnel": "ts-node tools/setup-tunnel.ts"
   },
   "author": "Willy Ovalle <willyovalle16@gmail.com>",
   "license": "ISC",

@@ -1,13 +1,13 @@
-import { Update, User, ChatMember } from 'telegram-typings';
+import { Update, ChatMember } from 'telegram-typings';
 import {
   TypedUpdate,
   PlainMedia,
-  PlainMessage,
   UpdateType,
   EventType,
   EventData,
+  UserRole,
 } from './types';
-import { ChatUser, UserRole, UserStatus } from './models';
+import { PlainMessage, ChatMember as ModelChatMember } from './models';
 
 export const getUpdateWithType = (update: Update): TypedUpdate => {
   let type: UpdateType;
@@ -129,8 +129,6 @@ export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
   const msg = update.message;
   const is_entity = !!msg.entities && msg.entities.length > 0;
   const entity_type = is_entity ? msg.entities[0].type : null;
-  const entity_should_process =
-    entity_type === 'bot_command' && msg.text.includes('@benditobot');
   const is_forward = msg.forward_from && msg.forward_from.id > 0;
   const forward_message_id = is_forward ? msg.forward_from_message_id : null;
   const forward_from_id = is_forward ? msg.forward_from.id : null;
@@ -163,17 +161,27 @@ export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
   const is_event = update_event !== null;
   const event_data = update_event.data;
 
+  const group_types = ['group', 'supergroup', 'channels'];
+
+  const command_directed_to_bot = group_types.includes(update.message.chat.type)
+    ? /bendito(beta)?bot/i.test(msg.text)
+    : true;
+
+  const entity_should_process =
+    entity_type === 'bot_command' && command_directed_to_bot;
+
   return {
-    update_id: update.update_id,
-    message_id: msg.message_id,
+    id: `${update.id}`,
+    update_id: `${update.update_id}`,
+    message_id: `${msg.message_id}`,
     date: new Date(msg.date * 1000),
     text: msg.text,
-    from_id: msg.from.id,
+    from_id: `${msg.from.id}`,
     from_is_bot: msg.from.is_bot,
     from_first_name: msg.from.first_name,
     from_last_name: msg.from.last_name,
     from_username: msg.from.username,
-    chat_id: msg.chat.id,
+    chat_id: `${msg.chat.id}`,
     chat_type: msg.chat.type,
     chat_title: msg.chat.title,
     is_entity,
@@ -181,16 +189,16 @@ export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
     entity_should_process,
     entities: msg.entities,
     is_forward,
-    forward_message_id,
-    forward_from_id,
+    forward_message_id: `${forward_message_id}`,
+    forward_from_id: `${forward_from_id}`,
     forward_from_is_bot,
     forward_from_first_name,
     forward_from_last_name,
     forward_from_username,
     is_reply,
-    reply_message_id,
+    reply_message_id: `${reply_message_id}`,
     reply_text,
-    reply_from_id,
+    reply_from_id: `${reply_from_id}`,
     reply_from_is_bot,
     reply_from_first_name,
     reply_from_last_name,
@@ -204,42 +212,104 @@ export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
 };
 
 export enum BotCommands {
-  remove_inactives = 'thanos',
-  protect_user = 'delomio',
-  list_inactives = 'lovegetadore',
-  list_protected = 'lodichoso',
-  remove_protected = 'baraja',
-  enable_crush_mode = 'benditocrush',
+  remove_inactives = 'remove_inactives',
+  protect_user = 'protect_user',
+  list_inactives = 'list_inactives',
+  list_protected = 'list_protected',
+  remove_protected = 'remove_protected',
+  enable_crush_mode = 'enable_crush_mode',
+  start = 'start',
+  help = 'help',
 }
 
-const BotCommandsPermissions = [
-  { admin: true, key: BotCommands.list_inactives },
-  { admin: true, key: BotCommands.remove_inactives },
-  { admin: true, key: BotCommands.protect_user },
-  { admin: true, key: BotCommands.remove_protected },
-  { admin: true, key: BotCommands.list_protected },
-  { admin: false, key: BotCommands.enable_crush_mode },
+export enum BotCommandScope {
+  group = 'group',
+  supergroup = 'supergroup',
+  private = 'private',
+  channel = 'channel',
+}
+
+export interface IDetailedBotCommand {
+  admin: boolean;
+  key: BotCommands;
+  keyword: string;
+  scopes: Array<BotCommandScope>;
+}
+
+const BotCommandsDetails: IDetailedBotCommand[] = [
+  {
+    admin: true,
+    key: BotCommands.list_inactives,
+    keyword: 'lobrechadore',
+    scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+  },
+  {
+    admin: true,
+    key: BotCommands.remove_inactives,
+    keyword: 'thanos',
+    scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+  },
+  {
+    admin: true,
+    key: BotCommands.protect_user,
+    keyword: 'delomio',
+    scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+  },
+  {
+    admin: true,
+    key: BotCommands.remove_protected,
+    keyword: 'baraja',
+    scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+  },
+  {
+    admin: true,
+    key: BotCommands.list_protected,
+    keyword: 'lodichoso',
+    scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+  },
+  {
+    admin: false,
+    key: BotCommands.enable_crush_mode,
+    keyword: 'benditocrush',
+    scopes: [
+      BotCommandScope.group,
+      BotCommandScope.supergroup,
+      BotCommandScope.private,
+    ],
+  },
+  {
+    admin: false,
+    key: BotCommands.start,
+    keyword: 'start',
+    scopes: [BotCommandScope.private],
+  },
+  {
+    admin: false,
+    key: BotCommands.help,
+    keyword: 'help',
+    scopes: [BotCommandScope.private],
+  },
 ];
 
 export const getBotCommand = (pm: PlainMessage) => {
   const command = pm.text
     .slice(pm.entities[0].offset + 1, pm.entities[0].length)
-    .replace('@benditobot', '') //TODO: generalize
+    .replace(/@bendito(beta)?bot/i, '') //TODO: generalize
     .trim();
 
-  return BotCommandsPermissions.find(c => c.key === command) || null;
+  return BotCommandsDetails.find(c => c.keyword === command) || null;
 };
 
-export const getUserChatFromMember = (u: ChatMember): ChatUser => {
+export const getUserChatFromMember = (u: ChatMember): ModelChatMember => {
   return {
-    id: u.user.id,
+    id: `${u.user.id}`,
     first_name: u.user.first_name,
     last_name: u.user.last_name,
     is_bot: u.user.is_bot,
+    protected: false,
     role: u.status === 'administrator' ? UserRole.admin : UserRole.user,
     last_message: null,
     username: u.user.username,
-    warnings: [],
     status: u.status,
   };
 };

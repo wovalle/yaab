@@ -6,14 +6,14 @@ export interface IRepository<T extends { id: string }> {
   delete(id: string): Promise<void>;
 }
 
-export type IFirestoreVal = string | number | Date;
+export type IFirestoreVal = string | number | Date | Boolean;
 
 export enum FirestoreOperators {
   equal = '==',
   lessThan = '<',
   greaterThan = '>',
   lessThanEqual = '<=',
-  greaterThanEqual = '=>',
+  greaterThanEqual = '>=',
   arrayContains = 'array-contains',
 }
 
@@ -29,7 +29,7 @@ export interface IFireOrmQueryLine {
 
 export type IQueryBuilderResult = IFireOrmQueryLine[];
 
-export interface IQueryBuilder<T> {
+export interface IQueryBuilder<T extends { id: string }> {
   whereEqualTo(prop: keyof T, val: IFirestoreVal): IQueryBuilder<T>;
   whereGreaterThan(prop: keyof T, val: IFirestoreVal): IQueryBuilder<T>;
   whereGreaterOrEqualThan(prop: keyof T, val: IFirestoreVal): IQueryBuilder<T>;
@@ -38,3 +38,6 @@ export interface IQueryBuilder<T> {
   whereArrayCointain(prop: keyof T, val: IFirestoreVal): IQueryBuilder<T>;
   find(): Promise<T[]>;
 }
+
+export type ISubCollection<T extends { id: string }> = IRepository<T> &
+  IQueryBuilder<T>;

@@ -1,15 +1,7 @@
-export enum UserRole {
-  user = 'user',
-  admin = 'admin',
-}
+import { UserRole } from '../types';
 
-export enum UserStatus {
-  active = 'active',
-  unsaved = 'unsaved',
-}
-
-export interface ChatUser {
-  id: Number;
+export class ChatMember {
+  id: string;
   is_bot: boolean;
   first_name: string;
   last_name?: string;
@@ -17,6 +9,5 @@ export interface ChatUser {
   last_message: Date;
   role: UserRole;
   status: string; // “creator”, “administrator”, “member”, “restricted”, “left” or “kicked”
-  protected?: boolean;
-  warnings: []; // TODO: Define model
+  protected: boolean;
 }

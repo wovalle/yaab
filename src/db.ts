@@ -1,6 +1,7 @@
 import * as admin from 'firebase-admin';
-import { PlainMessage } from './types';
-import { ChatUser, UserRole } from './models';
+import { ChatMember } from './models';
+import { PlainMessage } from './models/PlainMessage';
+import { UserRole, EventType } from './types';
 
 let instance = null;
 
@@ -23,20 +24,20 @@ const parseDates = obj => {
 };
 
 export class Db {
-  private db: FirebaseFirestore.Firestore;
+  public _db: FirebaseFirestore.Firestore;
 
   constructor() {
     admin.initializeApp();
-    this.db = admin.firestore();
-    this.db.settings({ timestampsInSnapshots: true });
+    this._db = admin.firestore();
+    this._db.settings({ timestampsInSnapshots: true });
   }
 
   retreiveMessagesInRange(
-    groupId: Number,
+    groupId: string,
     from: Date,
     to: Date
   ): Promise<PlainMessage[]> {
-    return this.db
+    return this._db
       .collection('chats')
       .doc(`${groupId}`)
       .collection('messages')
@@ -46,50 +47,47 @@ export class Db {
       .then(snap => snap.docs.map(d => parseDates(d.data())));
   }
 
-  retreiveUsersFromGroup(groupId: Number) {
-    return this.db
+  retreiveUsersFromGroup(groupId: string) {
+    return this._db
       .collection('chats')
       .doc(`${groupId}`)
       .collection('users')
       .get()
-      .then(snap => snap.docs.map(d => parseDates(d.data()) as ChatUser));
+      .then(snap => snap.docs.map(d => parseDates(d.data()) as ChatMember));
   }
 
-  getUserFromGroup(
-    groupId: Number,
-    userId: Number | string
-  ): Promise<ChatUser> {
-    const chatRef = this.db.collection(`chats`).doc(`${groupId}`);
+  getUserFromGroup(groupId: string, userId: string): Promise<ChatMember> {
+    const chatRef = this._db.collection(`chats`).doc(`${groupId}`);
     const userRef = chatRef.collection('users').doc(`${userId}`);
 
     return userRef
       .get()
-      .then(snap => (snap.exists ? (snap.data() as ChatUser) : null));
+      .then(snap => (snap.exists ? (snap.data() as ChatMember) : null));
   }
 
-  getProtectedUsers(groupId: Number): Promise<ChatUser[]> {
-    const chatRef = this.db.collection(`chats`).doc(`${groupId}`);
+  getProtectedUsers(groupId: Number): Promise<ChatMember[]> {
+    const chatRef = this._db.collection(`chats`).doc(`${groupId}`);
     const userRef = chatRef.collection('users');
 
     return userRef
       .where('protected', '==', true)
       .get()
-      .then(snap => snap.docs.map(d => parseDates(d.data()) as ChatUser));
+      .then(snap => snap.docs.map(d => parseDates(d.data()) as ChatMember));
   }
 
-  async getInactiveUsers(groupId: Number, since: Date): Promise<ChatUser[]> {
-    const chatRef = this.db.collection(`chats`).doc(`${groupId}`);
+  async getInactiveUsers(groupId: Number, since: Date): Promise<ChatMember[]> {
+    const chatRef = this._db.collection(`chats`).doc(`${groupId}`);
     const userRef = chatRef.collection('users');
 
     const inactives = await userRef
       .where('last_message', '<=', since)
       .get()
-      .then(snap => snap.docs.map(d => parseDates(d.data()) as ChatUser));
+      .then(snap => snap.docs.map(d => parseDates(d.data()) as ChatMember));
 
     const nullUsers = await userRef
       .where('last_message', '==', null)
       .get()
-      .then(snap => snap.docs.map(d => parseDates(d.data() as ChatUser)));
+      .then(snap => snap.docs.map(d => parseDates(d.data() as ChatMember)));
 
     return inactives
       .concat(nullUsers)
@@ -99,10 +97,10 @@ export class Db {
       .filter(u => u.role !== UserRole.admin);
   }
 
-  async saveChatUser(chatId: Number, user: ChatUser, today: Date) {
-    const batch = this.db.batch();
+  async saveChatUser(chatId: string, user: ChatMember, today: Date) {
+    const batch = this._db.batch();
 
-    const chatRef = this.db.collection('chats').doc(`${chatId}`);
+    const chatRef = this._db.collection('chats').doc(`${chatId}`);
     const userRef = chatRef.collection('users').doc(`${user.id}`);
     const internalEventRef = chatRef.collection('internal_events');
     const internalEventDoc = internalEventRef.doc();
@@ -118,22 +116,22 @@ export class Db {
     return batch.commit();
   }
 
-  async updateChatUser(chatId: Number, user: ChatUser) {
-    const chatRef = this.db.collection('chats').doc(`${chatId}`);
+  async updateChatUser(chatId: string, user: ChatMember) {
+    const chatRef = this._db.collection('chats').doc(`${chatId}`);
     const userRef = chatRef.collection('users').doc(`${user.id}`);
 
     return userRef.update(user);
   }
 
   async setProtectedUser(
-    chatId: Number,
-    userId: Number,
+    chatId: string,
+    userId: string,
     today: Date,
     _protected: boolean
   ) {
-    const batch = this.db.batch();
+    const batch = this._db.batch();
 
-    const chatRef = this.db.collection('chats').doc(`${chatId}`);
+    const chatRef = this._db.collection('chats').doc(`${chatId}`);
     const userRef = chatRef.collection('users').doc(`${userId}`);
     const internalEventRef = chatRef.collection('internal_events');
     const internalEventDoc = internalEventRef.doc();
@@ -149,31 +147,45 @@ export class Db {
     return batch.commit();
   }
 
-  async saveChatStat(message: PlainMessage, user: ChatUser, today: Date) {
-    const batch = this.db.batch();
+  async saveChatStat(message: PlainMessage, user: ChatMember, today: Date) {
+    const batch = this._db.batch();
 
-    const chatRef = this.db.collection(`chats`).doc(`${message.chat_id}`);
+    const chatRef = this._db.collection(`chats`).doc(`${message.chat_id}`);
     const msgRef = chatRef.collection('messages').doc(`${message.update_id}`);
     batch.set(msgRef, cleanUndefined(message));
 
     const userRef = chatRef.collection('users').doc(`${message.from_id}`);
 
     batch.update(userRef, { last_message: today, status: 'active' });
+
+    if (message.event_type === EventType.new_chat_members) {
+      const events = message.event_data as Array<any>;
+      if (events.length) {
+        events.forEach(e => {
+          if (!e.id) {
+            return;
+          }
+
+          const eventUser = chatRef.collection('users').doc(`${e.id}`);
+          batch.update(eventUser, { last_message: today, status: 'active' });
+        });
+      }
+    }
     return batch.commit();
   }
 
-  async insertUsersInGroup(usersToImport: ChatUser[], groupId: Number) {
+  async insertUsersInGroup(usersToImport: ChatMember[], groupId: Number) {
     if (!usersToImport.length) return null;
 
-    const batch = this.db.batch();
+    const batch = this._db.batch();
     const batch_id = Date.now();
-    const groupRef = this.db.collection(`chats`).doc(`${groupId}`);
+    const groupRef = this._db.collection(`chats`).doc(`${groupId}`);
     const internalEventRef = groupRef.collection('internal_events');
 
     const existingUsers = await groupRef
       .collection('users')
       .get()
-      .then(snap => snap.docs.map(d => parseDates(d.data() as ChatUser)));
+      .then(snap => snap.docs.map(d => parseDates(d.data() as ChatMember)));
 
     for (const user of usersToImport) {
       if (!existingUsers.some(u => u.id === user.id)) {

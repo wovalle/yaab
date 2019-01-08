@@ -27,6 +27,7 @@ export default class BaseFirestoreRepository<T extends { id: string }>
   // TODO: @createdOnField, @updatedOnField
   // TODO: well defined types, investigate
   // TODO: register repository in metadata
+  // TODO: remove functions in models
 
   public collectionType: FirestoreCollectionType;
   private firestoreCollection: CollectionReference;
@@ -64,28 +65,37 @@ export default class BaseFirestoreRepository<T extends { id: string }>
 
     const entity = this.parseTimestamp(doc.data() as T);
 
-    const subcollections = getMetadataStorage().subCollections.filter(
-      sc => sc.collection === this.colName
-    );
+    // TODO: This wont be required after implementing https://github.com/typestack/class-transformer
+    entity.id = `${doc.id}`;
 
-    subcollections.forEach(subCol => {
-      // tslint:disable-next-line:no-shadowed-variable
-      const T = subCol.entity;
-      Object.assign(entity, {
-        [subCol.attribute]: new BaseFirestoreRepository<T>(
-          this.db,
-          this.colName,
-          doc.id,
-          subCol.subcollection
-        ),
+    //If you're a subcollection, you don't have to check for other subcollections
+    // TODO: Write tests
+    // TODO: remove subcollections when saving to db
+    if (this.collectionType === FirestoreCollectionType.collection) {
+      const subcollections = getMetadataStorage().subCollections.filter(
+        sc => sc.collection === this.colName
+      );
+
+      subcollections.forEach(subCol => {
+        // tslint:disable-next-line:no-shadowed-variable
+        const T = subCol.entity;
+        Object.assign(entity, {
+          [subCol.attribute]: new BaseFirestoreRepository<T>(
+            this.db,
+            this.colName,
+            doc.id,
+            subCol.subcollection
+          ),
+        });
       });
-    });
+    }
 
     return entity;
   };
 
   private parseTimestamp = (obj: T): T => {
     Object.keys(obj).forEach(key => {
+      if (!obj[key]) return;
       if (typeof obj[key] === 'object' && 'toDate' in obj[key]) {
         obj[key] = obj[key].toDate();
       } else if (typeof obj[key] === 'object') {
@@ -103,13 +113,28 @@ export default class BaseFirestoreRepository<T extends { id: string }>
       .then(this.extractTFromDocSnap);
   }
 
-  create(item: T): Promise<T> {
+  async create(item: T): Promise<T> {
     // TODO: Double operation here. Should construct T myself with ref.id?
+    // TODO: add tests
 
-    return this.firestoreCollection
-      .add(item)
-      .then(ref => ref.get())
-      .then(this.extractTFromDocSnap);
+    if (item.id) {
+      const found = await this.findById(`${item.id}`);
+      if (found) {
+        return Promise.reject(
+          new Error('Trying to create an already existing document')
+        );
+      }
+    }
+
+    const doc = item.id
+      ? this.firestoreCollection.doc(`${item.id}`)
+      : this.firestoreCollection.doc();
+
+    await doc.set(item);
+
+    item.id = doc.id;
+
+    return item;
   }
 
   async update(item: T): Promise<T> {
@@ -171,6 +196,7 @@ export default class BaseFirestoreRepository<T extends { id: string }>
 
 // TODO: after registering repositories in metadata storage, return single instance
 // TODO: or make it singleton?
+// TODO: since you have to register a collection, we can deduct dbcol from metadata
 export function getRepository<T extends { id: string }>(
   db: Firestore,
   dbCol: string

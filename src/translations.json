@@ -1,10 +1,11 @@
 {
-  "actions": {
-    "users": {
-      "kick_inactive": "señore tAmo en vivo pero eta gente ya no: {{users}}"
-    }
-  },
   "commands": {
+    "start": {
+      "successful": "tAmo en vivo!\nUn cientifico ta' tirando codigo para agregarme funcionalidades, mientras tanto vete a freir tusa.\n/benditocrush #comingsoon\n👨‍💻: @wovalle"
+    },
+    "help": {
+      "successful": "oh pero ayúdame tu a mi"
+    },
     "protect_user": {
       "successful": "ufff, ya no le voy a da mocha a {{name}}"
     },
@@ -12,25 +13,36 @@
       "successful": "ya si me puedo llevar a {{name}}"
     },
     "list_inactive": {
+      "wrong_command": "billy boy, ecribe el comando bien",
       "empty": "en velda nadie vegetó en las últimas {{hours}} horas",
-      "successful": "señore tAmo en vivo y eta gente lleva {{hours}} horas vegetando: {{mentions}}"
+      "successful": "señore tAmo en vivo y eta gente lleva {{hours}} horas brechando sin habla: {{mentions}}"
     },
     "enable_crush_mode": {
-      "successful": "Estamos trabajando por el bienestar de tu queso.\nBendito Crush #ComingSoon"
+      "successful": "Estamos trabajando por el bienestar de tu queso.\nBendito Crush #ComingSoon\nDale /start a @benditobot en privado para que seas parte del coro!"
     },
     "list_protected": {
       "successful": "lo que tan pegao de la teta son: {{mentions}}"
     },
-    "remove_inactive": {
+    "remove_inactives": {
       "successful": "señore tAmo en vivo pero eta gente ya no: {{mentions}}"
     },
     "errors": {
       "invalid": "manito, que jodio comando fue ese",
+      "internal": "bi toy chipiando, tirale a un adm",
+      "wrong_scope": "el comando `{{command}}` solo se puede usar en: {{scopes}}",
       "forbidden": "bi pero tu no tiene podere pa ejecuta el comando `{{cmd}}`",
       "user_not_found": "bi, ete usuario no existe",
       "pm_not_implemented": "solo funciono en grupos por ahora ;)",
       "not_implemented": "tamo trabajando en eso bi",
       "nothing_to_do": "ok, gracia"
+    }
+  },
+  "enums": {
+    "scopes": {
+      "group": "Grupos",
+      "supergroup": "Supergrupos",
+      "private": "Mensajes Privados",
+      "channel": "Canales"
     }
   }
 }
