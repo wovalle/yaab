@@ -13,9 +13,8 @@ export class User {
   firstName: string;
   lastName?: string;
   birthDate: Date;
-  @SubCollection(Message, 'message', 'users')
-  readonly messages?: IRepository<Message>;
 }
+
 const getColFixture = () => {
   const users = new Array<User>();
   users.push({

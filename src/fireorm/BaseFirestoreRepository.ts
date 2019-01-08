@@ -72,19 +72,28 @@ export default class BaseFirestoreRepository<T extends { id: string }>
     // TODO: Write tests
     // TODO: remove subcollections when saving to db
     if (this.collectionType === FirestoreCollectionType.collection) {
+      const collection = getMetadataStorage().collections.find(
+        c => c.name === this.colName
+      );
+
+      if (!collection) {
+        throw new Error(`There is no collection called ${this.colName}`);
+      }
+
+      const allSubs = getMetadataStorage().subCollections;
       const subcollections = getMetadataStorage().subCollections.filter(
-        sc => sc.collection === this.colName
+        sc => sc.target === collection.target
       );
 
       subcollections.forEach(subCol => {
         // tslint:disable-next-line:no-shadowed-variable
         const T = subCol.entity;
         Object.assign(entity, {
-          [subCol.attribute]: new BaseFirestoreRepository<T>(
+          [subCol.name]: new BaseFirestoreRepository<T>(
             this.db,
             this.colName,
             doc.id,
-            subCol.subcollection
+            subCol.name
           ),
         });
       });
@@ -196,10 +205,17 @@ export default class BaseFirestoreRepository<T extends { id: string }>
 
 // TODO: after registering repositories in metadata storage, return single instance
 // TODO: or make it singleton?
-// TODO: since you have to register a collection, we can deduct dbcol from metadata
 export function getRepository<T extends { id: string }>(
-  db: Firestore,
-  dbCol: string
+  entity: { new (): T },
+  db: Firestore
 ) {
-  return new BaseFirestoreRepository<T>(db, dbCol);
+  const collection = getMetadataStorage().collections.find(
+    c => c.target === entity
+  );
+
+  if (!collection) {
+    throw new Error(`${entity.name} is not a valid collection.`);
+  }
+
+  return new BaseFirestoreRepository<T>(db, collection.name);
 }

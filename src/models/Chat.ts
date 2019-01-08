@@ -6,8 +6,8 @@ import { ChatMember } from './ChatMember';
 @Collection('chats')
 export class Chat {
   id: string;
-  @SubCollection(PlainMessage, 'messages', 'chats')
+  @SubCollection(PlainMessage)
   readonly messages?: ISubCollection<PlainMessage>;
-  @SubCollection(ChatMember, 'users', 'chats')
+  @SubCollection(ChatMember)
   readonly users?: ISubCollection<ChatMember>;
 }

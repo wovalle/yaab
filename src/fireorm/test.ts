@@ -1,5 +1,7 @@
 import * as admin from 'firebase-admin';
-import BaseFirestoreRepository from './BaseFirestoreRepository';
+import BaseFirestoreRepository, {
+  getRepository,
+} from './BaseFirestoreRepository';
 import { IRepository, IQueryBuilder, ISubCollection } from './types';
 import { EventType, EventData, PlainMedia, UserRole } from '../types';
 import Collection from './Decorators/Collection';
@@ -23,18 +25,19 @@ firestore.settings({
 @Collection('chats')
 class Chat {
   id: string;
-  @SubCollection(PlainMessage, 'messages', 'chats')
+  @SubCollection(PlainMessage)
   readonly messages?: ISubCollection<PlainMessage>;
-  @SubCollection(PlainMessage, 'users', 'chats')
+  @SubCollection(ChatMember)
   readonly users?: ISubCollection<ChatMember>;
 }
 
-class ChatRepository extends BaseFirestoreRepository<Chat> {}
-const chatRepository = new ChatRepository(firestore, 'chats');
+// class ChatRepository extends BaseFirestoreRepository<Chat> {}
+// const chatRepository = new ChatRepository(firestore, 'chats');
+const chatRepository = getRepository(Chat, firestore);
 
 const foo = async () => {
-  const colls = await firestore.listCollections();
-  console.log('lecolls', colls.map(c => c.id));
+  // const colls = await firestore.listCollections();
+  // console.log('lecolls', colls.map(c => c.id));
   // const benditoChat = await chatRepository.findById('-1001376022771');
   const benditoChat = await chatRepository.findById(`${-1001376022771}`);
   console.log(benditoChat);
@@ -43,22 +46,18 @@ const foo = async () => {
     .whereEqualTo('update_id', 140671219)
     .whereGreaterOrEqualThan('date', date)
     .find();
-
   const inactiveUsers = await benditoChat.users
     .whereLessOrEqualThan('last_message', date)
     .find();
-
   const nullUsers = await benditoChat.users
     .whereEqualTo('last_message', null)
     .find();
-
   const users = inactiveUsers
     .concat(nullUsers)
     .filter(u => !u.is_bot)
     .filter(u => !u.protected)
     .filter(u => !['kicked', 'left', 'creator'].includes(u.status))
     .filter(u => u.role !== UserRole.admin);
-
   console.log({ users });
   // End of repeated code
 };

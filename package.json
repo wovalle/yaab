@@ -4,11 +4,13 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "@types/pluralize": "0.0.29",
     "axios": "^0.18.0",
     "date-fns": "^1.29.0",
     "firebase-admin": "^6.3.0",
     "firebase-functions": "^2.1.0",
     "lodash": "^4.17.11",
+    "pluralize": "^7.0.0",
     "reflect-metadata": "^0.1.12",
     "telegram-typings": "^4.0.0-beta",
     "tsmediator": "0.0.5",

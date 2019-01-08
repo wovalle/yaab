@@ -7,14 +7,12 @@ export const storage = {
 
 export interface CollectionMetadata {
   target: Function;
-  collection: string;
+  name: string;
 }
 
 export interface SubCollectionMetadata {
   target: Function;
-  collection: string;
-  subcollection: string;
-  attribute: string;
+  name: string;
   entity: Function;
 }
 
