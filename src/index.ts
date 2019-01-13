@@ -25,7 +25,7 @@ const getDate = () => new Date();
 
 // Section: fireorm
 import { Chat } from './models/Chat';
-import { getRepository, BaseFirestoreRepository } from './fireorm';
+import { getRepository, BaseFirestoreRepository } from 'fireorm';
 
 const chatRepository = getRepository(Chat, db._db);
 export const ChatRepositoryToken = new Token<BaseFirestoreRepository<Chat>>(

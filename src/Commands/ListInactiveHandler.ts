@@ -1,12 +1,12 @@
 import { Handler, ICommandHandler } from 'tsmediator';
 import Container from 'typedi';
+import { BaseFirestoreRepository } from 'fireorm';
 
 import TelegramService from '../services/telegram/TelegramService';
 import { BotCommands } from '../selectors';
 import I18nProvider from '../I18nProvider';
 import { ParseMode } from '../services/telegram';
 import { Chat } from '../models';
-import { BaseFirestoreRepository } from '../fireorm';
 import { ChatRepositoryToken } from '..';
 import { addHours } from 'date-fns';
 import { UserRole, ITelegramHandlerPayload } from '../types';

@@ -6,7 +6,7 @@ import { BotCommands } from '../selectors';
 import I18nProvider from '../I18nProvider';
 import { ParseMode } from '../services/telegram';
 import { Chat } from '../models';
-import { BaseFirestoreRepository } from '../fireorm';
+import { BaseFirestoreRepository } from 'fireorm';
 import { ChatRepositoryToken } from '..';
 import { ITelegramHandlerPayload } from '../types';
 

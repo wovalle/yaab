@@ -1,6 +1,5 @@
-import { Collection, SubCollection } from '../fireorm';
+import { Collection, SubCollection, ISubCollection } from 'fireorm';
 import { PlainMessage } from './PlainMessage';
-import { ISubCollection } from '../fireorm/types';
 import { ChatMember } from './ChatMember';
 
 @Collection('chats')
