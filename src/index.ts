@@ -7,6 +7,7 @@ import updateLastMessageBetweenDates from './functions/updateLastMessageBetweenD
 import fetchInactiveUsersWithinTimeframe from './functions/fetchInactiveUsersWithinTimeframe';
 import onTelegramUpdate from './functions/onTelegramUpdate';
 import TelegramService from './services/telegram';
+import { ChatRepository, ChatMemberRepository } from './Repositories';
 import DbSingleton, { Db } from './db';
 import Http from './Http';
 import I18nProvider from './I18nProvider';
@@ -25,12 +26,10 @@ const getDate = () => new Date();
 
 // Section: fireorm
 import { Chat } from './models/Chat';
-import { getRepository, BaseFirestoreRepository } from 'fireorm';
+import { getRepository } from 'fireorm';
 
 const chatRepository = getRepository(Chat, db._db);
-export const ChatRepositoryToken = new Token<BaseFirestoreRepository<Chat>>(
-  'ChatRepository'
-);
+export const ChatRepositoryToken = new Token<ChatRepository>('ChatRepository');
 
 // Section: initialize ioc
 Container.set(TelegramService, telegramService);
@@ -47,6 +46,7 @@ import { RemoveInactivesHandler } from './Commands/RemoveInactivesHandler';
 import { EnableCrushModeHandler } from './Commands/EnableCrushModeHandler';
 import { StartHandler } from './Commands/StartHandler';
 import { HelpHandler } from './Commands/HelpHandler';
+
 ListProtectedHandler.name;
 ListInactiveHandler.name;
 SetProtectedHandler.name;
@@ -55,6 +55,7 @@ EnableCrushModeHandler.name;
 StartHandler.name;
 HelpHandler.name;
 Chat.name;
+ChatMemberRepository.name;
 
 export const importUsersInternalFn = functions.https.onRequest(
   async (req, res) => {

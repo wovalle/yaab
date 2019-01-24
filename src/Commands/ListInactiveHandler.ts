@@ -1,24 +1,22 @@
 import { Handler, ICommandHandler } from 'tsmediator';
 import Container from 'typedi';
-import { BaseFirestoreRepository } from 'fireorm';
 
 import TelegramService from '../services/telegram/TelegramService';
 import { BotCommands } from '../selectors';
 import I18nProvider from '../I18nProvider';
 import { ParseMode } from '../services/telegram';
-import { Chat } from '../models';
 import { ChatRepositoryToken } from '..';
 import { addHours } from 'date-fns';
-import { UserRole, ITelegramHandlerPayload } from '../types';
+import { ITelegramHandlerPayload } from '../types';
+import { ChatRepository } from '../Repositories';
 
-// TODO: implement custom repositories to implement inactive users
 // TODO: send pm summary with users tagged, bots and protected
 @Handler(BotCommands.list_inactives)
 export class ListInactiveHandler
   implements ICommandHandler<ITelegramHandlerPayload, void> {
   private telegramService: TelegramService;
   private i18n: I18nProvider;
-  private chatRepository: BaseFirestoreRepository<Chat>;
+  private chatRepository: ChatRepository;
   private getCurrentDate: () => Date;
 
   constructor() {
@@ -41,25 +39,9 @@ export class ListInactiveHandler
       return;
     }
 
-    //TODO: This will be done inside a custom repository but for now, here is it
-    const sinceDate = addHours(this.getCurrentDate(), -hours);
-
+    const inactiveSince = addHours(this.getCurrentDate(), -hours);
     const chat = await this.chatRepository.findById(`${pm.chat_id}`);
-    const inactiveUsers = await chat.users
-      .whereLessOrEqualThan('last_message', sinceDate)
-      .find();
-
-    const nullUsers = await chat.users
-      .whereEqualTo('last_message', null)
-      .find();
-
-    const users = inactiveUsers
-      .concat(nullUsers)
-      .filter(u => !u.is_bot)
-      .filter(u => !u.protected)
-      .filter(u => !['kicked', 'left', 'creator'].includes(u.status))
-      .filter(u => u.role !== UserRole.admin);
-    // End of repeated code
+    const users = await chat.users.getInactive(inactiveSince);
 
     if (!users.length) {
       const errorId = 'commands.list_inactive.empty';

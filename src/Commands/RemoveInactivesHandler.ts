@@ -41,23 +41,8 @@ export class RemoveInactivesHandler
     }
 
     const sinceDate = addHours(this.getCurrentDate(), -hours);
-
     const chat = await this.chatRepository.findById(`${pm.chat_id}`);
-    const inactiveUsers = await chat.users
-      .whereLessOrEqualThan('last_message', sinceDate)
-      .find();
-
-    const nullUsers = await chat.users
-      .whereEqualTo('last_message', null)
-      .find();
-
-    const users = inactiveUsers
-      .concat(nullUsers)
-      .filter(u => !u.is_bot)
-      .filter(u => !u.protected)
-      .filter(u => !['kicked', 'left', 'creator'].includes(u.status))
-      .filter(u => u.role !== UserRole.admin);
-    // End of repeated code
+    const users = await chat.users.getInactive(sinceDate);
 
     if (!users.length) {
       const errorId = 'commands.list_inactive.empty';
