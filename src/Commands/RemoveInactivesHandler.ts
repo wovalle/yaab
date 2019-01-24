@@ -30,14 +30,17 @@ export class RemoveInactivesHandler
   async Handle(payload: ITelegramHandlerPayload) {
     const pm = payload.plainMessage;
     const commandText = pm.text.split(' ');
-    const hours = Number.parseInt(commandText[1]);
+    let hours = Number.parseInt(commandText[1]);
+    const isHoursANumber = Number.isNaN(hours);
 
-    if (commandText.length !== 2 || Number.isNaN(hours)) {
+    if (commandText.length > 1 && !isHoursANumber) {
       const errorId = 'commands.errors.invalid';
       await this.telegramService.sendChat(pm.chat_id, this.i18n.t(errorId), {
         reply_to_message_id: pm.message_id,
       });
       return;
+    } else if (commandText.length === 1) {
+      hours = 5 * 24; // TODO: update capabilities
     }
 
     const sinceDate = addHours(this.getCurrentDate(), -hours);
