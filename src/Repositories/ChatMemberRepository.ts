@@ -21,6 +21,25 @@ class ChatMemberRepository extends BaseFirestoreRepository<ChatMember>
       .filter(u => !['kicked', 'left', 'creator'].includes(u.status))
       .filter(u => u.role !== UserRole.admin);
   }
+
+  async findByName(name: string): Promise<ChatMember[]> {
+    const keywords = name.trim().split(' ');
+    const promises: Promise<ChatMember[]>[] = [];
+
+    for (const key of keywords) {
+      promises.push(this.whereEqualTo('first_name', key).find());
+      promises.push(this.whereEqualTo('last_name', key).find());
+    }
+
+    return Promise.all(promises).then(p =>
+      p.reduce((cur, acc) => cur.concat(acc), [])
+    );
+  }
+
+  async findByUsername(username: string): Promise<ChatMember> {
+    const users = await this.whereEqualTo('username', username).find();
+    return users.length ? users[0] : null;
+  }
 }
 
 export default ChatMemberRepository;
