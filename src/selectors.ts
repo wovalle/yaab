@@ -308,7 +308,12 @@ const BotCommandsDetails: IBotCommandDetail[] = [
       BotCommandScope.group,
       BotCommandScope.supergroup,
     ],
-    textActivators: ['addcrush', 'commands.addcrush.init'],
+    textActivators: [
+      'crush_search',
+      'crush_found',
+      'crush_not_found',
+      'crush_not_found',
+    ],
   },
 ];
 
@@ -365,9 +370,12 @@ export const getBotCommand = (message: PlainMessage): BotCommand => {
 
   const [replyActivator] = replyText.split(' ');
 
+  // replyActivators will always start with # and end with :
+  const replyActivatorStd = replyActivator.slice(1, -1);
+
   const textActivatorCommand =
     BotCommandsDetails.find(b =>
-      b.textActivators.some(activator => replyActivator === activator)
+      b.textActivators.some(activator => replyActivatorStd === activator)
     ) || null;
 
   const shouldProcessTextCommand =
@@ -383,7 +391,7 @@ export const getBotCommand = (message: PlainMessage): BotCommand => {
       details: textActivatorCommand,
       isValid: true,
       type: 'text_command',
-      activator: textActivatorCommand ? replyActivator : null,
+      activator: textActivatorCommand ? replyActivatorStd : null,
     };
   }
 
