@@ -4,6 +4,8 @@ import { ChatMember } from './ChatMember';
 
 export interface IChatMemberSubCollection extends ISubCollection<ChatMember> {
   getInactive(since: Date): Promise<ChatMember[]>;
+  findByName(name: string): Promise<ChatMember[]>;
+  findByUsername(username: string): Promise<ChatMember>;
 }
 
 @Collection('chats')
