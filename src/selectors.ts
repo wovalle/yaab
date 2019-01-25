@@ -166,7 +166,7 @@ export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
   const command_directed_to_bot = group_types.includes(update.message.chat.type)
     ? /bendito(beta)?bot/i.test(msg.text)
     : true;
-
+  // TODO: Deprecate
   const entity_should_process =
     entity_type === 'bot_command' && command_directed_to_bot;
 
@@ -218,6 +218,7 @@ export enum BotCommands {
   list_protected = 'list_protected',
   remove_protected = 'remove_protected',
   enable_crush_mode = 'enable_crush_mode',
+  add_crush = 'add_crush',
   start = 'start',
   help = 'help',
 }
@@ -229,43 +230,49 @@ export enum BotCommandScope {
   channel = 'channel',
 }
 
-export interface IDetailedBotCommand {
+export interface IBotCommandDetail {
   admin: boolean;
   key: BotCommands;
   keyword: string;
   scopes: Array<BotCommandScope>;
+  textActivators: Array<string>;
 }
 
-const BotCommandsDetails: IDetailedBotCommand[] = [
+const BotCommandsDetails: IBotCommandDetail[] = [
   {
     admin: true,
     key: BotCommands.list_inactives,
     keyword: 'lobrechadore',
     scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+    textActivators: [],
   },
   {
     admin: true,
     key: BotCommands.remove_inactives,
     keyword: 'thanos',
     scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+    textActivators: [],
   },
   {
     admin: true,
     key: BotCommands.protect_user,
     keyword: 'delomio',
     scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+    textActivators: [],
   },
   {
     admin: true,
     key: BotCommands.remove_protected,
     keyword: 'baraja',
     scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+    textActivators: [],
   },
   {
     admin: true,
     key: BotCommands.list_protected,
     keyword: 'lodichoso',
     scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+    textActivators: [],
   },
   {
     admin: false,
@@ -276,28 +283,106 @@ const BotCommandsDetails: IDetailedBotCommand[] = [
       BotCommandScope.supergroup,
       BotCommandScope.private,
     ],
+    textActivators: [],
   },
   {
     admin: false,
     key: BotCommands.start,
     keyword: 'start',
     scopes: [BotCommandScope.private],
+    textActivators: [],
   },
   {
     admin: false,
     key: BotCommands.help,
     keyword: 'help',
     scopes: [BotCommandScope.private],
+    textActivators: [],
   },
 ];
 
-export const getBotCommand = (pm: PlainMessage) => {
-  const command = pm.text
-    .slice(pm.entities[0].offset + 1, pm.entities[0].length)
-    .replace(/@bendito(beta)?bot/i, '') //TODO: generalize
-    .trim();
+type CommandType = 'bot_command' | 'text_command';
 
-  return BotCommandsDetails.find(c => c.keyword === command) || null;
+export type BotCommand = {
+  args: string[];
+  type: CommandType;
+  isValid: boolean;
+  details: IBotCommandDetail;
+  activator: string;
+};
+
+// TODO: make constants
+const botRegex = /bendito(beta)?bot/i;
+
+export const getBotCommand = (message: PlainMessage): BotCommand => {
+  const {
+    chat_type,
+    text,
+    reply_from_is_bot,
+    reply_text,
+    reply_from_username,
+    entity_type,
+    is_reply,
+  } = message;
+  const groupScopes = [BotCommandScope.group, BotCommandScope.supergroup];
+  const replyText = reply_text || '';
+  const chatScope = chat_type as BotCommandScope;
+
+  const isBotCommandDirectedToBot = groupScopes.includes(chatScope)
+    ? botRegex.test(text)
+    : true;
+
+  const shouldProcessBotCommand =
+    entity_type === 'bot_command' && isBotCommandDirectedToBot;
+
+  if (shouldProcessBotCommand) {
+    const splittedText = text.trim().split(' ');
+    const [commandKeyword] = splittedText[0].split('@');
+
+    const details =
+      BotCommandsDetails.find(c => c.keyword === commandKeyword.slice(1)) ||
+      null;
+
+    return {
+      args: splittedText.slice(1),
+      details,
+      isValid: !!details,
+      type: 'bot_command',
+      activator: null,
+    };
+  }
+
+  const [replyActivator] = replyText.split(' ');
+
+  const textActivatorCommand =
+    BotCommandsDetails.find(b =>
+      b.textActivators.some(activator => replyActivator === activator)
+    ) || null;
+
+  const shouldProcessTextCommand =
+    textActivatorCommand &&
+    is_reply &&
+    reply_from_is_bot &&
+    botRegex.test(reply_from_username) &&
+    replyText;
+
+  if (shouldProcessTextCommand) {
+    return {
+      args: [text],
+      details: textActivatorCommand,
+      isValid: true,
+      type: 'text_command',
+      activator: textActivatorCommand ? replyActivator : null,
+    };
+  }
+
+  return {
+    args: [],
+    details: null,
+    isValid: false,
+    type: null,
+    activator: null,
+  };
 };
 
 export const getUserChatFromMember = (u: ChatMember): ModelChatMember => {

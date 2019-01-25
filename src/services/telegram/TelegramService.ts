@@ -1,8 +1,23 @@
-import { ITelegramService, ISendMessageOpts } from './ITelegramService';
+import {
+  ITelegramService,
+  ISendMessageOpts,
+  ParseMode,
+} from './ITelegramService';
 import { Message, ChatMember } from 'telegram-typings';
 import { getUnixTimeFromDate } from '../../utils';
 import { IHttp } from '../../Http';
 
+type ReplyMarkup = {
+  force_reply: boolean;
+};
+
+type TelegramHttpPayload = {
+  chat_id: string;
+  text: string;
+  parse_mode?: ParseMode;
+  reply_to_message_id?: string;
+  reply_markup?: ReplyMarkup;
+};
 export default class TelegramService implements ITelegramService {
   constructor(private key: string, private http: IHttp) {}
 
@@ -12,14 +27,20 @@ export default class TelegramService implements ITelegramService {
   async sendChat(
     chatId: string,
     message: string,
-    opts?: ISendMessageOpts
+    { force_reply, ...opts }: ISendMessageOpts = {}
   ): Promise<Message> {
     const url = this.buildUrl('sendMessage');
-    const payload = {
+    const payload: TelegramHttpPayload = {
       chat_id: chatId,
       text: message,
       ...opts,
     };
+
+    if (force_reply) {
+      payload.reply_markup = {
+        force_reply: true,
+      };
+    }
 
     const response = await this.http.post(url, payload);
     return response.result as Message;
@@ -50,5 +71,17 @@ export default class TelegramService implements ITelegramService {
   getMentionFromId(id: string, name: string, lastName?: string) {
     const fullName = lastName ? `${name} ${lastName}` : name;
     return `[${fullName}](tg://user?id=${id})`;
+  }
+
+  sendReply(
+    chatId: string,
+    replyMessageId: string,
+    message: string,
+    opts: ISendMessageOpts = {}
+  ) {
+    return this.sendChat(chatId, message, {
+      reply_to_message_id: replyMessageId,
+      ...opts,
+    });
   }
 }

@@ -27,7 +27,8 @@ export class SetProtectedHandler
 
   async Handle(payload: ITelegramHandlerPayload) {
     const pm = payload.plainMessage;
-    const shouldProtect = payload.command.key === BotCommands.protect_user;
+    const shouldProtect =
+      payload.command.details.key === BotCommands.protect_user;
 
     const chat = await this.chatRepository.findById(`${pm.chat_id}`);
 

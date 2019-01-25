@@ -1,3 +1,5 @@
+import { BotCommand } from './selectors';
+import { PlainMessage } from './models';
 import {
   Update,
   Document,
@@ -17,8 +19,6 @@ import {
   Message,
   SuccessfulPayment,
 } from 'telegram-typings';
-import { IDetailedBotCommand } from './selectors';
-import { PlainMessage } from './models';
 
 export enum UpdateType {
   message = 'message',
@@ -123,5 +123,5 @@ export enum UserStatus {
 
 export interface ITelegramHandlerPayload {
   plainMessage: PlainMessage;
-  command: IDetailedBotCommand;
+  command: BotCommand;
 }

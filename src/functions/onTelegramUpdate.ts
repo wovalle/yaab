@@ -41,54 +41,53 @@ export default async (
 
   await db.saveChatStat(pm, user, currentDate);
 
-  if (pm.entity_should_process) {
-    const command = getBotCommand(pm);
+  const command = getBotCommand(pm);
+
+  if (!command.isValid && command.type === 'bot_command') {
+    const errorId = 'commands.errors.invalid';
+    await service.sendReply(pm.chat_id, pm.message_id, i18n.t(errorId));
+  }
+
+  if (command.isValid) {
     const commandScope = pm.chat_type as BotCommandScope;
 
-    if (!command) {
-      const errorId = 'commands.errors.invalid';
-      await service.sendChat(pm.chat_id, i18n.t(errorId), {
-        reply_to_message_id: pm.message_id,
-      });
-
-      return;
-    } else if (!command.scopes.includes(commandScope)) {
+    if (!command.details.scopes.includes(commandScope)) {
       const errorId = 'commands.errors.wrong_scope';
 
-      const scopes = command.scopes
+      const scopes = command.details.scopes
         .map(s => i18n.t(`enums.scopes.${s}`))
         .join(', ');
 
       await service.sendChat(
         pm.chat_id,
-        i18n.t(errorId, { scopes, command: command.keyword }),
+        i18n.t(errorId, { scopes, command: command.details.keyword }),
         {
           reply_to_message_id: pm.message_id,
         }
       );
       return;
-    } else if (command.admin && user.role !== UserRole.admin) {
+    } else if (command.details.admin && user.role !== UserRole.admin) {
       const errorId = 'commands.errors.forbidden';
-      await service.sendChat(
+      await service.sendReply(
         pm.chat_id,
-        i18n.t(errorId, { cmd: command.key }),
-        {
-          reply_to_message_id: pm.message_id,
-        }
+        pm.message_id,
+        i18n.t(errorId, { cmd: command.details.key })
       );
       return;
     } else {
       try {
-        await mediator.Send(command.key, {
+        await mediator.Send(command.details.key, {
           plainMessage: pm,
           command,
         });
       } catch (error) {
         console.error('Error on Telegram Update', error);
 
-        await service.sendChat(pm.chat_id, i18n.t('commands.errors.internal'), {
-          reply_to_message_id: pm.message_id,
-        });
+        await service.sendReply(
+          pm.chat_id,
+          pm.message_id,
+          i18n.t('commands.errors.internal')
+        );
       }
     }
   }
