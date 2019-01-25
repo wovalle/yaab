@@ -299,6 +299,17 @@ const BotCommandsDetails: IBotCommandDetail[] = [
     scopes: [BotCommandScope.private],
     textActivators: [],
   },
+  {
+    admin: false,
+    key: BotCommands.add_crush,
+    keyword: 'addcrush',
+    scopes: [
+      BotCommandScope.private,
+      BotCommandScope.group,
+      BotCommandScope.supergroup,
+    ],
+    textActivators: ['addcrush', 'commands.addcrush.init'],
+  },
 ];
 
 type CommandType = 'bot_command' | 'text_command';
