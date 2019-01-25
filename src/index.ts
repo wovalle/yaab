@@ -46,6 +46,7 @@ import { RemoveInactivesHandler } from './Commands/RemoveInactivesHandler';
 import { EnableCrushModeHandler } from './Commands/EnableCrushModeHandler';
 import { StartHandler } from './Commands/StartHandler';
 import { HelpHandler } from './Commands/HelpHandler';
+import { AddCrushHandler } from './Commands/AddCrush';
 
 ListProtectedHandler.name;
 ListInactiveHandler.name;
@@ -56,6 +57,7 @@ StartHandler.name;
 HelpHandler.name;
 Chat.name;
 ChatMemberRepository.name;
+AddCrushHandler.name;
 
 export const importUsersInternalFn = functions.https.onRequest(
   async (req, res) => {
@@ -141,7 +143,7 @@ export const onTelegramUpdateFn = functions.https.onRequest(
   async (req, res) => {
     const update: Update = req.body;
 
-    logger.log('Update:', update);
+    logger.log('Update:', JSON.stringify(update, null, 2));
     if (!update) {
       return res.status(400).send('`message` parameter is required');
     }
