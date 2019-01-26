@@ -138,6 +138,7 @@ export const getPlainMessage = (baseUpdate: Update): PlainMessage => {
 
   if (update.type === UpdateType.callback_query) {
     root = update.callback_query.message;
+    root.reply_to_message = update.callback_query.message;
     root.from = update.callback_query.from;
     callback_data = update.callback_query.data;
   } else {
@@ -322,7 +323,7 @@ const BotCommandsDetails: IBotCommandDetail[] = [
     textActivators: [
       'crush_search',
       'crush_found',
-      'crush_not_found',
+      'crush_uname_not_found',
       'crush_not_found',
     ],
   },
@@ -354,7 +355,8 @@ export const getBotCommand = (message: PlainMessage): BotCommand => {
     callback_data,
   } = message;
   const groupScopes = [BotCommandScope.group, BotCommandScope.supergroup];
-  const replyText = reply_text || '';
+  // callback queries store info in text
+  const replyText = callback_data ? text : reply_text || '';
   const chatScope = chat_type as BotCommandScope;
 
   const isBotCommandDirectedToBot = groupScopes.includes(chatScope)
@@ -392,12 +394,14 @@ export const getBotCommand = (message: PlainMessage): BotCommand => {
       b.textActivators.some(activator => replyActivatorStd === activator)
     ) || null;
 
+  const isReplyFromBot =
+    reply_from_is_bot && botRegex.test(reply_from_username);
+
   const shouldProcessTextCommand =
     textActivatorCommand &&
     is_reply &&
-    reply_from_is_bot &&
-    botRegex.test(reply_from_username) &&
-    replyText;
+    replyText &&
+    (!!callback_data || isReplyFromBot);
 
   if (shouldProcessTextCommand) {
     return {

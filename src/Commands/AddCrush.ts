@@ -20,7 +20,7 @@ export class AddCrushHandler
     search: 'crush_search',
     usernameNotFound: 'crush_uname_not_found',
     searchNotFound: 'crush_not_found',
-    crushFound: 'crush_found',
+    usersFound: 'crush_found',
   };
 
   constructor() {
@@ -68,18 +68,25 @@ export class AddCrushHandler
       const usersKeyboard = users.map(u => {
         let text = u.first_name;
         text = u.last_name ? `${text} ${u.last_name}` : '';
-        text = u.username ? `${text} (${u.last_name})` : '';
+        text = u.username ? `${text} (${u.username})` : '';
         return { text, callback_data: u.id };
       });
 
       return this.telegramService.sendReplyKeyboard(
         payload.plainMessage.chat_id,
-        payload.plainMessage.message_id,
+        this.withActivator(
+          this.activators.usersFound,
+          'commands.add_crush.users_found'
+        ),
         usersKeyboard,
         {
-          parse_mode: ParseMode.Markdown,
           force_reply: true,
         }
+      );
+    } else if (payload.command.activator === this.activators.usersFound) {
+      return this.telegramService.sendChat(
+        payload.plainMessage.chat_id,
+        'commands.addcrush.successful'
       );
     }
 
