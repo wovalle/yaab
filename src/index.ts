@@ -7,35 +7,55 @@ import updateLastMessageBetweenDates from './functions/updateLastMessageBetweenD
 import fetchInactiveUsersWithinTimeframe from './functions/fetchInactiveUsersWithinTimeframe';
 import onTelegramUpdate from './functions/onTelegramUpdate';
 import TelegramService from './services/telegram';
-import { ChatRepository, ChatMemberRepository } from './Repositories';
+import {
+  ChatRepository,
+  ChatMemberRepository,
+  CrushRelationshipRepository,
+} from './Repositories';
 import DbSingleton, { Db } from './db';
 import Http from './Http';
 import I18nProvider from './I18nProvider';
 import * as translations from './translations.json';
 import { Update } from 'telegram-typings';
 import { Container, Token } from 'typedi';
+import PermanentStore from './services/PermanentStore';
 
 const logger = console;
 const db = DbSingleton.getInstance();
 const telegramKey = functions.config().telegram.key;
+const storageOpts = functions.config().permanent_store;
 const http = new Http();
 const i18n = new I18nProvider(translations);
 const telegramService = new TelegramService(telegramKey, http);
+
+const permanentStore = new PermanentStore(
+  http,
+  storageOpts.url,
+  storageOpts.user,
+  storageOpts.pass
+);
 
 const getDate = () => new Date();
 
 // Section: fireorm
 import { Chat } from './models/Chat';
+import { CrushRelationship } from './Models/CrushRelationship';
 import { getRepository } from 'fireorm';
 
 const chatRepository = getRepository(Chat, db._db);
+const crushRelationshipRepository = getRepository(CrushRelationship, db._db);
 export const ChatRepositoryToken = new Token<ChatRepository>('ChatRepository');
+export const CrushRelationshipRepositoryToken = new Token<
+  CrushRelationshipRepository
+>('CrushRelationshipRepository');
 
 // Section: initialize ioc
 Container.set(TelegramService, telegramService);
 Container.set(Db, db);
 Container.set(I18nProvider, i18n);
 Container.set(ChatRepositoryToken, chatRepository);
+Container.set(CrushRelationshipRepositoryToken, crushRelationshipRepository);
+Container.set(PermanentStore, permanentStore);
 Container.set('getCurrentDate', getDate);
 
 // Section: initialize commands
@@ -149,11 +169,19 @@ export const onTelegramUpdateFn = functions.https.onRequest(
     }
 
     try {
-      await onTelegramUpdate(db, update, telegramService, i18n, getDate());
+      await onTelegramUpdate(
+        db,
+        update,
+        telegramService,
+        i18n,
+        getDate(),
+        permanentStore
+      );
 
       return res.send({ ok: true });
     } catch (error) {
-      logger.error(error, update);
+      logger.error(error);
+      logger.error(JSON.stringify(update, null, 2));
       return res.status(200).send({ ok: false });
     }
   }

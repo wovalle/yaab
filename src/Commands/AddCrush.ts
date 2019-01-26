@@ -1,12 +1,14 @@
 import { Handler, ICommandHandler } from 'tsmediator';
 import Container from 'typedi';
+import * as faker from 'faker';
 
 import TelegramService from '../services/telegram/TelegramService';
 import { BotCommands } from '../selectors';
 import I18nProvider from '../I18nProvider';
 import { ITelegramHandlerPayload } from '../types';
-import { ChatRepository } from '../Repositories';
-import { ChatRepositoryToken } from '..';
+import { ChatRepository, CrushRelationshipRepository } from '../Repositories';
+import { ChatRepositoryToken, CrushRelationshipRepositoryToken } from '..';
+import { CrushRelationship } from '../models/CrushRelationship';
 
 @Handler(BotCommands.add_crush)
 export class AddCrushHandler
@@ -14,6 +16,7 @@ export class AddCrushHandler
   private telegramService: TelegramService;
   private i18n: I18nProvider;
   private chatRepository: ChatRepository;
+  private crushRelationshipRepository: CrushRelationshipRepository;
 
   private activators = {
     search: 'crush_search',
@@ -26,6 +29,9 @@ export class AddCrushHandler
     this.telegramService = Container.get(TelegramService);
     this.i18n = Container.get(I18nProvider);
     this.chatRepository = Container.get(ChatRepositoryToken);
+    this.crushRelationshipRepository = Container.get(
+      CrushRelationshipRepositoryToken
+    );
   }
 
   async Handle(payload: ITelegramHandlerPayload) {
@@ -70,15 +76,57 @@ export class AddCrushHandler
         .forceReply()
         .send();
     } else if (payload.command.activator === this.activators.usersFound) {
-      await this.telegramService.deleteMessage(
-        payload.plainMessage.chat_id,
-        payload.plainMessage.message_id
+      const chat = await this.chatRepository.findById(
+        payload.plainMessage.chat_id
       );
 
-      return this.telegramService
-        .buildMessage(this.i18n.t('commands.add_crush.successful'))
+      const user = await chat.users.findById(payload.command.callback_data);
+
+      if (user.crush_status === 'disabled') {
+        // TODO: build getter
+        let name = user.first_name;
+        name = user.last_name ? name.concat(` ${user.last_name}`) : name;
+
+        return this.telegramService
+          .buildMessage(this.i18n.t('commands.add_crush.invalid', { name }))
+          .to(payload.plainMessage.chat_id)
+          .send();
+      }
+
+      const existingCrushRelationship = await this.crushRelationshipRepository
+        .whereEqualTo('chat_id', payload.plainMessage.chat_id)
+        .whereEqualTo('user_id', payload.plainMessage.from_id)
+        .whereEqualTo('crush_id', payload.plainMessage.callback_data)
+        .find();
+
+      if (existingCrushRelationship.length) {
+        return this.telegramService
+          .buildMessage(this.i18n.t('commands.add_crush.duplicated'))
+          .to(payload.plainMessage.chat_id)
+          .send();
+      }
+
+      const crushRelationship = new CrushRelationship();
+      const nickname = faker.internet.userName();
+      crushRelationship.chat_id = payload.plainMessage.chat_id;
+      crushRelationship.user_id = payload.plainMessage.from_id;
+      crushRelationship.crush_id = payload.plainMessage.callback_data;
+      crushRelationship.user_nickname = nickname;
+
+      await this.crushRelationshipRepository.create(crushRelationship);
+
+      await this.telegramService
+        .buildMessage(
+          this.i18n.t('commands.add_crush.successful', { nickname })
+        )
         .to(payload.plainMessage.chat_id)
         .send();
+
+      await this.telegramService
+        .buildMessage(this.i18n.t('commands.add_crush.new_crush', { nickname }))
+        .to(payload.plainMessage.callback_data)
+        .send();
+      return Promise.resolve();
     }
 
     return Promise.reject('Invalid Path');

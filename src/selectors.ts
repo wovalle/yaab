@@ -424,6 +424,31 @@ export const getBotCommand = (message: PlainMessage): BotCommand => {
   };
 };
 
+export const getUserSearchKeywords = (u: ChatMember): string[] => {
+  let keywords = [];
+
+  const getVariations = (key: string): string[] => {
+    return key
+      .toLowerCase()
+      .split('')
+      .reduce((acc, _, i) => acc.concat(key.slice(0, i + 1)), []);
+  };
+
+  keywords = u.user.first_name
+    ? keywords.concat(getVariations(u.user.first_name))
+    : keywords;
+
+  keywords = u.user.last_name
+    ? keywords.concat(getVariations(u.user.last_name))
+    : keywords;
+
+  keywords = u.user.username
+    ? keywords.concat(getVariations(u.user.username))
+    : keywords;
+
+  return Array.from(new Set(keywords));
+};
+
 export const getUserChatFromMember = (u: ChatMember): ModelChatMember => {
   return {
     id: `${u.user.id}`,
@@ -435,5 +460,7 @@ export const getUserChatFromMember = (u: ChatMember): ModelChatMember => {
     last_message: null,
     username: u.user.username,
     status: u.status,
+    crush_status: 'enabled',
+    search_keywords: getUserSearchKeywords(u),
   };
 };

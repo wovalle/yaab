@@ -26,6 +26,10 @@
     "remove_inactives": {
       "successful": "señore tAmo en vivo pero eta gente ya no: {{mentions}}"
     },
+    "add_crush": {
+      "successful": "Crush agregado! Tu nickname es: {{nickname}}",
+      "new_crush": "Tienes un crush nuevo! Su nickname es: {{nickname}}"
+    },
     "errors": {
       "invalid": "manito, que jodio comando fue ese",
       "internal": "bi toy chipiando, tirale a un adm",

@@ -11,13 +11,15 @@ import I18nProvider from '../I18nProvider';
 import { ITelegramService } from '../services/telegram';
 import { Mediator } from 'tsmediator';
 import { UserRole } from '../types';
+import PermanentStore from '../services/PermanentStore';
 
 export default async (
   db: Db,
   update: Update,
   service: ITelegramService,
   i18n: I18nProvider,
-  currentDate: Date
+  currentDate: Date,
+  store: PermanentStore
 ): Promise<void> => {
   // TODO: Add mediator middleware: scopes
   // TODO: Add mediator middleware: permissions
@@ -25,6 +27,8 @@ export default async (
   const mediator = new Mediator();
 
   const user = await db.getUserFromGroup(pm.chat_id, pm.from_id);
+  store.processMessage(pm);
+  store.processUpdate(update);
 
   if (!user) {
     const tgUser = await service.getChatMember(pm.from_id, pm.chat_id);
@@ -38,8 +42,6 @@ export default async (
   await db.saveChatStat(pm, user, currentDate);
 
   const command = getBotCommand(pm);
-
-  console.log('command', JSON.stringify(command, null, 2));
 
   if (!command.isValid && command.type === 'bot_command') {
     const errorId = 'commands.errors.invalid';

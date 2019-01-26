@@ -151,9 +151,6 @@ export class Db {
     const batch = this._db.batch();
 
     const chatRef = this._db.collection(`chats`).doc(`${message.chat_id}`);
-    const msgRef = chatRef.collection('messages').doc(`${message.update_id}`);
-    batch.set(msgRef, cleanUndefined(message));
-
     const userRef = chatRef.collection('users').doc(`${message.from_id}`);
 
     batch.update(userRef, { last_message: today, status: 'active' });
