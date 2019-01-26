@@ -89,10 +89,10 @@ export default class TelegramService implements ITelegramService {
   sendReply(
     chatId: string,
     replyMessageId: string,
-    message: string,
+    text: string,
     opts: ISendMessageOpts = {}
   ) {
-    return this.sendChat(chatId, message, {
+    return this.sendChat(chatId, text, {
       reply_to_message_id: replyMessageId,
       ...opts,
     });

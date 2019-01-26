@@ -28,20 +28,15 @@ export class AddCrushHandler
     this.chatRepository = Container.get(ChatRepositoryToken);
   }
 
-  withActivator(activator: string, label: string, opts?: any) {
-    return `#${activator}: ${this.i18n.t(label, opts)}`;
-  }
-
   async Handle(payload: ITelegramHandlerPayload) {
     if (payload.command.type === 'bot_command') {
-      return this.telegramService.sendReply(
-        payload.plainMessage.chat_id,
-        payload.plainMessage.message_id,
-        this.withActivator(this.activators.search, 'commands.addcrush.search'),
-        {
-          force_reply: true,
-        }
-      );
+      return this.telegramService
+        .buildMessage(this.i18n.t('commands.addcrush.search'))
+        .to(payload.plainMessage.chat_id)
+        .replyTo(payload.plainMessage.message_id)
+        .withActivator(this.activators.search)
+        .forceReply()
+        .send();
     } else if (payload.command.activator === this.activators.search) {
       // TODO: constant group id
       const chat = await this.chatRepository.findById(
