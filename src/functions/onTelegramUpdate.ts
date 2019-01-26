@@ -2,7 +2,6 @@ import { Db } from '../db';
 import { Update } from 'telegram-typings';
 import {
   getPlainMessage,
-  getUpdateWithType,
   getBotCommand,
   getUserChatFromMember,
   BotCommandScope,
@@ -20,12 +19,9 @@ export default async (
   i18n: I18nProvider,
   currentDate: Date
 ): Promise<void> => {
-  // TODO: get rid of typedUpdate
   // TODO: Add mediator middleware: scopes
   // TODO: Add mediator middleware: permissions
-
-  const typedUpdate = getUpdateWithType(update);
-  const pm = getPlainMessage(typedUpdate);
+  const pm = getPlainMessage(update);
   const mediator = new Mediator();
 
   const user = await db.getUserFromGroup(pm.chat_id, pm.from_id);

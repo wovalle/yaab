@@ -1,4 +1,4 @@
-import { Update, ChatMember } from 'telegram-typings';
+import { Update, ChatMember, Message } from 'telegram-typings';
 import {
   TypedUpdate,
   PlainMedia,
@@ -47,8 +47,7 @@ export const getUpdateWithType = (update: Update): TypedUpdate => {
   return { type, id, ...update };
 };
 
-export const getPlainMediaType = (update: TypedUpdate): PlainMedia => {
-  const msg = update.message;
+export const getPlainMediaType = (msg: Message): PlainMedia => {
   const is_audio = msg.audio && msg.audio.file_id !== '';
   const is_document = msg.document && msg.document.file_id !== '';
   const is_animation = msg.animation && msg.animation.file_id !== '';
@@ -81,113 +80,124 @@ export const getPlainMediaType = (update: TypedUpdate): PlainMedia => {
 
 export const getUpdateEvent = (
   // tslint:disable-next-line:no-shadowed-variable
-  update: TypedUpdate
+  message: Message
 ): { type: EventType; data: EventData } => {
   let type: EventType = null;
   let data: EventData = null;
 
-  if (update.message.new_chat_members) {
+  if (message.new_chat_members) {
     type = EventType.new_chat_members;
-    data = update.message.new_chat_members;
-  } else if (update.message.left_chat_member) {
+    data = message.new_chat_members;
+  } else if (message.left_chat_member) {
     type = EventType.left_chat_member;
-    data = update.message.left_chat_member;
-  } else if (update.message.new_chat_title) {
+    data = message.left_chat_member;
+  } else if (message.new_chat_title) {
     type = EventType.new_chat_title;
-    data = update.message.new_chat_title;
-  } else if (update.message.new_chat_photo) {
+    data = message.new_chat_title;
+  } else if (message.new_chat_photo) {
     type = EventType.new_chat_photo;
-    data = update.message.new_chat_photo;
-  } else if (update.message.delete_chat_photo) {
+    data = message.new_chat_photo;
+  } else if (message.delete_chat_photo) {
     type = EventType.delete_chat_photo;
-    data = update.message.delete_chat_photo;
-  } else if (update.message.supergroup_chat_created) {
+    data = message.delete_chat_photo;
+  } else if (message.supergroup_chat_created) {
     type = EventType.supergroup_chat_created;
-    data = update.message.supergroup_chat_created;
-  } else if (update.message.channel_chat_created) {
+    data = message.supergroup_chat_created;
+  } else if (message.channel_chat_created) {
     type = EventType.channel_chat_created;
-    data = update.message.channel_chat_created;
-  } else if (update.message.migrate_to_chat_id) {
+    data = message.channel_chat_created;
+  } else if (message.migrate_to_chat_id) {
     type = EventType.migrate_to_chat_id;
-    data = update.message.migrate_to_chat_id;
-  } else if (update.message.migrate_from_chat_id) {
+    data = message.migrate_to_chat_id;
+  } else if (message.migrate_from_chat_id) {
     type = EventType.migrate_from_chat_id;
-    data = update.message.migrate_from_chat_id;
-  } else if (update.message.pinned_message) {
+    data = message.migrate_from_chat_id;
+  } else if (message.pinned_message) {
     type = EventType.pinned_message;
-    data = update.message.pinned_message;
-  } else if (update.message.successful_payment) {
+    data = message.pinned_message;
+  } else if (message.successful_payment) {
     type = EventType.successful_payment;
-    data = update.message.successful_payment;
+    data = message.successful_payment;
   }
 
   return { type, data };
 };
 
+const supportedTypes = [UpdateType.message, UpdateType.callback_query];
+
 // TODO: extract class and add convenient methods like isGroup, isCommand
-export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
-  const msg = update.message;
-  const is_entity = !!msg.entities && msg.entities.length > 0;
-  const entity_type = is_entity ? msg.entities[0].type : null;
-  const is_forward = msg.forward_from && msg.forward_from.id > 0;
-  const forward_message_id = is_forward ? msg.forward_from_message_id : null;
-  const forward_from_id = is_forward ? msg.forward_from.id : null;
-  const forward_from_is_bot = is_forward ? msg.forward_from.is_bot : null;
+export const getPlainMessage = (baseUpdate: Update): PlainMessage => {
+  const update = getUpdateWithType(baseUpdate);
+
+  if (!supportedTypes.includes(update.type)) {
+    throw new Error(`Update (${update.type}) is not currently supported`);
+  }
+
+  let root: Message = null;
+  let callback_data: string = null;
+
+  if (update.type === UpdateType.callback_query) {
+    root = update.callback_query.message;
+    root.from = update.callback_query.from;
+    callback_data = update.callback_query.data;
+  } else {
+    root = update.message;
+  }
+
+  const is_entity = !!root.entities && root.entities.length > 0;
+  const entity_type = is_entity ? root.entities[0].type : null;
+  const is_forward = root.forward_from && root.forward_from.id > 0;
+  const forward_message_id = is_forward ? root.forward_from_message_id : null;
+  const forward_from_id = is_forward ? root.forward_from.id : null;
+  const forward_from_is_bot = is_forward ? root.forward_from.is_bot : null;
   const forward_from_first_name = is_forward
-    ? msg.forward_from.first_name
+    ? root.forward_from.first_name
     : null;
-  const forward_from_last_name = is_forward ? msg.forward_from.last_name : null;
-  const forward_from_username = is_forward ? msg.forward_from.username : null;
-  const is_reply = msg.reply_to_message && msg.reply_to_message.message_id > 0;
-  const reply_message_id = is_reply ? msg.reply_to_message.message_id : null;
-  const reply_text = is_reply ? msg.reply_to_message.text : null;
-  const reply_from_id = is_reply ? msg.reply_to_message.from.id : null;
-  const reply_from_is_bot = is_reply ? msg.reply_to_message.from.is_bot : null;
+  const forward_from_last_name = is_forward
+    ? root.forward_from.last_name
+    : null;
+  const forward_from_username = is_forward ? root.forward_from.username : null;
+  const is_reply =
+    root.reply_to_message && root.reply_to_message.message_id > 0;
+  const reply_message_id = is_reply ? root.reply_to_message.message_id : null;
+  const reply_text = is_reply ? root.reply_to_message.text : null;
+  const reply_from_id = is_reply ? root.reply_to_message.from.id : null;
+  const reply_from_is_bot = is_reply ? root.reply_to_message.from.is_bot : null;
   const reply_from_first_name = is_reply
-    ? msg.reply_to_message.from.first_name
+    ? root.reply_to_message.from.first_name
     : null;
   const reply_from_last_name = is_reply
-    ? msg.reply_to_message.from.last_name
+    ? root.reply_to_message.from.last_name
     : null;
   const reply_from_username = is_reply
-    ? msg.reply_to_message.from.username
+    ? root.reply_to_message.from.username
     : null;
 
-  const plain_media_type = getPlainMediaType(update);
+  const plain_media_type = getPlainMediaType(root);
   const is_plain_media = plain_media_type !== null;
 
-  const update_event = getUpdateEvent(update);
+  const update_event = getUpdateEvent(root);
   const event_type = update_event.type;
   const is_event = update_event !== null;
   const event_data = update_event.data;
 
-  const group_types = ['group', 'supergroup', 'channels'];
-
-  const command_directed_to_bot = group_types.includes(update.message.chat.type)
-    ? /bendito(beta)?bot/i.test(msg.text)
-    : true;
-  // TODO: Deprecate
-  const entity_should_process =
-    entity_type === 'bot_command' && command_directed_to_bot;
-
   return {
     id: `${update.id}`,
     update_id: `${update.update_id}`,
-    message_id: `${msg.message_id}`,
-    date: new Date(msg.date * 1000),
-    text: msg.text,
-    from_id: `${msg.from.id}`,
-    from_is_bot: msg.from.is_bot,
-    from_first_name: msg.from.first_name,
-    from_last_name: msg.from.last_name,
-    from_username: msg.from.username,
-    chat_id: `${msg.chat.id}`,
-    chat_type: msg.chat.type,
-    chat_title: msg.chat.title,
+    message_id: `${root.message_id}`,
+    date: new Date(root.date * 1000),
+    text: root.text,
+    from_id: `${root.from.id}`,
+    from_is_bot: root.from.is_bot,
+    from_first_name: root.from.first_name,
+    from_last_name: root.from.last_name,
+    from_username: root.from.username,
+    chat_id: `${root.chat.id}`,
+    chat_type: root.chat.type,
+    chat_title: root.chat.title,
     is_entity,
     entity_type,
-    entity_should_process,
-    entities: msg.entities,
+    entities: root.entities,
     is_forward,
     forward_message_id: `${forward_message_id}`,
     forward_from_id: `${forward_from_id}`,
@@ -208,6 +218,7 @@ export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
     is_event,
     event_type,
     event_data,
+    callback_data,
   };
 };
 
