@@ -3,10 +3,12 @@ import {
   ISendMessageOpts,
   ParseMode,
   IReplyKeyboardOptions,
+  MessageBuilderProps,
 } from './ITelegramService';
 import { Message, ChatMember } from 'telegram-typings';
 import { getUnixTimeFromDate } from '../../utils';
 import { IHttp } from '../../Http';
+import MessageBuilder from '../../MessageBuilder';
 
 type ReplyMarkup = {
   force_reply?: boolean;
@@ -28,30 +30,23 @@ export default class TelegramService implements ITelegramService {
 
   async sendChat(
     chatId: string,
-    message: string,
+    text: string,
     { force_reply, keyboard, ...opts }: ISendMessageOpts = {}
   ): Promise<Message> {
-    const url = this.buildUrl('sendMessage');
-    const payload: TelegramHttpPayload = {
-      chat_id: chatId,
-      text: message,
-      ...opts,
+    const props: MessageBuilderProps = {
+      chatId,
+      text,
     };
 
-    if (force_reply || keyboard) {
-      payload.reply_markup = {};
-    }
-
     if (force_reply) {
-      payload.reply_markup.force_reply = true;
+      props.forceReply = true;
     }
 
     if (keyboard) {
-      payload.reply_markup.inline_keyboard = keyboard;
+      props.replyKeyboard = keyboard;
     }
 
-    const response = await this.http.post(url, payload);
-    return response.result as Message;
+    return this.sendRawMessage(props);
   }
 
   async kickUser(userId: string, chatId: string, until: Date): Promise<void> {
@@ -103,15 +98,35 @@ export default class TelegramService implements ITelegramService {
     });
   }
 
-  sendReplyKeyboard(
-    chatId: string,
-    message: string,
-    options: IReplyKeyboardOptions[],
-    opts: ISendMessageOpts = {}
-  ) {
-    return this.sendChat(chatId, message, {
-      keyboard: [options],
-      ...opts,
-    });
+  buildMessage(text: string) {
+    return new MessageBuilder(this, text);
+  }
+
+  async sendRawMessage(props: MessageBuilderProps): Promise<Message> {
+    const url = this.buildUrl('sendMessage');
+    const payload: TelegramHttpPayload = {
+      chat_id: props.chatId,
+      text: props.text,
+      reply_markup: {},
+    };
+
+    if (props.parseMode) {
+      payload.parse_mode = props.parseMode;
+    }
+
+    if (props.replyKeyboard) {
+      payload.reply_markup.inline_keyboard = [props.replyKeyboard];
+    }
+
+    if (props.forceReply) {
+      payload.reply_markup.force_reply = true;
+    }
+
+    if (props.activator) {
+      payload.text = `#${props.activator}: ${props.text}`;
+    }
+
+    const response = await this.http.post(url, payload);
+    return response.result as Message;
   }
 }

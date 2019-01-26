@@ -13,8 +13,18 @@ export interface ISendMessageOpts {
   parse_mode?: ParseMode;
   reply_to_message_id?: string;
   force_reply?: boolean;
-  keyboard?: [IReplyKeyboardOptions[]];
+  keyboard?: IReplyKeyboardOptions[];
 }
+
+export type MessageBuilderProps = {
+  chatId?: string;
+  text?: string;
+  forceReply?: boolean;
+  replyKeyboard?: IReplyKeyboardOptions[];
+  parseMode?: ParseMode;
+  replyTo?: string;
+  activator?: string;
+};
 
 export interface ITelegramService {
   sendChat(
@@ -31,10 +41,5 @@ export interface ITelegramService {
   kickUser(userId: string, chatId: string, until: Date): Promise<void>;
   getChatMember(userId: string, chatId: string): Promise<ChatMember>;
   getMentionFromId(id: string, name: string, lastName?: string): string;
-  sendReplyKeyboard(
-    chatId: string,
-    message: string,
-    options: IReplyKeyboardOptions[],
-    opts?: ISendMessageOpts
-  );
+  sendRawMessage(props: MessageBuilderProps): Promise<Message>;
 }

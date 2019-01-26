@@ -51,17 +51,13 @@ export class AddCrushHandler
       const users = await chat.users.findByName(payload.plainMessage.text);
 
       if (!users.length) {
-        return this.telegramService.sendReply(
-          payload.plainMessage.chat_id,
-          payload.plainMessage.message_id,
-          this.withActivator(
-            this.activators.search,
-            'commands.add_crush.not_found'
-          ),
-          {
-            force_reply: true,
-          }
-        );
+        return this.telegramService
+          .buildMessage(this.i18n.t('commands.add_crush.not_found'))
+          .to(payload.plainMessage.chat_id)
+          .withActivator(this.activators.search)
+          .replyTo(payload.plainMessage.message_id)
+          .forceReply()
+          .send();
       }
 
       const usersKeyboard = users.map(u => {
@@ -71,26 +67,23 @@ export class AddCrushHandler
         return { text, callback_data: u.id };
       });
 
-      return this.telegramService.sendReplyKeyboard(
-        payload.plainMessage.chat_id,
-        this.withActivator(
-          this.activators.usersFound,
-          'commands.add_crush.users_found'
-        ),
-        usersKeyboard,
-        {
-          force_reply: true,
-        }
-      );
+      return this.telegramService
+        .buildMessage(this.i18n.t('commands.add_crush.users_found'))
+        .to(payload.plainMessage.chat_id)
+        .withActivator(this.activators.usersFound)
+        .withKeyboard(usersKeyboard)
+        .forceReply()
+        .send();
     } else if (payload.command.activator === this.activators.usersFound) {
       await this.telegramService.deleteMessage(
         payload.plainMessage.chat_id,
         payload.plainMessage.message_id
       );
-      return this.telegramService.sendChat(
-        payload.plainMessage.chat_id,
-        'commands.addcrush.successful'
-      );
+
+      return this.telegramService
+        .buildMessage(this.i18n.t('commands.add_crush.successful'))
+        .to(payload.plainMessage.chat_id)
+        .send();
     }
 
     return Promise.reject('Invalid Path');
