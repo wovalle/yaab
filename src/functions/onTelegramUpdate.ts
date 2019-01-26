@@ -39,6 +39,8 @@ export default async (
 
   const command = getBotCommand(pm);
 
+  console.log('command', JSON.stringify(command, null, 2));
+
   if (!command.isValid && command.type === 'bot_command') {
     const errorId = 'commands.errors.invalid';
     await service.sendReply(pm.chat_id, pm.message_id, i18n.t(errorId));
@@ -77,7 +79,10 @@ export default async (
           command,
         });
       } catch (error) {
-        console.error('Error on Telegram Update', error);
+        console.error(
+          'Error on Telegram Update',
+          JSON.stringify(error, null, 2)
+        );
 
         await service.sendReply(
           pm.chat_id,

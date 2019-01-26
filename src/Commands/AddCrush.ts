@@ -65,14 +65,17 @@ export class AddCrushHandler
         );
       }
 
-      const userMention = users.map(u =>
-        this.telegramService.getMentionFromId(u.id, u.first_name, u.last_name)
-      );
+      const usersKeyboard = users.map(u => {
+        let text = u.first_name;
+        text = u.last_name ? `${text} ${u.last_name}` : '';
+        text = u.username ? `${text} (${u.last_name})` : '';
+        return { text, callback_data: u.id };
+      });
 
-      return this.telegramService.sendReply(
+      return this.telegramService.sendReplyKeyboard(
         payload.plainMessage.chat_id,
         payload.plainMessage.message_id,
-        userMention.join(','),
+        usersKeyboard,
         {
           parse_mode: ParseMode.Markdown,
           force_reply: true,

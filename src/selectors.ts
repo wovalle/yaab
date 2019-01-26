@@ -336,6 +336,7 @@ export type BotCommand = {
   isValid: boolean;
   details: IBotCommandDetail;
   activator: string;
+  callback_data: string;
 };
 
 // TODO: make constants
@@ -350,6 +351,7 @@ export const getBotCommand = (message: PlainMessage): BotCommand => {
     reply_from_username,
     entity_type,
     is_reply,
+    callback_data,
   } = message;
   const groupScopes = [BotCommandScope.group, BotCommandScope.supergroup];
   const replyText = reply_text || '';
@@ -376,6 +378,7 @@ export const getBotCommand = (message: PlainMessage): BotCommand => {
       isValid: !!details,
       type: 'bot_command',
       activator: null,
+      callback_data,
     };
   }
 
@@ -403,6 +406,7 @@ export const getBotCommand = (message: PlainMessage): BotCommand => {
       isValid: true,
       type: 'text_command',
       activator: textActivatorCommand ? replyActivatorStd : null,
+      callback_data,
     };
   }
 
@@ -412,6 +416,7 @@ export const getBotCommand = (message: PlainMessage): BotCommand => {
     isValid: false,
     type: null,
     activator: null,
+    callback_data,
   };
 };
 

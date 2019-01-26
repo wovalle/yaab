@@ -2,13 +2,15 @@ import {
   ITelegramService,
   ISendMessageOpts,
   ParseMode,
+  IReplyKeyboardOptions,
 } from './ITelegramService';
 import { Message, ChatMember } from 'telegram-typings';
 import { getUnixTimeFromDate } from '../../utils';
 import { IHttp } from '../../Http';
 
 type ReplyMarkup = {
-  force_reply: boolean;
+  force_reply?: boolean;
+  inline_keyboard?: [IReplyKeyboardOptions[]];
 };
 
 type TelegramHttpPayload = {
@@ -27,7 +29,7 @@ export default class TelegramService implements ITelegramService {
   async sendChat(
     chatId: string,
     message: string,
-    { force_reply, ...opts }: ISendMessageOpts = {}
+    { force_reply, keyboard, ...opts }: ISendMessageOpts = {}
   ): Promise<Message> {
     const url = this.buildUrl('sendMessage');
     const payload: TelegramHttpPayload = {
@@ -36,10 +38,16 @@ export default class TelegramService implements ITelegramService {
       ...opts,
     };
 
+    if (force_reply || keyboard) {
+      payload.reply_markup = {};
+    }
+
     if (force_reply) {
-      payload.reply_markup = {
-        force_reply: true,
-      };
+      payload.reply_markup.force_reply = true;
+    }
+
+    if (keyboard) {
+      payload.reply_markup.inline_keyboard = keyboard;
     }
 
     const response = await this.http.post(url, payload);
@@ -81,6 +89,18 @@ export default class TelegramService implements ITelegramService {
   ) {
     return this.sendChat(chatId, message, {
       reply_to_message_id: replyMessageId,
+      ...opts,
+    });
+  }
+
+  sendReplyKeyboard(
+    chatId: string,
+    message: string,
+    options: IReplyKeyboardOptions[],
+    opts: ISendMessageOpts = {}
+  ) {
+    return this.sendChat(chatId, message, {
+      keyboard: [options],
       ...opts,
     });
   }
