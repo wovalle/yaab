@@ -65,6 +65,16 @@ export default class TelegramService implements ITelegramService {
     await this.http.post(url, payload);
   }
 
+  async deleteMessage(chat_id: string, message_id: string): Promise<void> {
+    const url = this.buildUrl('deleteMessage');
+    const payload = {
+      chat_id,
+      message_id,
+    };
+
+    await this.http.post(url, payload);
+  }
+
   async getChatMember(userId: string, chatId: string): Promise<ChatMember> {
     const url = this.buildUrl('getChatMember');
     const payload = {

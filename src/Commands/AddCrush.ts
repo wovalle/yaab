@@ -7,7 +7,6 @@ import I18nProvider from '../I18nProvider';
 import { ITelegramHandlerPayload } from '../types';
 import { ChatRepository } from '../Repositories';
 import { ChatRepositoryToken } from '..';
-import { ParseMode } from '../services/telegram';
 
 @Handler(BotCommands.add_crush)
 export class AddCrushHandler
@@ -84,6 +83,10 @@ export class AddCrushHandler
         }
       );
     } else if (payload.command.activator === this.activators.usersFound) {
+      await this.telegramService.deleteMessage(
+        payload.plainMessage.chat_id,
+        payload.plainMessage.message_id
+      );
       return this.telegramService.sendChat(
         payload.plainMessage.chat_id,
         'commands.addcrush.successful'
