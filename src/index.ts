@@ -39,7 +39,7 @@ const getDate = () => new Date();
 
 // Section: fireorm
 import { Chat } from './models/Chat';
-import { CrushRelationship } from './Models/CrushRelationship';
+import { CrushRelationship } from './models/CrushRelationship';
 import { getRepository } from 'fireorm';
 
 const chatRepository = getRepository(Chat, db._db);

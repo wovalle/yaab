@@ -27,8 +27,8 @@ export default async (
   const mediator = new Mediator();
 
   const user = await db.getUserFromGroup(pm.chat_id, pm.from_id);
-  store.processMessage(pm);
-  store.processUpdate(update);
+  await store.processMessage(pm);
+  await store.processUpdate(update);
 
   if (!user) {
     const tgUser = await service.getChatMember(pm.from_id, pm.chat_id);
