@@ -34,10 +34,9 @@ export class ListInactiveHandler
 
     if (commandText.length === 2 && !isHoursANumber) {
       const errorId = 'commands.errors.invalid';
-      await this.telegramService.sendChat(pm.chat_id, this.i18n.t(errorId), {
+      return this.telegramService.sendChat(pm.chat_id, this.i18n.t(errorId), {
         reply_to_message_id: pm.message_id,
       });
-      return;
     } else if (commandText.length === 1) {
       hours = 5 * 24; // TODO: update capabilities
     }
@@ -48,7 +47,7 @@ export class ListInactiveHandler
 
     if (!users.length) {
       const errorId = 'commands.list_inactive.empty';
-      await this.telegramService.sendChat(
+      return this.telegramService.sendChat(
         pm.chat_id,
         this.i18n.t(errorId, { hours }),
         {
@@ -56,14 +55,13 @@ export class ListInactiveHandler
           reply_to_message_id: pm.message_id,
         }
       );
-      return;
     }
 
     const mentions = users
       .map(u => this.telegramService.getMentionFromId(u.id, u.first_name))
       .join(', ');
 
-    await this.telegramService.sendChat(
+    return this.telegramService.sendChat(
       pm.chat_id,
       this.i18n.t('commands.list_inactive.successful', { hours, mentions }),
       { parse_mode: ParseMode.Markdown }

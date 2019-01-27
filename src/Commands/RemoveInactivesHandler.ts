@@ -31,14 +31,15 @@ export class RemoveInactivesHandler
     const pm = payload.plainMessage;
     const commandText = pm.text.split(' ');
     let hours = Number.parseInt(commandText[1]);
-    const isHoursANumber = Number.isNaN(hours);
+    const isHoursANumber = Number.isInteger(hours);
 
-    if (commandText.length > 1 && !isHoursANumber) {
+    if (commandText.length === 2 && !isHoursANumber) {
       const errorId = 'commands.errors.invalid';
-      await this.telegramService.sendChat(pm.chat_id, this.i18n.t(errorId), {
-        reply_to_message_id: pm.message_id,
-      });
-      return;
+      return this.telegramService.sendReply(
+        pm.chat_id,
+        pm.message_id,
+        this.i18n.t(errorId)
+      );
     } else if (commandText.length === 1) {
       hours = 5 * 24; // TODO: update capabilities
     }
@@ -49,7 +50,7 @@ export class RemoveInactivesHandler
 
     if (!users.length) {
       const errorId = 'commands.list_inactive.empty';
-      await this.telegramService.sendChat(
+      return this.telegramService.sendChat(
         pm.chat_id,
         this.i18n.t(errorId, { hours }),
         {
@@ -57,7 +58,6 @@ export class RemoveInactivesHandler
           reply_to_message_id: pm.message_id,
         }
       );
-      return;
     }
 
     const usersWithError = [];
@@ -85,7 +85,7 @@ export class RemoveInactivesHandler
       .map(u => this.telegramService.getMentionFromId(u.id, u.first_name))
       .join(', ');
 
-    await this.telegramService.sendChat(
+    return this.telegramService.sendChat(
       pm.chat_id,
       this.i18n.t('commands.remove_inactives.successful', { mentions }),
       { parse_mode: ParseMode.Markdown }
