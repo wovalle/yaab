@@ -46,6 +46,10 @@ export default class TelegramService implements ITelegramService {
       props.replyKeyboard = keyboard;
     }
 
+    if (opts.parse_mode) {
+      props.parseMode = opts.parse_mode;
+    }
+
     return this.sendRawMessage(props);
   }
 
