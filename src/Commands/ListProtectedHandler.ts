@@ -16,18 +16,15 @@ export class ListProtectedHandler
   implements ICommandHandler<ITelegramHandlerPayload, void> {
   private telegramService: TelegramService;
   private i18n: I18nProvider;
-  private chatRepository: BaseFirestoreRepository<Chat>;
 
   constructor() {
     this.telegramService = Container.get(TelegramService);
     this.i18n = Container.get(I18nProvider);
-    this.chatRepository = Container.get(ChatRepositoryToken);
   }
 
   async Handle(payload: ITelegramHandlerPayload) {
     const pm = payload.plainMessage;
-
-    const chat = await this.chatRepository.findById(`${pm.chat_id}`);
+    const chat = payload.chat;
     const users = await chat.users.whereEqualTo('protected', true).find();
 
     const mentions = users

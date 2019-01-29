@@ -17,18 +17,17 @@ export class RemoveInactivesHandler
   implements ICommandHandler<ITelegramHandlerPayload, void> {
   private telegramService: TelegramService;
   private i18n: I18nProvider;
-  private chatRepository: BaseFirestoreRepository<Chat>;
   private getCurrentDate: () => Date;
 
   constructor() {
     this.telegramService = Container.get(TelegramService);
     this.i18n = Container.get(I18nProvider);
-    this.chatRepository = Container.get(ChatRepositoryToken);
     this.getCurrentDate = Container.get('getCurrentDate');
   }
 
   async Handle(payload: ITelegramHandlerPayload) {
     const pm = payload.plainMessage;
+    const chat = payload.chat;
     const commandText = pm.text.split(' ');
     let hours = Number.parseInt(commandText[1]);
     const isHoursANumber = Number.isInteger(hours);
@@ -45,7 +44,6 @@ export class RemoveInactivesHandler
     }
 
     const sinceDate = addHours(this.getCurrentDate(), -hours);
-    const chat = await this.chatRepository.findById(`${pm.chat_id}`);
     const users = await chat.users.getInactive(sinceDate);
 
     if (!users.length) {
@@ -85,10 +83,12 @@ export class RemoveInactivesHandler
       .map(u => this.telegramService.getMentionFromId(u.id, u.first_name))
       .join(', ');
 
-    return this.telegramService.sendChat(
+    await this.telegramService.sendChat(
       pm.chat_id,
       this.i18n.t('commands.remove_inactives.successful', { mentions }),
       { parse_mode: ParseMode.Markdown }
     );
+
+    return Promise.resolve();
   }
 }

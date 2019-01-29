@@ -19,7 +19,7 @@ export class StartHandler
   }
 
   async Handle(payload: ITelegramHandlerPayload) {
-    await this.telegramService.sendChat(
+    return this.telegramService.sendChat(
       payload.plainMessage.chat_id,
       this.i18n.t('commands.start.successful'),
       {

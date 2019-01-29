@@ -17,12 +17,10 @@ export class SetProtectedHandler
   implements ICommandHandler<ITelegramHandlerPayload, void> {
   private telegramService: TelegramService;
   private i18n: I18nProvider;
-  private chatRepository: BaseFirestoreRepository<Chat>;
 
   constructor() {
     this.telegramService = Container.get(TelegramService);
     this.i18n = Container.get(I18nProvider);
-    this.chatRepository = Container.get(ChatRepositoryToken);
   }
 
   async Handle(payload: ITelegramHandlerPayload) {
@@ -30,8 +28,7 @@ export class SetProtectedHandler
     const shouldProtect =
       payload.command.details.key === BotCommands.protect_user;
 
-    const chat = await this.chatRepository.findById(`${pm.chat_id}`);
-
+    const chat = payload.chat;
     let userIdToProtect = null;
 
     if (pm.is_reply) {
@@ -40,7 +37,7 @@ export class SetProtectedHandler
       const text = pm.text.trim().split(' ');
 
       if (text.length !== 2) {
-        await this.telegramService.sendChat(
+        return this.telegramService.sendChat(
           pm.chat_id,
           this.i18n.t('commands.errors.nothing_to_do'),
           {
@@ -48,7 +45,6 @@ export class SetProtectedHandler
             parse_mode: ParseMode.Markdown,
           }
         );
-        return;
       }
 
       userIdToProtect = text.slice(-1)[0];
@@ -56,7 +52,6 @@ export class SetProtectedHandler
 
     let userToProtect = await chat.users.findById(userIdToProtect);
 
-    // TODO: Write in system events
     if (userToProtect) {
       userToProtect.protected = shouldProtect;
       await chat.users.update(userToProtect);
@@ -86,5 +81,7 @@ export class SetProtectedHandler
         parse_mode: ParseMode.Markdown,
       }
     );
+
+    return Promise.resolve();
   }
 }

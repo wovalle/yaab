@@ -1,4 +1,3 @@
-import { Db } from '../db';
 import { Update } from 'telegram-typings';
 import {
   getPlainMessage,
@@ -12,34 +11,34 @@ import { ITelegramService } from '../services/telegram';
 import { Mediator } from 'tsmediator';
 import { UserRole } from '../types';
 import PermanentStore from '../services/PermanentStore';
+import { ChatRepository } from '../Repositories';
 
 export default async (
-  db: Db,
   update: Update,
   service: ITelegramService,
   i18n: I18nProvider,
   currentDate: Date,
-  store: PermanentStore
+  store: PermanentStore,
+  chatRepository: ChatRepository
 ): Promise<void> => {
   // TODO: Add mediator middleware: scopes
   // TODO: Add mediator middleware: permissions
   const pm = getPlainMessage(update);
   const mediator = new Mediator();
 
-  const user = await db.getUserFromGroup(pm.chat_id, pm.from_id);
+  const chat = await chatRepository.findById(pm.chat_id);
+  let messageFrom = await chat.users.findById(pm.from_id);
+
   await store.processMessage(pm);
   await store.processUpdate(update);
 
-  if (!user) {
+  if (!messageFrom) {
     const tgUser = await service.getChatMember(pm.from_id, pm.chat_id);
-    await db.saveChatUser(
-      pm.chat_id,
-      getUserChatFromMember(tgUser),
-      currentDate
-    );
+    messageFrom = getUserChatFromMember(tgUser);
+    await chat.users.create(messageFrom);
   }
 
-  await db.saveChatStat(pm, user, currentDate);
+  await chat.users.updateStat(messageFrom, currentDate);
 
   const command = getBotCommand(pm);
 
@@ -66,7 +65,7 @@ export default async (
         }
       );
       return;
-    } else if (command.details.admin && user.role !== UserRole.admin) {
+    } else if (command.details.admin && messageFrom.role !== UserRole.admin) {
       const errorId = 'commands.errors.forbidden';
       await service.sendReply(
         pm.chat_id,
@@ -79,6 +78,8 @@ export default async (
         await mediator.Send(command.details.key, {
           plainMessage: pm,
           command,
+          chat,
+          messageFrom,
         });
       } catch (error) {
         console.log(error);

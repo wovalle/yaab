@@ -170,12 +170,12 @@ export const onTelegramUpdateFn = functions.https.onRequest(
 
     try {
       await onTelegramUpdate(
-        db,
         update,
         telegramService,
         i18n,
         getDate(),
-        permanentStore
+        permanentStore,
+        chatRepository
       );
 
       return res.send({ ok: true });

@@ -1,5 +1,5 @@
 import { BotCommand } from './selectors';
-import { PlainMessage } from './models';
+import { PlainMessage, ChatMember, Chat } from './models';
 import {
   Update,
   Document,
@@ -124,4 +124,6 @@ export enum UserStatus {
 export interface ITelegramHandlerPayload {
   plainMessage: PlainMessage;
   command: BotCommand;
+  userFrom: ChatMember;
+  chat: Chat;
 }

@@ -6,7 +6,7 @@ import TelegramService from '../services/telegram/TelegramService';
 import { BotCommands } from '../selectors';
 import I18nProvider from '../I18nProvider';
 import { ITelegramHandlerPayload } from '../types';
-import { ChatRepository, CrushRelationshipRepository } from '../Repositories';
+import { CrushRelationshipRepository } from '../Repositories';
 import { ChatRepositoryToken, CrushRelationshipRepositoryToken } from '..';
 import { CrushRelationship } from '../models/CrushRelationship';
 
@@ -15,7 +15,6 @@ export class AddCrushHandler
   implements ICommandHandler<ITelegramHandlerPayload, void> {
   private telegramService: TelegramService;
   private i18n: I18nProvider;
-  private chatRepository: ChatRepository;
   private crushRelationshipRepository: CrushRelationshipRepository;
 
   private activators = {
@@ -28,7 +27,6 @@ export class AddCrushHandler
   constructor() {
     this.telegramService = Container.get(TelegramService);
     this.i18n = Container.get(I18nProvider);
-    this.chatRepository = Container.get(ChatRepositoryToken);
     this.crushRelationshipRepository = Container.get(
       CrushRelationshipRepositoryToken
     );
@@ -45,9 +43,7 @@ export class AddCrushHandler
         .send();
     } else if (payload.command.activator === this.activators.search) {
       // TODO: constant group id
-      const chat = await this.chatRepository.findById(
-        payload.plainMessage.chat_id
-      );
+      const chat = payload.chat;
 
       const users = await chat.users.findByName(payload.plainMessage.text);
 
@@ -76,10 +72,7 @@ export class AddCrushHandler
         .forceReply()
         .send();
     } else if (payload.command.activator === this.activators.usersFound) {
-      const chat = await this.chatRepository.findById(
-        payload.plainMessage.chat_id
-      );
-
+      const chat = await payload.chat;
       const user = await chat.users.findById(payload.command.callback_data);
 
       if (user.crush_status === 'disabled') {

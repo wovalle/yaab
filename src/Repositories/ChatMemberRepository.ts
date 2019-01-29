@@ -40,6 +40,12 @@ class ChatMemberRepository extends BaseFirestoreRepository<ChatMember>
     const users = await this.whereEqualTo('username', username).find();
     return users.length ? users[0] : null;
   }
+
+  async updateStat(user: ChatMember, currentDate: Date) {
+    user.last_message = currentDate;
+    user.status = 'active';
+    return this.update(user);
+  }
 }
 
 export default ChatMemberRepository;
