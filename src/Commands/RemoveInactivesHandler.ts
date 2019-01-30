@@ -5,11 +5,8 @@ import TelegramService from '../services/telegram/TelegramService';
 import { BotCommands } from '../selectors';
 import I18nProvider from '../I18nProvider';
 import { ParseMode } from '../services/telegram';
-import { Chat } from '../models';
-import { BaseFirestoreRepository } from 'fireorm';
-import { ChatRepositoryToken } from '..';
 import { addHours } from 'date-fns';
-import { UserRole, ITelegramHandlerPayload } from '../types';
+import { ITelegramHandlerPayload } from '../types';
 
 // TODO: send pm summary with users tagged, bots and protected
 @Handler(BotCommands.remove_inactives)
@@ -26,21 +23,19 @@ export class RemoveInactivesHandler
   }
 
   async Handle(payload: ITelegramHandlerPayload) {
-    const pm = payload.plainMessage;
-    const chat = payload.chat;
-    const commandText = pm.text.split(' ');
-    let hours = Number.parseInt(commandText[1]);
+    const { plainMessage: pm, chat, command } = payload;
+    let hours = Number.parseInt(command.args[0]);
     const isHoursANumber = Number.isInteger(hours);
 
-    if (commandText.length === 2 && !isHoursANumber) {
+    if (command.args.length && !isHoursANumber) {
       const errorId = 'commands.errors.invalid';
       return this.telegramService.sendReply(
         pm.chat_id,
         pm.message_id,
         this.i18n.t(errorId)
       );
-    } else if (commandText.length === 1) {
-      hours = 5 * 24; // TODO: update capabilities
+    } else if (!command.args.length) {
+      hours = 5 * 24; // TODO: update constants
     }
 
     const sinceDate = addHours(this.getCurrentDate(), -hours);
@@ -48,14 +43,13 @@ export class RemoveInactivesHandler
 
     if (!users.length) {
       const errorId = 'commands.list_inactive.empty';
-      return this.telegramService.sendChat(
-        pm.chat_id,
-        this.i18n.t(errorId, { hours }),
-        {
-          parse_mode: ParseMode.Markdown,
-          reply_to_message_id: pm.message_id,
-        }
-      );
+
+      return this.telegramService
+        .buildMessage(this.i18n.t(errorId, { hours }))
+        .to(pm.chat_id)
+        .replyTo(pm.message_id)
+        .asMarkDown()
+        .send();
     }
 
     const usersWithError = [];
