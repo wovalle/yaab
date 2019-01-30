@@ -23,14 +23,14 @@ export default async (
 ): Promise<void> => {
   // TODO: Add mediator middleware: scopes
   // TODO: Add mediator middleware: permissions
-  const pm = getPlainMessage(update);
   const mediator = new Mediator();
+  const pm = getPlainMessage(update);
+  const command = getBotCommand(pm);
 
   const chat = await chatRepository.findById(pm.chat_id);
   let messageFrom = await chat.users.findById(pm.from_id);
 
-  await store.processMessage(pm);
-  await store.processUpdate(update);
+  await Promise.all([store.processMessage(pm), store.processUpdate(update)]);
 
   if (!messageFrom) {
     const tgUser = await service.getChatMember(pm.from_id, pm.chat_id);
@@ -39,8 +39,6 @@ export default async (
   }
 
   await chat.users.updateStat(messageFrom, currentDate);
-
-  const command = getBotCommand(pm);
 
   if (!command.isValid && command.type === 'bot_command') {
     const errorId = 'commands.errors.invalid';
@@ -57,12 +55,10 @@ export default async (
         .map(s => i18n.t(`enums.scopes.${s}`))
         .join(', ');
 
-      await service.sendChat(
+      await service.sendReply(
         pm.chat_id,
-        i18n.t(errorId, { scopes, command: command.details.keyword }),
-        {
-          reply_to_message_id: pm.message_id,
-        }
+        pm.message_id,
+        i18n.t(errorId, { scopes, command: command.details.keyword })
       );
       return;
     } else if (command.details.admin && messageFrom.role !== UserRole.admin) {
