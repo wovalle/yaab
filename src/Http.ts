@@ -17,6 +17,6 @@ export default class Http implements IHttp {
     return axios
       .post(url, data, opts)
       .then(response => response.data)
-      .catch(e => Promise.reject(e.response.data || e.response));
+      .catch(e => Promise.reject(e.response ? e.response.data : e));
   }
 }
