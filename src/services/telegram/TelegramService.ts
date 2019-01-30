@@ -126,20 +126,20 @@ export default class TelegramService implements ITelegramService {
       payload.reply_markup.force_reply = true;
     }
 
-    if (props.activator) {
-      payload.text = `#${props.activator}: ${props.text}`;
-    }
-
-    if (props.replyTo) {
-      payload.reply_to_message_id = props.replyTo;
-    }
-
     if (props.prepend) {
       payload.text = `${props.prepend}${payload.text}`;
     }
 
     if (props.append) {
       payload.text = `${payload.text}${props.append}`;
+    }
+
+    if (props.activator) {
+      payload.text = `|${props.activator}| ${payload.text}`;
+    }
+
+    if (props.replyTo) {
+      payload.reply_to_message_id = props.replyTo;
     }
 
     const response = await this.http.post(url, payload);
