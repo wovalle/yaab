@@ -232,6 +232,7 @@ export enum BotCommands {
   add_crush = 'add_crush',
   start = 'start',
   help = 'help',
+  private_message = 'private_message',
 }
 
 export enum BotCommandScope {
@@ -319,12 +320,14 @@ const BotCommandsDetails: IBotCommandDetail[] = [
       BotCommandScope.group,
       BotCommandScope.supergroup,
     ],
-    textActivators: [
-      'crush_search',
-      'crush_found',
-      'crush_uname_not_found',
-      'crush_not_found',
-    ],
+    textActivators: ['crush_search', 'crush_found'],
+  },
+  {
+    admin: false,
+    key: BotCommands.private_message,
+    keyword: '',
+    scopes: [BotCommandScope.private],
+    textActivators: ['pick_user'],
   },
 ];
 
@@ -406,6 +409,21 @@ export const getBotCommand = (message: PlainMessage): BotCommand => {
       isValid: true,
       type: 'text_command',
       activator: textActivatorCommand ? replyActivatorStd : null,
+      callback_data,
+    };
+  }
+
+  if (chatScope === BotCommandScope.private) {
+    const details = BotCommandsDetails.find(
+      c => c.key === BotCommands.private_message
+    );
+
+    return {
+      args: [],
+      details,
+      isValid: true,
+      type: 'text_command',
+      activator: null,
       callback_data,
     };
   }

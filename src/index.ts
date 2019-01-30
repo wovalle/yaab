@@ -44,6 +44,7 @@ import { getRepository } from 'fireorm';
 
 const chatRepository = getRepository(Chat, db._db);
 const crushRelationshipRepository = getRepository(CrushRelationship, db._db);
+
 export const ChatRepositoryToken = new Token<ChatRepository>('ChatRepository');
 export const CrushRelationshipRepositoryToken = new Token<
   CrushRelationshipRepository
@@ -67,6 +68,7 @@ import { EnableCrushModeHandler } from './Commands/EnableCrushModeHandler';
 import { StartHandler } from './Commands/StartHandler';
 import { HelpHandler } from './Commands/HelpHandler';
 import { AddCrushHandler } from './Commands/AddCrush';
+import { PrivateMessageHandler } from './Commands/PrivateMessageHandler';
 
 ListProtectedHandler.name;
 ListInactiveHandler.name;
@@ -78,6 +80,7 @@ HelpHandler.name;
 Chat.name;
 ChatMemberRepository.name;
 AddCrushHandler.name;
+PrivateMessageHandler.name;
 
 export const importUsersInternalFn = functions.https.onRequest(
   async (req, res) => {

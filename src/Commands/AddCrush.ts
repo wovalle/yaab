@@ -7,7 +7,7 @@ import { BotCommands } from '../selectors';
 import I18nProvider from '../I18nProvider';
 import { ITelegramHandlerPayload } from '../types';
 import { CrushRelationshipRepository } from '../Repositories';
-import { ChatRepositoryToken, CrushRelationshipRepositoryToken } from '..';
+import { CrushRelationshipRepositoryToken } from '..';
 import { CrushRelationship } from '../models/CrushRelationship';
 
 @Handler(BotCommands.add_crush)
@@ -19,8 +19,6 @@ export class AddCrushHandler
 
   private activators = {
     search: 'crush_search',
-    usernameNotFound: 'crush_uname_not_found',
-    searchNotFound: 'crush_not_found',
     usersFound: 'crush_found',
   };
 
@@ -43,7 +41,7 @@ export class AddCrushHandler
         .send();
     } else if (payload.command.activator === this.activators.search) {
       // TODO: constant group id
-      const chat = payload.chat;
+      const { chat } = payload;
 
       const users = await chat.users.findByName(payload.plainMessage.text);
 
