@@ -138,7 +138,6 @@ export const getPlainMessage = (baseUpdate: Update): PlainMessage => {
 
   if (update.type === UpdateType.callback_query) {
     root = update.callback_query.message;
-    root.reply_to_message = update.callback_query.message;
     root.from = update.callback_query.from;
     callback_data = update.callback_query.data;
   } else {
@@ -351,9 +350,9 @@ export const getBotCommand = (message: PlainMessage): BotCommand => {
     reply_text,
     reply_from_username,
     entity_type,
-    is_reply,
     callback_data,
   } = message;
+
   const groupScopes = [BotCommandScope.group, BotCommandScope.supergroup];
   // callback queries store info in text
   const replyText = callback_data ? text : reply_text || '';
@@ -398,10 +397,7 @@ export const getBotCommand = (message: PlainMessage): BotCommand => {
     reply_from_is_bot && botRegex.test(reply_from_username);
 
   const shouldProcessTextCommand =
-    textActivatorCommand &&
-    is_reply &&
-    replyText &&
-    (!!callback_data || isReplyFromBot);
+    textActivatorCommand && replyText && (!!callback_data || isReplyFromBot);
 
   if (shouldProcessTextCommand) {
     return {
