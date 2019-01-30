@@ -27,7 +27,13 @@ export default async (
   const pm = getPlainMessage(update);
   const command = getBotCommand(pm);
 
-  const chat = await chatRepository.findById(pm.chat_id);
+  let chat = await chatRepository.findById(pm.chat_id);
+
+  if (!chat) {
+    await chatRepository.create({ id: pm.chat_id });
+    chat = await chatRepository.findById(pm.chat_id);
+  }
+
   let messageFrom = await chat.users.findById(pm.from_id);
 
   await Promise.all([store.processMessage(pm), store.processUpdate(update)]);
