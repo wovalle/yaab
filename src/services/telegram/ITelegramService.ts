@@ -24,6 +24,8 @@ export type MessageBuilderProps = {
   parseMode?: ParseMode;
   replyTo?: string;
   activator?: string;
+  prepend?: string;
+  append?: string;
 };
 
 export interface ITelegramService {

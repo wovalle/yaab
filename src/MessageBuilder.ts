@@ -48,6 +48,16 @@ export default class MessageBuilder {
     return this;
   }
 
+  prepend(text: string) {
+    this.props.prepend = text;
+    return this;
+  }
+
+  append(text: string) {
+    this.props.append = text;
+    return this;
+  }
+
   send() {
     return this.service.sendRawMessage(this.props);
   }
