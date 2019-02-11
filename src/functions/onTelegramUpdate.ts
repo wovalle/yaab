@@ -27,6 +27,9 @@ export default async (
   const pm = getPlainMessage(update);
   const command = getBotCommand(pm);
 
+  // console.log(JSON.stringify(command, null, 2));
+  // console.log(JSON.stringify(pm, null, 2));
+
   let chat = await chatRepository.findById(pm.chat_id);
 
   if (!chat) {
@@ -35,8 +38,6 @@ export default async (
   }
 
   let messageFrom = await chat.users.findById(pm.from_id);
-
-  await Promise.all([store.processMessage(pm), store.processUpdate(update)]);
 
   if (!messageFrom) {
     const tgUser = await service.getChatMember(pm.from_id, pm.chat_id);
@@ -97,5 +98,6 @@ export default async (
         );
       }
     }
+    await Promise.all([store.processMessage(pm), store.processUpdate(update)]);
   }
 };

@@ -327,7 +327,7 @@ const BotCommandsDetails: IBotCommandDetail[] = [
     key: BotCommands.private_message,
     keyword: '',
     scopes: [BotCommandScope.private],
-    textActivators: ['pick_user'],
+    textActivators: ['pick_user', 'rtc', 'rfc'],
   },
 ];
 
