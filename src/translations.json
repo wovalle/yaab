@@ -28,11 +28,15 @@
     },
     "add_crush": {
       "successful": "Crush agregado! Tu nickname es: {{nickname}}",
-      "new_crush": "Tienes un crush nuevo! Su nickname es: {{nickname}}"
+      "new_crush": "Tienes un crush nuevo!❤️ Su nickname es: {{nickname}}, Qué le quieres decir? 😉",
+      "search": "Dame el nombre de tu crush pa' buscarlo 😏",
+      "not_found": "Tu ta segur@ que hay un '{{name}}' en el grupo? Dale again y ecribe bien",
+      "users_found": "Encontré a eta gente:"
     },
     "anon_message": {
       "user_says": "{{user}}: ",
-      "crush_says": "{{mention}}: "
+      "crush_says": "{{{nickname}}}({{mention}}): ",
+      "pick_user": "A quién e' que le tengo que escribir?🤔"
     },
     "errors": {
       "invalid": "manito, que jodio comando fue ese",

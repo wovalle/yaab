@@ -7,7 +7,6 @@ import I18nProvider from '../I18nProvider';
 import { ITelegramHandlerPayload } from '../types';
 import { CrushRelationshipRepository } from '../Repositories';
 import { CrushRelationshipRepositoryToken } from '..';
-import { CrushRelationship } from '../models';
 
 @Handler(BotCommands.private_message)
 export class PrivateMessageHandler
@@ -46,36 +45,55 @@ export class PrivateMessageHandler
       const [crush_id, user_nickname] = pm.callback_data.split('|');
       await this.sendMessage(pm.reply_text, crush_id, user_nickname);
       await this.telegramService.deleteMessage(pm.chat_id, pm.message_id);
-      return;
+      return Promise.resolve();
     }
 
     if (command.activator === this.activators.replyFromCrush) {
-      const username = pm.reply_text.split(' ')[1].slice(0, -1);
+      const nickname = pm.reply_text.split(' ')[1].slice(0, -1);
       const crushRelationship = await this.crushRelationshipRepository
-        .whereEqualTo('user_nickname', username)
+        .whereEqualTo('user_nickname', nickname)
         .find();
 
-      const userId = crushRelationship[0].user_id;
+      const { user_id: userId } = crushRelationship[0];
       const mention = this.telegramService.getMentionFromId(
         pm.from_id,
         pm.from_first_name,
         pm.from_last_name
       );
 
-      //todo: sanitize markdown
+      const sanitized = [`\\[`, `\\]`, '`', '_', '\\*'].reduce(
+        (acc, cur) => acc.replace(new RegExp(cur, 'ig'), ''),
+        pm.text
+      );
 
       return this.telegramService
-        .buildMessage(pm.text)
+        .buildMessage(sanitized)
         .to(userId)
-        .prepend(this.i18n.t('commands.anon_message.crush_says', { mention }))
+        .prepend(
+          this.i18n.t('commands.anon_message.crush_says', { mention, nickname })
+        )
         .withActivator(this.activators.replyToCrush)
         .asMarkDown()
         .send();
     }
 
     if (command.activator === this.activators.replyToCrush) {
-      console.log('TODO: replyToCrush', { command, pm });
-      return null;
+      const nick = /{(.*?)}/.exec(pm.reply_text)[1];
+
+      if (!nick) {
+        return Promise.reject(new Error('Invalid Username'));
+      }
+
+      const crushRelationship = await this.crushRelationshipRepository
+        .whereEqualTo('user_nickname', nick)
+        .find();
+
+      if (!crushRelationship) {
+        return Promise.reject(new Error('Invalid Relationship'));
+      }
+
+      await this.sendMessage(pm.text, crushRelationship[0].crush_id, nick);
+      return Promise.resolve();
     }
 
     const myCrushes = await this.crushRelationshipRepository
@@ -110,8 +128,8 @@ export class PrivateMessageHandler
 
     const usersKeyboard = [...myCrushesKeyboard, ...crushesOfMineKeyboard];
 
-    await this.telegramService
-      .buildMessage('commands.anon_message.pick_user')
+    return this.telegramService
+      .buildMessage(this.i18n.t('commands.anon_message.pick_user'))
       .to(pm.chat_id)
       .replyTo(pm.message_id)
       .withActivator(this.activators.pickUser)

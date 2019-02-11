@@ -33,7 +33,7 @@ export class AddCrushHandler
   async Handle(payload: ITelegramHandlerPayload) {
     if (payload.command.type === 'bot_command') {
       return this.telegramService
-        .buildMessage(this.i18n.t('commands.addcrush.search'))
+        .buildMessage(this.i18n.t('commands.add_crush.search'))
         .to(payload.plainMessage.chat_id)
         .replyTo(payload.plainMessage.message_id)
         .withActivator(this.activators.search)
@@ -42,12 +42,12 @@ export class AddCrushHandler
     } else if (payload.command.activator === this.activators.search) {
       // TODO: constant group id
       const { chat } = payload;
-
-      const users = await chat.users.findByName(payload.plainMessage.text);
+      const name = payload.plainMessage.text;
+      const users = await chat.users.findByName(name);
 
       if (!users.length) {
         return this.telegramService
-          .buildMessage(this.i18n.t('commands.add_crush.not_found'))
+          .buildMessage(this.i18n.t('commands.add_crush.not_found', { name }))
           .to(payload.plainMessage.chat_id)
           .withActivator(this.activators.search)
           .replyTo(payload.plainMessage.message_id)

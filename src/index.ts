@@ -67,7 +67,7 @@ import { RemoveInactivesHandler } from './Commands/RemoveInactivesHandler';
 import { EnableCrushModeHandler } from './Commands/EnableCrushModeHandler';
 import { StartHandler } from './Commands/StartHandler';
 import { HelpHandler } from './Commands/HelpHandler';
-import { AddCrushHandler } from './Commands/AddCrush';
+import { AddCrushHandler } from './Commands/AddCrushHandler';
 import { PrivateMessageHandler } from './Commands/PrivateMessageHandler';
 
 ListProtectedHandler.name;
