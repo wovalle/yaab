@@ -24,6 +24,7 @@ const logger = console;
 const db = DbSingleton.getInstance();
 const telegramKey = functions.config().telegram.key;
 const storageOpts = functions.config().permanent_store;
+const fixedCrushGroup = functions.config().telegram.crush_group;
 const http = new Http();
 const i18n = new I18nProvider(translations);
 const telegramService = new TelegramService(telegramKey, http);
@@ -58,6 +59,7 @@ Container.set(ChatRepositoryToken, chatRepository);
 Container.set(CrushRelationshipRepositoryToken, crushRelationshipRepository);
 Container.set(PermanentStore, permanentStore);
 Container.set('getCurrentDate', getDate);
+Container.set('fixedCrushGroup', fixedCrushGroup);
 
 // Section: initialize commands
 import { ListProtectedHandler } from './Commands/ListProtectedHandler';

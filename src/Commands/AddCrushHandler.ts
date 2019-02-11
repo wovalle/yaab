@@ -6,8 +6,8 @@ import TelegramService from '../services/telegram/TelegramService';
 import { BotCommands } from '../selectors';
 import I18nProvider from '../I18nProvider';
 import { ITelegramHandlerPayload } from '../types';
-import { CrushRelationshipRepository } from '../Repositories';
-import { CrushRelationshipRepositoryToken } from '..';
+import { CrushRelationshipRepository, ChatRepository } from '../Repositories';
+import { CrushRelationshipRepositoryToken, ChatRepositoryToken } from '..';
 import { CrushRelationship } from '../models/CrushRelationship';
 
 @Handler(BotCommands.add_crush)
@@ -16,6 +16,8 @@ export class AddCrushHandler
   private telegramService: TelegramService;
   private i18n: I18nProvider;
   private crushRelationshipRepository: CrushRelationshipRepository;
+  private crushGroupId: string;
+  private chatRepository: ChatRepository;
 
   private activators = {
     search: 'crush_search',
@@ -28,6 +30,8 @@ export class AddCrushHandler
     this.crushRelationshipRepository = Container.get(
       CrushRelationshipRepositoryToken
     );
+    this.crushGroupId = Container.get('fixedCrushGroup');
+    this.chatRepository = Container.get(ChatRepositoryToken);
   }
 
   async Handle(payload: ITelegramHandlerPayload) {
@@ -40,10 +44,9 @@ export class AddCrushHandler
         .forceReply()
         .send();
     } else if (payload.command.activator === this.activators.search) {
-      // TODO: constant group id
-      const { chat } = payload;
       const name = payload.plainMessage.text;
-      const users = await chat.users.findByName(name);
+      const fixedChat = await this.chatRepository.findById(this.crushGroupId);
+      const users = await fixedChat.users.findByName(name);
 
       if (!users.length) {
         return this.telegramService
