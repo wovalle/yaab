@@ -12,7 +12,7 @@ import MessageBuilder from '../../MessageBuilder';
 
 type ReplyMarkup = {
   force_reply?: boolean;
-  inline_keyboard?: [IReplyKeyboardOptions[]];
+  inline_keyboard?: [IReplyKeyboardOptions[]] | IReplyKeyboardOptions[][];
 };
 
 type TelegramHttpPayload = {
@@ -119,7 +119,7 @@ export default class TelegramService implements ITelegramService {
     }
 
     if (props.replyKeyboard) {
-      payload.reply_markup.inline_keyboard = [props.replyKeyboard];
+      payload.reply_markup.inline_keyboard = props.replyKeyboard.map(k => [k]);
     }
 
     if (props.forceReply) {
