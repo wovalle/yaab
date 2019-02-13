@@ -8,8 +8,9 @@
     "target": "es6",
     "resolveJsonModule": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true
   },
   "compileOnSave": true,
-  "include": ["src"]
+  "include": ["src", "tools"]
 }
