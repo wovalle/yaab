@@ -73,8 +73,10 @@ export class AddCrushHandler
         .forceReply()
         .send();
     } else if (payload.command.activator === this.activators.usersFound) {
-      const chat = await payload.chat;
-      const user = await chat.users.findById(payload.command.callback_data);
+      const fixedChat = await this.chatRepository.findById(this.crushGroupId);
+      const user = await fixedChat.users.findById(
+        payload.command.callback_data
+      );
 
       if (user.crush_status === 'disabled') {
         // TODO: build getter
@@ -88,7 +90,7 @@ export class AddCrushHandler
       }
 
       const existingCrushRelationship = await this.crushRelationshipRepository
-        .whereEqualTo('chat_id', payload.plainMessage.chat_id)
+        .whereEqualTo('chat_id', this.crushGroupId)
         .whereEqualTo('user_id', payload.plainMessage.from_id)
         .whereEqualTo('crush_id', payload.plainMessage.callback_data)
         .find();
@@ -102,7 +104,7 @@ export class AddCrushHandler
 
       const crushRelationship = new CrushRelationship();
       const nickname = faker.internet.userName();
-      crushRelationship.chat_id = payload.plainMessage.chat_id;
+      crushRelationship.chat_id = this.crushGroupId;
       crushRelationship.user_id = payload.plainMessage.from_id;
       crushRelationship.crush_id = payload.plainMessage.callback_data;
       crushRelationship.user_nickname = nickname;

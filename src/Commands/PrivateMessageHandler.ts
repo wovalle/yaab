@@ -17,8 +17,8 @@ export class PrivateMessageHandler
 
   private activators = {
     pickUser: 'pick_user',
-    replyFromCrush: 'rfc',
-    replyToCrush: 'rtc',
+    fromCrush: 'rfc',
+    toCrush: 'rtc',
   };
 
   constructor() {
@@ -41,15 +41,20 @@ export class PrivateMessageHandler
       when responding |fc| Fulanito(tg://234234) says:
     */
 
+    // TODO: handle message types (vn, vdn, image, video, music, location)
     if (command.activator === this.activators.pickUser) {
-      const [crush_id, user_nickname] = pm.callback_data.split('|');
-      await this.sendMessage(pm.reply_text, crush_id, user_nickname);
+      const [id, nick, activator] = pm.callback_data.split('|');
+      // TODO:
+      // if (activator === this.activators.toCrush) {
+
+      await this.sendMessage(pm.reply_text, id, nick, activator);
       await this.telegramService.deleteMessage(pm.chat_id, pm.message_id);
       return Promise.resolve();
     }
 
-    if (command.activator === this.activators.replyFromCrush) {
+    if (command.activator === this.activators.fromCrush) {
       const nickname = pm.reply_text.split(' ')[1].slice(0, -1);
+      // TODO: custom repository, findByNick
       const crushRelationship = await this.crushRelationshipRepository
         .whereEqualTo('user_nickname', nickname)
         .find();
@@ -72,12 +77,12 @@ export class PrivateMessageHandler
         .prepend(
           this.i18n.t('commands.anon_message.crush_says', { mention, nickname })
         )
-        .withActivator(this.activators.replyToCrush)
+        .withActivator(this.activators.toCrush)
         .asMarkDown()
         .send();
     }
 
-    if (command.activator === this.activators.replyToCrush) {
+    if (command.activator === this.activators.toCrush) {
       const nick = /{(.*?)}/.exec(pm.reply_text)[1];
 
       if (!nick) {
@@ -92,10 +97,16 @@ export class PrivateMessageHandler
         return Promise.reject(new Error('Invalid Relationship'));
       }
 
-      await this.sendMessage(pm.text, crushRelationship[0].crush_id, nick);
+      await this.sendMessage(
+        pm.text,
+        crushRelationship[0].crush_id,
+        nick,
+        this.activators.fromCrush
+      );
       return Promise.resolve();
     }
 
+    // TODO: move to repository
     const myCrushes = await this.crushRelationshipRepository
       .whereEqualTo('user_id', pm.from_id)
       .find();
@@ -115,14 +126,18 @@ export class PrivateMessageHandler
       text = u.username ? `${text} (${u.username})` : '';
 
       const crush = myCrushes.find(c => c.crush_id === `${u.id}`);
-      const callback_data = `${crush.crush_id}|${crush.user_nickname}`;
+      const callback_data = `${crush.crush_id}|${crush.user_nickname}|${
+        this.activators.fromCrush
+      }`;
 
       return { text, callback_data };
     });
 
     const crushesOfMineKeyboard = crushesOfMine.map(u => {
       const text = u.user_nickname;
-      const callback_data = `${u.user_id}|${u.user_nickname}`;
+      const callback_data = `${u.user_id}|${u.user_nickname}|${
+        this.activators.toCrush
+      }`;
       return { text, callback_data };
     });
 
@@ -137,12 +152,12 @@ export class PrivateMessageHandler
       .send();
   }
 
-  async sendMessage(text: string, to: string, user: string) {
+  async sendMessage(text: string, to: string, user: string, activator: string) {
     return this.telegramService
       .buildMessage(text)
       .to(to)
       .prepend(this.i18n.t('commands.anon_message.user_says', { user }))
-      .withActivator(this.activators.replyFromCrush)
+      .withActivator(activator)
       .send();
   }
 }
