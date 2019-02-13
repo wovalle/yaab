@@ -45,8 +45,6 @@ export default async (
     await chat.users.create(messageFrom);
   }
 
-  await chat.users.updateStat(messageFrom, currentDate);
-
   if (!command.isValid && command.type === 'bot_command') {
     const errorId = 'commands.errors.invalid';
     await service.sendReply(pm.chat_id, pm.message_id, i18n.t(errorId));
@@ -98,6 +96,8 @@ export default async (
         );
       }
     }
-    await Promise.all([store.processMessage(pm), store.processUpdate(update)]);
   }
+  // TODO: implement Promise.every and do in parallel mediator.send, updateStat and storing
+  await chat.users.updateStat(messageFrom, currentDate);
+  await Promise.all([store.processMessage(pm), store.processUpdate(update)]);
 };
