@@ -41,10 +41,11 @@ const getDate = () => new Date();
 // Section: fireorm
 import { Chat } from './models/Chat';
 import { CrushRelationship } from './models/CrushRelationship';
-import { getRepository } from 'fireorm';
+import { GetRepository, Initialize } from 'fireorm';
+Initialize(db._db);
 
-const chatRepository = getRepository(Chat, db._db);
-const crushRelationshipRepository = getRepository(CrushRelationship, db._db);
+const chatRepository = GetRepository(Chat);
+const crushRelationshipRepository = GetRepository(CrushRelationship);
 
 export const ChatRepositoryToken = new Token<ChatRepository>('ChatRepository');
 export const CrushRelationshipRepositoryToken = new Token<

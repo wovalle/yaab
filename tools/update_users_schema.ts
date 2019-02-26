@@ -1,5 +1,5 @@
 import admin from 'firebase-admin';
-import { getRepository, BaseFirestoreRepository } from 'fireorm';
+import { GetRepository, BaseFirestoreRepository, Initialize } from 'fireorm';
 
 import { Chat } from '../src/models/Chat';
 import TelegramService from '../src/services/telegram';
@@ -20,12 +20,11 @@ firestore.settings({
   timestampsInSnapshots: true,
 });
 
+Initialize(firestore);
+
 const groupId = data.telegram.crush_group;
 async function init() {
-  const chatRepository = getRepository(
-    Chat,
-    firestore
-  ) as BaseFirestoreRepository<Chat>;
+  const chatRepository = GetRepository(Chat) as BaseFirestoreRepository<Chat>;
   const chat = await chatRepository.findById(groupId);
   const users = await chat.users.find();
   const telegramService = new TelegramService(data.telegram.key, new Http());
