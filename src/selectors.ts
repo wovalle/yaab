@@ -8,6 +8,7 @@ import {
   UserRole,
 } from './types';
 import { PlainMessage, ChatMember as ModelChatMember } from './models';
+const emojiStrip = require('emoji-strip');
 
 export const getUpdateWithType = (update: Update): TypedUpdate => {
   let type: UpdateType;
@@ -438,43 +439,42 @@ export const getBotCommand = (message: PlainMessage): BotCommand => {
   };
 };
 
-export const getUserSearchKeywords = (u: ChatMember): string[] => {
+export const getUserSearchKeywords = (
+  firstName: string,
+  lastName: string,
+  username: string
+): string[] => {
   let keywords = [];
 
   const getVariations = (key: string): string[] => {
-    return key
-      .toLowerCase()
+    const lowerKey = key.toLocaleLowerCase();
+    return lowerKey
       .split('')
-      .reduce((acc, _, i) => acc.concat(key.slice(0, i + 1)), []);
+      .reduce((acc, _, i) => acc.concat(lowerKey.slice(0, i + 1)), []);
   };
 
-  keywords = u.user.first_name
-    ? keywords.concat(getVariations(u.user.first_name))
-    : keywords;
-
-  keywords = u.user.last_name
-    ? keywords.concat(getVariations(u.user.last_name))
-    : keywords;
-
-  keywords = u.user.username
-    ? keywords.concat(getVariations(u.user.username))
-    : keywords;
+  keywords = firstName ? keywords.concat(getVariations(firstName)) : keywords;
+  keywords = lastName ? keywords.concat(getVariations(lastName)) : keywords;
+  keywords = username ? keywords.concat(getVariations(username)) : keywords;
 
   return Array.from(new Set(keywords));
 };
 
 export const getUserChatFromMember = (u: ChatMember): ModelChatMember => {
+  const firstName = emojiStrip(u.user.first_name);
+  const lastName = emojiStrip(u.user.last_name || '') || null;
+  const username = emojiStrip(u.user.username);
   return {
     id: `${u.user.id}`,
-    first_name: u.user.first_name,
-    last_name: u.user.last_name,
+    first_name: firstName,
+    last_name: lastName,
     is_bot: u.user.is_bot,
     protected: false,
     role: u.status === 'administrator' ? UserRole.admin : UserRole.user,
     last_message: null,
-    username: u.user.username,
+    username: username,
     status: u.status,
     crush_status: 'enabled',
-    search_keywords: getUserSearchKeywords(u),
+    search_keywords: getUserSearchKeywords(firstName, lastName, username),
   };
 };
