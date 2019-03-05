@@ -23,13 +23,18 @@ class ChatMemberRepository extends BaseFirestoreRepository<ChatMember>
   }
 
   async findByName(name: string): Promise<ChatMember[]> {
-    const keywords = name.trim().split(' ');
-    const promises: Promise<ChatMember[]>[] = [];
-
-    for (const key of keywords) {
-      promises.push(this.whereEqualTo('first_name', key).find());
-      promises.push(this.whereEqualTo('last_name', key).find());
+    if (!name) {
+      return Promise.resolve([]);
     }
+
+    const keywords = name
+      .trim()
+      .toLowerCase()
+      .split(' ');
+
+    const promises = keywords.map(k =>
+      this.whereArrayContains('search_keywords', k).find()
+    );
 
     return Promise.all(promises).then(p =>
       p.reduce((cur, acc) => cur.concat(acc), [])
