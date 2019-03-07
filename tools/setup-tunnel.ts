@@ -19,4 +19,4 @@ async function init() {
   console.log('Tunnel ready! url:', url);
 }
 
-init();
+init().catch(e => console.log('FATAL:', e));
