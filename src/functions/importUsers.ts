@@ -1,7 +1,8 @@
 // NOTE: This is not intended to be an external function
-import { ChatMember } from '../models/index.js';
+import { ChatMember } from '../models/index';
 import Container from 'typedi';
-import { ChatRepositoryToken } from '../index.js';
+import { ChatRepositoryToken } from '../index';
+import { getUserChat } from '../selectors';
 
 interface IImportUsers {
   existingUsers: Array<ChatMember>;
@@ -24,6 +25,7 @@ export default async (
 
   const existingUsers = [];
   const importedUsers = [];
+
   for (const userToImport of users) {
     const user = await group.users.findById(`${userToImport.id}`);
 
@@ -33,7 +35,11 @@ export default async (
       );
       existingUsers.push(user);
     } else {
-      await group.users.create(userToImport);
+      const fullUser = getUserChat({
+        ...userToImport,
+      });
+
+      await group.users.create(fullUser);
       console.log(
         `User ${userToImport.id}: ${userToImport.first_name} ${
           userToImport.last_name

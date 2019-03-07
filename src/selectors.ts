@@ -461,19 +461,30 @@ export const getUserSearchKeywords = (
 };
 
 export const getUserChatFromMember = (u: ChatMember): ModelChatMember => {
-  const firstName = emojiStrip(u.user.first_name);
-  const lastName = emojiStrip(u.user.last_name || '') || null;
-  const username = emojiStrip(u.user.username);
+  return getUserChat({ ...u.user, status: u.status });
+};
+
+export const getUserChat = ({
+  id,
+  is_bot,
+  status,
+  first_name,
+  last_name = '',
+  username: uname = '',
+}): ModelChatMember => {
+  const firstName = emojiStrip(first_name);
+  const lastName = emojiStrip(last_name || '') || null;
+  const username = emojiStrip(uname || '') || null;
   return {
-    id: `${u.user.id}`,
+    id: `${id}`,
     first_name: firstName,
     last_name: lastName,
-    is_bot: u.user.is_bot,
+    is_bot: is_bot,
     protected: false,
-    role: u.status === 'administrator' ? UserRole.admin : UserRole.user,
+    role: status === 'administrator' ? UserRole.admin : UserRole.user,
     last_message: null,
     username: username,
-    status: u.status,
+    status: status,
     crush_status: 'enabled',
     search_keywords: getUserSearchKeywords(firstName, lastName, username),
   };
