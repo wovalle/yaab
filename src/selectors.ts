@@ -460,10 +460,6 @@ export const getUserSearchKeywords = (
   return Array.from(new Set(keywords));
 };
 
-export const getUserChatFromMember = (u: ChatMember): ModelChatMember => {
-  return getUserChat({ ...u.user, status: u.status });
-};
-
 export const getUserChat = ({
   id,
   is_bot,
@@ -488,4 +484,8 @@ export const getUserChat = ({
     crush_status: 'enabled',
     search_keywords: getUserSearchKeywords(firstName, lastName, username),
   };
+};
+
+export const getUserChatFromMember = (u: ChatMember): ModelChatMember => {
+  return getUserChat({ ...u.user, status: u.status });
 };
