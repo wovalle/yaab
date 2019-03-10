@@ -3,7 +3,7 @@ import { get } from 'lodash';
 export interface ITranslationProvider {
   t(id: string, params?: any): string;
 }
-interface ITranslationParams {
+export interface ITranslationParams {
   [id: string]: string | number;
 }
 
