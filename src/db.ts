@@ -29,7 +29,6 @@ export class Db {
   constructor() {
     admin.initializeApp();
     this._db = admin.firestore();
-    this._db.settings({ timestampsInSnapshots: true });
   }
 
   retreiveMessagesInRange(

@@ -2,11 +2,6 @@ import admin from 'firebase-admin';
 import { GetRepository, BaseFirestoreRepository, Initialize } from 'fireorm';
 
 import { Chat } from '../src/models/Chat';
-import TelegramService from '../src/services/telegram';
-import Http from '../src/Http';
-
-import { getUserSearchKeywords } from '../src/selectors';
-const emojiStrip = require('emoji-strip');
 
 const serviceAccount = require('../firebase.creds.json');
 admin.initializeApp({
@@ -15,10 +10,6 @@ admin.initializeApp({
 });
 
 const firestore = admin.firestore();
-firestore.settings({
-  timestampsInSnapshots: true,
-});
-
 Initialize(firestore);
 
 const groupId = 'groupId';
