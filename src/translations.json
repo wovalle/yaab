@@ -35,7 +35,7 @@
     },
     "anon_message": {
       "user_says": "{{user}}: ",
-      "crush_says": "{{{nickname}}}({{mention}}): ",
+      "crush_says": "{{{nick}}}({{mention}}): ",
       "pick_user": "A quién e' que le tengo que escribir?🤔"
     },
     "errors": {

@@ -7,6 +7,12 @@ import I18nProvider from '../I18nProvider';
 import { ITelegramHandlerPayload } from '../types';
 import { CrushRelationshipRepository } from '../Repositories';
 import { CrushRelationshipRepositoryToken } from '..';
+import { PlainMessage } from '../models';
+
+interface ICallbackExtraData {
+  id: string;
+  nick: string;
+}
 
 @Handler(BotCommands.private_message)
 export class PrivateMessageHandler
@@ -29,83 +35,68 @@ export class PrivateMessageHandler
     );
   }
 
-  async Handle(payload: ITelegramHandlerPayload) {
-    const { plainMessage: pm, command } = payload;
-    // if 1 crush, just send msg
-    // is_reply
+  async handleToCrush(pm: PlainMessage, callbackData?: ICallbackExtraData) {
+    const nick = callbackData
+      ? callbackData.nick
+      : /{(.*?)}/.exec(pm.reply_text)[1];
 
-    /*
-      on writing check crushes and the people who I'm crush of
-      present the list
-      when writing crushes, |tc| Crush say:
-      when responding |fc| Fulanito(tg://234234) says:
-    */
-
-    // TODO: handle message types (vn, vdn, image, video, music, location)
-    if (command.activator === this.activators.pickUser) {
-      const [id, nick, activator] = pm.callback_data.split('|');
-      // TODO:
-      // if (activator === this.activators.toCrush) {
-
-      await this.sendMessage(pm.reply_text, id, nick, activator);
-      await this.telegramService.deleteMessage(pm.chat_id, pm.message_id);
-      return Promise.resolve();
+    if (!nick) {
+      return Promise.reject(new Error('Invalid Username'));
     }
 
-    if (command.activator === this.activators.fromCrush) {
-      const nickname = pm.reply_text.split(' ')[1].slice(0, -1);
-      // TODO: custom repository, findByNick
-      const crushRelationship = await this.crushRelationshipRepository
-        .whereEqualTo('user_nickname', nickname)
-        .find();
+    const messageText = callbackData ? pm.reply_text : pm.text;
 
-      const { user_id: userId } = crushRelationship[0];
-      const mention = this.telegramService.getMentionFromId(
-        pm.from_id,
-        pm.from_first_name,
-        pm.from_last_name
-      );
+    const crushRelationship = await this.crushRelationshipRepository
+      .whereEqualTo('user_nickname', nick)
+      .find();
 
-      const sanitized = [`\\[`, `\\]`, '`', '_', '\\*'].reduce(
-        (acc, cur) => acc.replace(new RegExp(cur, 'ig'), ''),
-        pm.text
-      );
-
-      return this.telegramService
-        .buildMessage(sanitized)
-        .to(userId)
-        .prepend(
-          this.i18n.t('commands.anon_message.crush_says', { mention, nickname })
-        )
-        .withActivator(this.activators.toCrush)
-        .asMarkDown()
-        .send();
+    if (!crushRelationship) {
+      return Promise.reject(new Error('Invalid Relationship'));
     }
 
-    if (command.activator === this.activators.toCrush) {
-      const nick = /{(.*?)}/.exec(pm.reply_text)[1];
+    return this.telegramService
+      .buildMessage(messageText)
+      .to(crushRelationship[0].crush_id)
+      .prepend(this.i18n.t('commands.anon_message.user_says', { user: nick }))
+      .withActivator(this.activators.fromCrush)
+      .send();
+  }
 
-      if (!nick) {
-        return Promise.reject(new Error('Invalid Username'));
-      }
+  async handleFromCrush(pm: PlainMessage, callbackData?: ICallbackExtraData) {
+    const nick = callbackData
+      ? callbackData.nick
+      : pm.reply_text.split(' ')[1].slice(0, -1);
 
-      const crushRelationship = await this.crushRelationshipRepository
-        .whereEqualTo('user_nickname', nick)
-        .find();
+    const messageText = callbackData ? pm.reply_text : pm.text;
+    // TODO: custom repository, findByNick
+    const crushRelationship = await this.crushRelationshipRepository
+      .whereEqualTo('user_nickname', nick)
+      .find();
 
-      if (!crushRelationship) {
-        return Promise.reject(new Error('Invalid Relationship'));
-      }
+    const { user_id: userId } = crushRelationship[0];
+    const mention = this.telegramService.getMentionFromId(
+      pm.from_id,
+      pm.from_first_name,
+      pm.from_last_name
+    );
 
-      await this.sendMessage(
-        pm.text,
-        crushRelationship[0].crush_id,
-        nick,
-        this.activators.fromCrush
-      );
-      return Promise.resolve();
-    }
+    const sanitized = [`\\[`, `\\]`, '`', '_', '\\*'].reduce(
+      (acc, cur) => acc.replace(new RegExp(cur, 'ig'), ''),
+      messageText
+    );
 
+    return this.telegramService
+      .buildMessage(sanitized)
+      .to(userId)
+      .prepend(
+        this.i18n.t('commands.anon_message.crush_says', { mention, nick })
+      )
+      .withActivator(this.activators.toCrush)
+      .asMarkDown()
+      .send();
+  }
+
+  async handleKeyboard(pm: PlainMessage) {
     // TODO: move to repository
     const myCrushes = await this.crushRelationshipRepository
       .whereEqualTo('user_id', pm.from_id)
@@ -152,12 +143,27 @@ export class PrivateMessageHandler
       .send();
   }
 
-  async sendMessage(text: string, to: string, user: string, activator: string) {
-    return this.telegramService
-      .buildMessage(text)
-      .to(to)
-      .prepend(this.i18n.t('commands.anon_message.user_says', { user }))
-      .withActivator(activator)
-      .send();
+  async Handle(payload: ITelegramHandlerPayload) {
+    const { plainMessage: pm, command } = payload;
+    let callbackExtraData = null;
+    let activator = command.activator;
+
+    // TODO: handle message types (vn, vdn, image, video, music, location)
+    if (activator === this.activators.pickUser) {
+      const [id, nick, cbActivator] = pm.callback_data.split('|');
+      callbackExtraData = { id, nick };
+      activator = cbActivator;
+      await this.telegramService.deleteMessage(pm.chat_id, pm.message_id);
+    }
+
+    if (activator === this.activators.fromCrush) {
+      return this.handleFromCrush(pm, callbackExtraData);
+    }
+
+    if (activator === this.activators.toCrush) {
+      return this.handleToCrush(pm, callbackExtraData);
+    }
+
+    return this.handleKeyboard(pm);
   }
 }
