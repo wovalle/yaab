@@ -123,7 +123,7 @@ export class PrivateMessageHandler
 
     const myCrushesKeyboard = myCrushesDetails.map(({ user: u }) => {
       let text = u.first_name;
-      text = u.username ? `${text} (${u.username})` : '';
+      text = u.username ? `${text} (${u.username})` : text;
 
       const crush = myCrushes.find(c => c.crush_id === `${u.id}`);
       const callback_data = `${crush.crush_id}|${crush.user_nickname}|${

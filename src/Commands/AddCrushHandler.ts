@@ -60,8 +60,8 @@ export class AddCrushHandler
 
       const usersKeyboard = users.map(u => {
         let text = u.first_name;
-        text = u.last_name ? `${text} ${u.last_name}` : '';
-        text = u.username ? `${text} (${u.username})` : '';
+        text = u.last_name ? `${text} ${u.last_name}` : text;
+        text = u.username ? `${text} (${u.username})` : text;
         return { text, callback_data: u.id };
       });
 
