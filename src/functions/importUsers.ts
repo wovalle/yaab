@@ -48,7 +48,6 @@ export default async (
       importedUsers.push(userToImport);
     }
   }
-  //TODO: write to events
 
   return { existingUsers, importedUsers };
 };

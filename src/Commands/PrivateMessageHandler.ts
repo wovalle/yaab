@@ -98,13 +98,10 @@ export class PrivateMessageHandler
 
   async handleKeyboard(pm: PlainMessage) {
     // TODO: move to repository
-    const myCrushes = await this.crushRelationshipRepository
-      .whereEqualTo('user_id', pm.from_id)
-      .find();
-
-    const crushesOfMine = await this.crushRelationshipRepository
-      .whereEqualTo('crush_id', pm.from_id)
-      .find();
+    const [myCrushes, crushesOfMine] = await Promise.all([
+      this.crushRelationshipRepository.getMyCrushes(pm.from_id),
+      this.crushRelationshipRepository.getCrushesOfMine(pm.from_id),
+    ]);
 
     const myCrushesDetails = await Promise.all(
       myCrushes.map(c =>
