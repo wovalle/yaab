@@ -97,7 +97,6 @@ export class PrivateMessageHandler
   }
 
   async handleKeyboard(pm: PlainMessage) {
-    // TODO: move to repository
     const [myCrushes, crushesOfMine] = await Promise.all([
       this.crushRelationshipRepository.getMyCrushes(pm.from_id),
       this.crushRelationshipRepository.getCrushesOfMine(pm.from_id),
@@ -130,6 +129,14 @@ export class PrivateMessageHandler
     });
 
     const usersKeyboard = [...myCrushesKeyboard, ...crushesOfMineKeyboard];
+
+    if (!usersKeyboard.length) {
+      return this.telegramService
+        .buildMessage(this.i18n.t('commands.errors.zero_crushes'))
+        .to(pm.chat_id)
+        .replyTo(pm.message_id)
+        .send();
+    }
 
     return this.telegramService
       .buildMessage(this.i18n.t('commands.anon_message.pick_user'))

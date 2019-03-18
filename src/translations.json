@@ -45,7 +45,8 @@
       "user_not_found": "bi, ete usuario no existe",
       "pm_not_implemented": "solo funciono en grupos por ahora ;)",
       "not_implemented": "tamo trabajando en eso bi",
-      "nothing_to_do": "ok, gracia"
+      "nothing_to_do": "ok, gracia",
+      "zero_crushes": "No se qué hacer con este mensaje 😞. Para agregar un crush usa /addcrush. Cualquier duda usa /help."
     }
   },
   "enums": {
