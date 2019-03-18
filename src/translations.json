@@ -1,7 +1,7 @@
 {
   "commands": {
     "start": {
-      "successful": "tAmo en vivo!\nUn cientifico ta' tirando codigo para agregarme funcionalidades, mientras tanto vete a freir tusa.\n/benditocrush #comingsoon\n👨‍💻: @wovalle"
+      "successful": "tAmo en vivo!\n. Si quieres saber todos los comandos que yo soporto escribe /help"
     },
     "help": {
       "successful": "oh pero ayúdame tu a mi"
@@ -31,7 +31,9 @@
       "new_crush": "Tienes un crush nuevo!❤️ Su nickname es: {{nickname}}, Qué le quieres decir? 😉",
       "search": "Dame el nombre de tu crush pa' buscarlo 😏",
       "not_found": "Tu ta segur@ que hay un '{{name}}' en el grupo? Dale again y ecribe bien",
-      "users_found": "Encontré a eta gente:"
+      "users_found": "Encontré a eta gente:",
+      "crush_disabled_single": "{{mention}} no le ha dado /start al bot o deshabilitó el #crushmode. No se pudo agregar el crush.",
+      "crush_disabled_group": "klk {{mention}}, alguien te ta' tratando de agregar como crush, ponte pa lo tuyo. "
     },
     "anon_message": {
       "user_says": "{{user}}: ",

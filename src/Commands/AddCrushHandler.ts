@@ -78,15 +78,30 @@ export class AddCrushHandler
         payload.command.callback_data
       );
 
-      if (user.crush_status === 'disabled') {
-        // TODO: build getter
-        let name = user.first_name;
-        name = user.last_name ? name.concat(` ${user.last_name}`) : name;
+      if (user.crush_status !== 'enabled') {
+        const mention = this.telegramService.getMentionFromId(
+          user.id,
+          user.first_name,
+          user.last_name
+        );
 
-        return this.telegramService
-          .buildMessage(this.i18n.t('commands.add_crush.invalid', { name }))
-          .to(payload.plainMessage.chat_id)
+        // Send message to the userFrom
+        await this.telegramService
+          .buildMessage(
+            this.i18n.t('commands.add_crush.crush_disabled_single', { mention })
+          )
+          .to(payload.userFrom.id)
           .send();
+
+        // Send message to the group
+        await this.telegramService
+          .buildMessage(
+            this.i18n.t('commands.add_crush.crush_disabled_group', { mention })
+          )
+          .to(fixedChat.id)
+          .send();
+
+        return Promise.resolve();
       }
 
       const existingCrushRelationship = await this.crushRelationshipRepository

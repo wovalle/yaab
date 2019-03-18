@@ -481,7 +481,7 @@ export const getUserChat = ({
     last_message: null,
     username: username,
     status: status,
-    crush_status: 'enabled',
+    crush_status: 'disabled',
     search_keywords: getUserSearchKeywords(firstName, lastName, username),
   };
 };

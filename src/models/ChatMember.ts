@@ -10,6 +10,6 @@ export class ChatMember {
   role: UserRole;
   status: string; // “creator”, “administrator”, “member”, “restricted”, “left” or “kicked”
   protected: boolean;
-  crush_status: 'enabled' | 'disabled';
+  crush_status: 'enabled' | 'disabled' | 'blocked';
   search_keywords: string[];
 }
