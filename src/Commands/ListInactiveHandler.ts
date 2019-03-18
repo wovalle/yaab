@@ -4,7 +4,6 @@ import Container from 'typedi';
 import TelegramService from '../services/telegram/TelegramService';
 import { BotCommands } from '../selectors';
 import I18nProvider from '../I18nProvider';
-import { ParseMode } from '../services/telegram';
 import { addHours } from 'date-fns';
 import { ITelegramHandlerPayload } from '../types';
 
@@ -43,25 +42,25 @@ export class ListInactiveHandler
 
     if (!users.length) {
       const errorId = 'commands.list_inactive.empty';
-      return this.telegramService.sendChat(
-        pm.chat_id,
-        this.i18n.t(errorId, { hours }),
-        {
-          parse_mode: ParseMode.Markdown,
-          reply_to_message_id: pm.message_id,
-        }
-      );
+      return this.telegramService
+        .buildMessage(this.i18n.t(errorId, { hours }))
+        .to(pm.chat_id)
+        .replyTo(pm.message_id)
+        .asMarkDown()
+        .send();
     }
 
     const mentions = users
       .map(u => this.telegramService.getMentionFromId(u.id, u.first_name))
       .join(', ');
 
-    await this.telegramService.sendChat(
-      pm.chat_id,
-      this.i18n.t('commands.list_inactive.successful', { hours, mentions }),
-      { parse_mode: ParseMode.Markdown }
-    );
+    await this.telegramService
+      .buildMessage(
+        this.i18n.t('commands.list_inactive.successful', { hours, mentions })
+      )
+      .to(pm.chat_id)
+      .asMarkDown()
+      .send();
 
     return Promise.resolve();
   }

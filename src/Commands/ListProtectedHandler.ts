@@ -4,7 +4,6 @@ import Container from 'typedi';
 import TelegramService from '../services/telegram/TelegramService';
 import { BotCommands } from '../selectors';
 import I18nProvider from '../I18nProvider';
-import { ParseMode } from '../services/telegram';
 import { ITelegramHandlerPayload } from '../types';
 
 // TODO: send pm summary with users tagged, bots and protected
@@ -30,10 +29,12 @@ export class ListProtectedHandler
       )
       .join(', ');
 
-    await this.telegramService.sendChat(
-      pm.chat_id,
-      this.i18n.t('commands.list_protected.successful', { mentions }),
-      { parse_mode: ParseMode.Markdown }
-    );
+    await this.telegramService
+      .buildMessage(
+        this.i18n.t('commands.list_protected.successful', { mentions })
+      )
+      .to(pm.chat_id)
+      .asMarkDown()
+      .send();
   }
 }

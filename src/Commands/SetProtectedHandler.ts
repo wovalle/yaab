@@ -4,7 +4,6 @@ import Container from 'typedi';
 import TelegramService from '../services/telegram/TelegramService';
 import { BotCommands, getUserChatFromMember } from '../selectors';
 import I18nProvider from '../I18nProvider';
-import { ParseMode } from '../services/telegram';
 import { ITelegramHandlerPayload } from '../types';
 
 // TODO: send pm summary with users tagged, bots and protected
@@ -34,14 +33,12 @@ export class SetProtectedHandler
       const text = pm.text.trim().split(' ');
 
       if (text.length !== 2) {
-        return this.telegramService.sendChat(
-          pm.chat_id,
-          this.i18n.t('commands.errors.nothing_to_do'),
-          {
-            reply_to_message_id: pm.message_id,
-            parse_mode: ParseMode.Markdown,
-          }
-        );
+        return this.telegramService
+          .buildMessage(this.i18n.t('commands.errors.nothing_to_do'))
+          .to(pm.chat_id)
+          .replyTo(pm.message_id)
+          .asMarkDown()
+          .send();
       }
 
       userIdToProtect = text.slice(-1)[0];
@@ -65,19 +62,21 @@ export class SetProtectedHandler
 
     const action = shouldProtect ? 'protect_user' : 'remove_protected';
 
-    await this.telegramService.sendChat(
-      pm.chat_id,
-      this.i18n.t(`commands.${action}.successful`, {
-        name: this.telegramService.getMentionFromId(
-          userToProtect.id,
-          userToProtect.first_name
-        ),
-      }),
-      {
-        reply_to_message_id: pm.message_id,
-        parse_mode: ParseMode.Markdown,
-      }
+    const mention = this.telegramService.getMentionFromId(
+      userToProtect.id,
+      userToProtect.first_name
     );
+
+    await this.telegramService
+      .buildMessage(
+        this.i18n.t(`commands.${action}.successful`, {
+          mention,
+        })
+      )
+      .to(pm.chat_id)
+      .replyTo(pm.message_id)
+      .asMarkDown()
+      .send();
 
     return Promise.resolve();
   }

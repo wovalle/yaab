@@ -4,7 +4,6 @@ import Container from 'typedi';
 import TelegramService from '../services/telegram/TelegramService';
 import { BotCommands } from '../selectors';
 import I18nProvider from '../I18nProvider';
-import { ParseMode } from '../services/telegram';
 import { addHours } from 'date-fns';
 import { ITelegramHandlerPayload } from '../types';
 
@@ -77,11 +76,13 @@ export class RemoveInactivesHandler
       .map(u => this.telegramService.getMentionFromId(u.id, u.first_name))
       .join(', ');
 
-    await this.telegramService.sendChat(
-      pm.chat_id,
-      this.i18n.t('commands.remove_inactives.successful', { mentions }),
-      { parse_mode: ParseMode.Markdown }
-    );
+    await this.telegramService
+      .buildMessage(
+        this.i18n.t('commands.remove_inactives.successful', { mentions })
+      )
+      .to(pm.chat_id)
+      .asMarkDown()
+      .send();
 
     return Promise.resolve();
   }
