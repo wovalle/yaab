@@ -289,17 +289,6 @@ const BotCommandsDetails: IBotCommandDetail[] = [
   },
   {
     admin: false,
-    key: BotCommands.enable_crush_mode,
-    keyword: 'benditocrush',
-    scopes: [
-      BotCommandScope.group,
-      BotCommandScope.supergroup,
-      BotCommandScope.private,
-    ],
-    textActivators: [],
-  },
-  {
-    admin: false,
     key: BotCommands.start,
     keyword: 'start',
     scopes: [BotCommandScope.private],
@@ -321,7 +310,7 @@ const BotCommandsDetails: IBotCommandDetail[] = [
       BotCommandScope.group,
       BotCommandScope.supergroup,
     ],
-    textActivators: ['crush_search', 'crush_found'],
+    textActivators: ['crush_search', 'crush_found', 'cancel'],
   },
   {
     admin: false,

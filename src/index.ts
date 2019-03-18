@@ -67,7 +67,6 @@ import { ListProtectedHandler } from './Commands/ListProtectedHandler';
 import { ListInactiveHandler } from './Commands/ListInactiveHandler';
 import { SetProtectedHandler } from './Commands/SetProtectedHandler';
 import { RemoveInactivesHandler } from './Commands/RemoveInactivesHandler';
-import { EnableCrushModeHandler } from './Commands/EnableCrushModeHandler';
 import { StartHandler } from './Commands/StartHandler';
 import { HelpHandler } from './Commands/HelpHandler';
 import { AddCrushHandler } from './Commands/AddCrushHandler';
@@ -77,7 +76,6 @@ ListProtectedHandler.name;
 ListInactiveHandler.name;
 SetProtectedHandler.name;
 RemoveInactivesHandler.name;
-EnableCrushModeHandler.name;
 StartHandler.name;
 HelpHandler.name;
 Chat.name;
@@ -187,7 +185,7 @@ export const onTelegramUpdateFn = functions.https.onRequest(
       return res.send({ ok: true });
     } catch (error) {
       logger.error(error);
-      logger.error(JSON.stringify(update, null, 2));
+      // logger.error(JSON.stringify(update, null, 2));
       return res.status(200).send({ ok: false });
     }
   }
