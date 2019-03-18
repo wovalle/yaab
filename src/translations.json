@@ -7,18 +7,15 @@
       "successful": "oh pero ayúdame tu a mi"
     },
     "protect_user": {
-      "successful": "ufff, ya no le voy a da mocha a {{name}}"
+      "successful": "ufff, ya no le voy a da mocha a {{mention}}"
     },
     "remove_protected": {
-      "successful": "ya si me puedo llevar a {{name}}"
+      "successful": "ya si me puedo llevar a {{mention}}"
     },
     "list_inactive": {
       "wrong_command": "billy boy, ecribe el comando bien",
       "empty": "en velda nadie vegetó en las últimas {{hours}} horas",
       "successful": "señore tAmo en vivo y eta gente lleva {{hours}} horas brechando sin habla: {{mentions}}"
-    },
-    "enable_crush_mode": {
-      "successful": "Estamos trabajando por el bienestar de tu queso.\nBendito Crush #ComingSoon\nDale /start a @benditobot en privado para que seas parte del coro!"
     },
     "list_protected": {
       "successful": "lo que tan pegao de la teta son: {{mentions}}"
@@ -30,8 +27,8 @@
       "successful": "Crush agregado! Tu nickname es: {{nickname}}",
       "new_crush": "Tienes un crush nuevo!❤️ Su nickname es: {{nickname}}, Qué le quieres decir? 😉",
       "search": "Dame el nombre de tu crush pa' buscarlo 😏",
-      "not_found": "Tu ta segur@ que hay un '{{name}}' en el grupo? Dale again y ecribe bien",
-      "users_found": "Encontré a eta gente:",
+      "not_found": "Tu ta segur@ que hay un '{{name}}' en el grupo? Porque yo no encontré a nadie que se llame así. Intenta de nuevo:",
+      "users_found": "Estos fueron los que encontré (dale click al nombre de tu crush para agregarlo o dale a cancelar): ",
       "crush_disabled_single": "{{mention}} no le ha dado /start al bot o deshabilitó el #crushmode. No se pudo agregar el crush.",
       "crush_disabled_group": "klk {{mention}}, alguien te ta' tratando de agregar como crush, ponte pa lo tuyo. "
     },
@@ -58,5 +55,8 @@
       "private": "Mensajes Privados",
       "channel": "Canales"
     }
+  },
+  "literals": {
+    "cancel": "Cancelar"
   }
 }

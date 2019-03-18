@@ -22,6 +22,7 @@ export class AddCrushHandler
   private activators = {
     search: 'crush_search',
     usersFound: 'crush_found',
+    cancel: 'cancel',
   };
 
   constructor() {
@@ -58,12 +59,17 @@ export class AddCrushHandler
           .send();
       }
 
-      const usersKeyboard = users.map(u => {
-        let text = u.first_name;
-        text = u.last_name ? `${text} ${u.last_name}` : text;
-        text = u.username ? `${text} (${u.username})` : text;
-        return { text, callback_data: u.id };
-      });
+      const usersKeyboard = users
+        .map(u => {
+          let text = u.first_name;
+          text = u.last_name ? `${text} ${u.last_name}` : text;
+          text = u.username ? `${text} (${u.username})` : text;
+          return { text, callback_data: u.id };
+        })
+        .concat({
+          text: this.i18n.t('literals.cancel'),
+          callback_data: 'cancel',
+        });
 
       return this.telegramService
         .buildMessage(this.i18n.t('commands.add_crush.users_found'))
@@ -138,6 +144,11 @@ export class AddCrushHandler
         .to(payload.plainMessage.callback_data)
         .send();
       return Promise.resolve();
+    } else if (payload.command.activator === this.activators.cancel) {
+      await this.telegramService.deleteMessage(
+        payload.plainMessage.chat_id,
+        payload.plainMessage.message_id
+      );
     }
 
     return Promise.reject('Invalid Path');
