@@ -124,6 +124,6 @@ export enum UserStatus {
 export interface ITelegramHandlerPayload {
   plainMessage: PlainMessage;
   command: BotCommand;
-  userFrom: ChatMember;
+  messageFrom: ChatMember;
   chat: Chat;
 }
