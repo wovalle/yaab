@@ -4,7 +4,6 @@ import Container from 'typedi';
 import TelegramService from '../services/telegram/TelegramService';
 import { BotCommands } from '../selectors';
 import I18nProvider from '../I18nProvider';
-import { ParseMode } from '../services/telegram';
 import { ITelegramHandlerPayload } from '../types';
 import { ChatRepository } from '../Repositories';
 import { ChatRepositoryToken } from '..';
@@ -14,26 +13,38 @@ export class StartHandler
   implements ICommandHandler<ITelegramHandlerPayload, void> {
   private telegramService: TelegramService;
   private i18n: I18nProvider;
+  private crushGroupId: string;
   private chatRepository: ChatRepository;
 
   constructor() {
     this.telegramService = Container.get(TelegramService);
     this.i18n = Container.get(I18nProvider);
+    this.crushGroupId = Container.get('fixedCrushGroup');
     this.chatRepository = Container.get(ChatRepositoryToken);
   }
 
   async Handle(payload: ITelegramHandlerPayload) {
-    const { userFrom } = payload;
+    const fixedChat = await this.chatRepository.findById(this.crushGroupId);
+    const userFromChat = await fixedChat.users.findById(payload.messageFrom.id);
 
-    userFrom.crush_status = 'enabled';
-    await this.chatRepository.update(userFrom);
+    if (!userFromChat) {
+      await this.telegramService
+        .buildMessage(this.i18n.t('commands.start.user_not_found'))
+        .to(payload.plainMessage.chat_id)
+        .asMarkDown()
+        .send();
 
-    return this.telegramService.sendChat(
-      payload.plainMessage.chat_id,
-      this.i18n.t('commands.start.successful'),
-      {
-        parse_mode: ParseMode.Markdown,
-      }
-    );
+      return Promise.resolve();
+    }
+
+    userFromChat.crush_status = 'enabled';
+
+    await fixedChat.users.update(userFromChat);
+
+    return this.telegramService
+      .buildMessage(this.i18n.t('commands.start.successful'))
+      .to(payload.plainMessage.chat_id)
+      .asMarkDown()
+      .send();
   }
 }
