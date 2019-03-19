@@ -79,6 +79,14 @@ export class AddCrushHandler
         .forceReply()
         .send();
     } else if (payload.command.activator === this.activators.usersFound) {
+      if (payload.command.callback_data === this.activators.cancel) {
+        await this.telegramService.deleteMessage(
+          payload.plainMessage.chat_id,
+          payload.plainMessage.message_id
+        );
+        return Promise.resolve();
+      }
+
       const fixedChat = await this.chatRepository.findById(this.crushGroupId);
       const user = await fixedChat.users.findById(
         payload.command.callback_data
@@ -91,21 +99,26 @@ export class AddCrushHandler
           user.last_name
         );
 
-        // Send message to the userFrom
         await this.telegramService
           .buildMessage(
             this.i18n.t('commands.add_crush.crush_disabled_single', { mention })
           )
-          .to(payload.userFrom.id)
+          .to(payload.plainMessage.from_id)
+          .asMarkDown()
           .send();
 
-        // Send message to the group
         await this.telegramService
           .buildMessage(
             this.i18n.t('commands.add_crush.crush_disabled_group', { mention })
           )
           .to(fixedChat.id)
+          .asMarkDown()
           .send();
+
+        await this.telegramService.deleteMessage(
+          payload.plainMessage.chat_id,
+          payload.plainMessage.message_id
+        );
 
         return Promise.resolve();
       }
@@ -144,11 +157,6 @@ export class AddCrushHandler
         .to(payload.plainMessage.callback_data)
         .send();
       return Promise.resolve();
-    } else if (payload.command.activator === this.activators.cancel) {
-      await this.telegramService.deleteMessage(
-        payload.plainMessage.chat_id,
-        payload.plainMessage.message_id
-      );
     }
 
     return Promise.reject('Invalid Path');
