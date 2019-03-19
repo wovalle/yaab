@@ -50,6 +50,10 @@ export default class TelegramService implements ITelegramService {
       props.parseMode = opts.parse_mode;
     }
 
+    if (opts.reply_to_message_id) {
+      props.replyTo = opts.reply_to_message_id;
+    }
+
     return this.sendRawMessage(props);
   }
 
