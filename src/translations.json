@@ -35,11 +35,12 @@
     },
     "anon_message": {
       "user_says": "{{user}}: ",
-      "crush_says": "{{{nick}}}({{mention}}): ",
-      "pick_user": "A quién e' que le tengo que escribir?🤔"
+      "crush_says": "{{{nick}}}({{name}}): ",
+      "pick_user": "A quién e' que le tengo que escribir?🤔",
+      "media_not_supported": "Sorry manin, todavía no soporto mandar media (vns, fotos, videos). Quéjate con un ADM pa' que le pongan eso.r"
     },
     "errors": {
-      "invalid": "manito, que jodio comando fue ese",
+      "invalid": "manito, qué jodio comando fue ese",
       "internal": "bi toy chipiando, tirale a un adm",
       "wrong_scope": "el comando `{{command}}` solo se puede usar en: {{scopes}}",
       "forbidden": "kien diablo tu ere, tu no puede ejecuta `{{cmd}}`",

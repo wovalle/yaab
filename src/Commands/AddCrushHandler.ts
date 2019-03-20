@@ -79,11 +79,12 @@ export class AddCrushHandler
         .forceReply()
         .send();
     } else if (payload.command.activator === this.activators.usersFound) {
+      await this.telegramService.deleteMessage(
+        payload.plainMessage.chat_id,
+        payload.plainMessage.message_id
+      );
+
       if (payload.command.callback_data === this.activators.cancel) {
-        await this.telegramService.deleteMessage(
-          payload.plainMessage.chat_id,
-          payload.plainMessage.message_id
-        );
         return Promise.resolve();
       }
 

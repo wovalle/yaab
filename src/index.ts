@@ -168,6 +168,7 @@ export const onTelegramUpdateFn = functions.https.onRequest(
     const update: Update = req.body;
 
     logger.log('Update:', JSON.stringify(update, null, 2));
+
     if (!update) {
       return res.status(400).send('`message` parameter is required');
     }

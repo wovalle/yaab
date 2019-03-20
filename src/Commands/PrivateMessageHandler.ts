@@ -63,6 +63,7 @@ export class PrivateMessageHandler
   }
 
   async handleFromCrush(pm: PlainMessage, callbackData?: ICallbackExtraData) {
+    const { from_first_name, from_last_name } = pm;
     const nick = callbackData
       ? callbackData.nick
       : pm.reply_text.split(' ')[1].slice(0, -1);
@@ -74,32 +75,28 @@ export class PrivateMessageHandler
       .find();
 
     const { user_id: userId } = crushRelationship[0];
-    const mention = this.telegramService.getMentionFromId(
-      pm.from_id,
-      pm.from_first_name,
-      pm.from_last_name
-    );
-
-    const sanitized = [`\\[`, `\\]`, '`', '_', '\\*'].reduce(
-      (acc, cur) => acc.replace(new RegExp(cur, 'ig'), ''),
-      messageText
-    );
+    const name = from_last_name
+      ? `${from_first_name} ${from_last_name}`
+      : from_first_name;
 
     return this.telegramService
-      .buildMessage(sanitized)
+      .buildMessage(messageText)
       .to(userId)
       .prepend(
-        this.i18n.t('commands.anon_message.crush_says', { mention, nick })
+        this.i18n.t('commands.anon_message.crush_says', {
+          name,
+          nick,
+        })
       )
       .withActivator(this.activators.toCrush)
-      .asMarkDown()
       .send();
   }
 
   async handleKeyboard(pm: PlainMessage) {
+    const { from_id } = pm;
     const [myCrushes, crushesOfMine] = await Promise.all([
-      this.crushRelationshipRepository.getMyCrushes(pm.from_id),
-      this.crushRelationshipRepository.getCrushesOfMine(pm.from_id),
+      this.crushRelationshipRepository.getMyCrushes(from_id),
+      this.crushRelationshipRepository.getCrushesOfMine(from_id),
     ]);
 
     const myCrushesDetails = await Promise.all(
@@ -114,7 +111,7 @@ export class PrivateMessageHandler
 
       const crush = myCrushes.find(c => c.crush_id === `${u.id}`);
       const callback_data = `${crush.crush_id}|${crush.user_nickname}|${
-        this.activators.fromCrush
+        this.activators.toCrush
       }`;
 
       return { text, callback_data };
@@ -123,7 +120,7 @@ export class PrivateMessageHandler
     const crushesOfMineKeyboard = crushesOfMine.map(u => {
       const text = u.user_nickname;
       const callback_data = `${u.user_id}|${u.user_nickname}|${
-        this.activators.toCrush
+        this.activators.fromCrush
       }`;
       return { text, callback_data };
     });
@@ -149,10 +146,20 @@ export class PrivateMessageHandler
 
   async Handle(payload: ITelegramHandlerPayload) {
     const { plainMessage: pm, command } = payload;
+
     let callbackExtraData = null;
     let activator = command.activator;
 
-    // TODO: handle message types (vn, vdn, image, video, music, location)
+    if (pm.is_plain_media) {
+      await this.telegramService
+        .buildMessage(this.i18n.t('commands.anon_message.media_not_supported'))
+        .to(pm.from_id)
+        .replyTo(pm.message_id)
+        .asMarkDown()
+        .send();
+      return Promise.resolve();
+    }
+
     if (activator === this.activators.pickUser) {
       const [id, nick, cbActivator] = pm.callback_data.split('|');
       callbackExtraData = { id, nick };

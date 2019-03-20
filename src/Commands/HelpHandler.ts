@@ -22,7 +22,21 @@ export class HelpHandler
     const p = (t: string = '') => `${t}\n`;
     // prettier-ignore
     const message =
-      p('**===Comandos===**') +
+      p('**===FAQ===**') +
+      p('- Cómo le hablo a mi crush?') +
+      p('Si no lo has agregado, puedes agregarlo como /addcrush.') +
+      p('Para enviarle mensajes anónimos a tu crush, envíame mensajes y yo se los envío 😏') +
+      p() +
+      p('- Por qué tengo que elegir un nick cada vez que envío un mensaje?') +
+      p('No tienes. Si le das reply a cualquier mensaje que te envíen, yo me encargo de hacerselo llegar') +
+      p() +
+      p('- Si agrego a alguien como crush, el puede ver quien yo soy?') +
+      p('Nopity nop.') +
+      p() +
+      p('- Cómo mando un nude?') +
+      p('No puedes por el momento 🥺, tamo trabajando pa eso') +
+      p() +
+      p('**===Commands===**') +
       p('/addcrush - Agrega a un usuario del grupo como crush. Esto te permite tirarle Dms anónimos 😏') +
       p('/mutecrush - Mutea un usuario') +
       p('/disablecrush - Deshabilita que otras personas puedan agregarte como crush') +

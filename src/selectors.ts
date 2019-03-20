@@ -344,6 +344,7 @@ export const getBotCommand = (message: PlainMessage): BotCommand => {
     reply_from_username,
     entity_type,
     callback_data,
+    entities,
   } = message;
 
   const groupScopes = [BotCommandScope.group, BotCommandScope.supergroup];
@@ -356,7 +357,9 @@ export const getBotCommand = (message: PlainMessage): BotCommand => {
     : true;
 
   const shouldProcessBotCommand =
-    entity_type === 'bot_command' && isBotCommandDirectedToBot;
+    entity_type === 'bot_command' &&
+    entities[0].offset === 0 &&
+    isBotCommandDirectedToBot;
 
   if (shouldProcessBotCommand) {
     const splittedText = text.trim().split(' ');
