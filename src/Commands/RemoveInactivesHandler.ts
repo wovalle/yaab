@@ -54,11 +54,7 @@ export class RemoveInactivesHandler
     const usersWithError = [];
     for (const u of users) {
       try {
-        await this.telegramService.kickUser(
-          u.id,
-          pm.chat_id,
-          addHours(this.getCurrentDate(), 12)
-        );
+        await this.telegramService.kickUser(u.id, pm.chat_id);
 
         u.status = 'kicked';
         await chat.users.update(u);

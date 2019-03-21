@@ -57,13 +57,17 @@ export default class TelegramService implements ITelegramService {
     return this.sendRawMessage(props);
   }
 
-  async kickUser(userId: string, chatId: string, until: Date): Promise<void> {
+  async kickUser(userId: string, chatId: string, until?: Date): Promise<void> {
     const url = this.buildUrl('kickChatMember');
     const payload = {
       chat_id: chatId,
       user_id: userId,
-      until_date: getUnixTimeFromDate(until),
+      until_date: null,
     };
+
+    if (until) {
+      payload.until_date = until;
+    }
 
     await this.http.post(url, payload);
   }
