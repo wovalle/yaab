@@ -49,6 +49,10 @@
       "not_implemented": "tamo trabajando en eso bi",
       "nothing_to_do": "ok, gracia",
       "zero_crushes": "No se qué hacer con este mensaje 😞. Para agregar un crush usa /addcrush. Cualquier duda usa /help."
+    },
+    "block_crush": {
+      "done": "tato, tamo ready con el bloqueo",
+      "list": "A quién e que vamo a bloquea?"
     }
   },
   "enums": {

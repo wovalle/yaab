@@ -229,11 +229,15 @@ export enum BotCommands {
   list_inactives = 'list_inactives',
   list_protected = 'list_protected',
   remove_protected = 'remove_protected',
-  enable_crush_mode = 'enable_crush_mode',
   add_crush = 'add_crush',
   start = 'start',
   help = 'help',
   private_message = 'private_message',
+  block_crush = 'block_crush',
+  unblock_crush = 'unblock_crush',
+  list_crush = 'list_crush',
+  enable_crush_mode = 'enable_crush_mode',
+  disable_crush_mode = 'disable_crush_mode',
 }
 
 export enum BotCommandScope {
@@ -311,6 +315,13 @@ const BotCommandsDetails: IBotCommandDetail[] = [
       BotCommandScope.supergroup,
     ],
     textActivators: ['crush_search', 'crush_found', 'cancel'],
+  },
+  {
+    admin: false,
+    key: BotCommands.block_crush,
+    keyword: 'blockcrush',
+    scopes: [BotCommandScope.private],
+    textActivators: ['p', 'cancel'],
   },
   {
     admin: false,
