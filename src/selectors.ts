@@ -339,6 +339,20 @@ const BotCommandsDetails: IBotCommandDetail[] = [
   },
   {
     admin: false,
+    key: BotCommands.enable_crush_mode,
+    keyword: 'enablecrush',
+    scopes: [BotCommandScope.private],
+    textActivators: [],
+  },
+  {
+    admin: false,
+    key: BotCommands.disable_crush_mode,
+    keyword: 'disablecrush',
+    scopes: [BotCommandScope.private],
+    textActivators: [],
+  },
+  {
+    admin: false,
     key: BotCommands.private_message,
     keyword: '',
     scopes: [BotCommandScope.private],

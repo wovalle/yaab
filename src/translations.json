@@ -60,6 +60,10 @@
     },
     "list_crush": {
       "successful": "Crushes:\n{{crushes}}\n\nCrushers:\n{{crushers}}"
+    },
+    "set_crush_mode": {
+      "enabled": "Readddyyyyyy, ya puedes mandar/recibir mensajes a/de tus crushs!",
+      "blocked": "Que palom@ 😔. Ya no vas a mandar/recibir mensajes a/de tus crushs."
     }
   },
   "enums": {
