@@ -40,15 +40,17 @@ export class ListCrushHandler
     const crushes = crushesDetails
       .map(e => {
         const rel = myCrushes.find(c => c.crush_id === `${e.user.id}`);
+        const extra = rel.crush_status === 'blocked' ? ' [blocked]' : '';
         return `${e.user.first_name} ${e.user.last_name} (${
           rel.user_nickname
-        })`;
+        }) ${extra}`;
       })
       .join('\n');
 
     const crushers = crushesOfMine
       .map(e => {
-        return `${e.user_nickname}`;
+        const extra = e.crush_status === 'blocked' ? ' [blocked]' : '';
+        return `${e.user_nickname} ${extra}`;
       })
       .join('\n');
 

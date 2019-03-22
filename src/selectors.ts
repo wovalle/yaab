@@ -321,7 +321,14 @@ const BotCommandsDetails: IBotCommandDetail[] = [
     key: BotCommands.block_crush,
     keyword: 'blockcrush',
     scopes: [BotCommandScope.private],
-    textActivators: ['p', 'cancel'],
+    textActivators: ['bp', 'cancel'],
+  },
+  {
+    admin: false,
+    key: BotCommands.unblock_crush,
+    keyword: 'unblockcrush',
+    scopes: [BotCommandScope.private],
+    textActivators: ['up', 'cancel'],
   },
   {
     admin: false,

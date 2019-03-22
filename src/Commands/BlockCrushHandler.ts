@@ -9,6 +9,7 @@ import { CrushRelationshipRepositoryToken } from '..';
 import { CrushRelationshipRepository } from '../Repositories';
 
 @Handler(BotCommands.block_crush)
+@Handler(BotCommands.unblock_crush)
 export class BlockCrushHandler
   implements ICommandHandler<ITelegramHandlerPayload, void> {
   private telegramService: TelegramService;
@@ -16,7 +17,8 @@ export class BlockCrushHandler
   private crushRelationshipRepository: CrushRelationshipRepository;
 
   private activators = {
-    pickUser: 'p',
+    blockUser: 'bp',
+    unblockUser: 'up',
     cancel: 'cancel',
   };
 
@@ -29,9 +31,14 @@ export class BlockCrushHandler
   }
 
   async Handle(payload: ITelegramHandlerPayload) {
-    const { plainMessage: pm, chat, command } = payload;
+    const { plainMessage: pm, command } = payload;
+    const commandKey = command.details.key;
 
-    if (command.activator === this.activators.pickUser) {
+    if (
+      [this.activators.blockUser, this.activators.unblockUser].includes(
+        command.activator
+      )
+    ) {
       await this.telegramService.deleteMessage(pm.chat_id, pm.message_id);
 
       if (command.callback_data === this.activators.cancel) {
@@ -48,18 +55,23 @@ export class BlockCrushHandler
         throw new Error('Could not find crush');
       }
 
-      relationship.crush_status = 'blocked';
+      relationship.crush_status =
+        commandKey === BotCommands.block_crush ? 'blocked' : 'active';
+
       await this.crushRelationshipRepository.update(relationship);
 
       return this.telegramService
-        .buildMessage(this.i18n.t('commands.block_crush.done'))
+        .buildMessage(this.i18n.t(`commands.${commandKey}.done`))
         .to(pm.chat_id)
         .send();
     }
 
+    const status =
+      commandKey === BotCommands.block_crush ? 'active' : 'blocked';
+
     const [myCrushes, crushesOfMine] = await Promise.all([
-      this.crushRelationshipRepository.getMyCrushes(pm.from_id),
-      this.crushRelationshipRepository.getCrushesOfMine(pm.from_id),
+      this.crushRelationshipRepository.getMyCrushes(pm.from_id, status),
+      this.crushRelationshipRepository.getCrushesOfMine(pm.from_id, status),
     ]);
 
     const myCrushesDetails = await Promise.all(
@@ -92,10 +104,15 @@ export class BlockCrushHandler
       callback_data: 'cancel',
     });
 
+    const activator =
+      commandKey === BotCommands.block_crush
+        ? this.activators.blockUser
+        : this.activators.unblockUser;
+
     return this.telegramService
-      .buildMessage(this.i18n.t('commands.block_crush.list'))
+      .buildMessage(this.i18n.t(`commands.${commandKey}.list`))
       .to(pm.chat_id)
-      .withActivator(this.activators.pickUser)
+      .withActivator(activator)
       .withKeyboard(usersKeyboard)
       .forceReply()
       .send();

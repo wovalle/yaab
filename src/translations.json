@@ -54,6 +54,10 @@
       "done": "tato, tamo ready con el bloqueo",
       "list": "A quién e que vamo a bloquea?"
     },
+    "unblock_crush": {
+      "done": "tato, tamo ready con el debloqueo",
+      "list": "Ahora te arrepentiste? lol. A quién e que vamo a debloquea?"
+    },
     "list_crush": {
       "successful": "Crushes:\n{{crushes}}\n\nCrushers:\n{{crushers}}"
     }
