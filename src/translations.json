@@ -53,6 +53,9 @@
     "block_crush": {
       "done": "tato, tamo ready con el bloqueo",
       "list": "A quién e que vamo a bloquea?"
+    },
+    "list_crush": {
+      "successful": "Crushes:\n{{crushes}}\n\nCrushers:\n{{crushers}}"
     }
   },
   "enums": {

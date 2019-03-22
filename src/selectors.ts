@@ -325,6 +325,13 @@ const BotCommandsDetails: IBotCommandDetail[] = [
   },
   {
     admin: false,
+    key: BotCommands.list_crush,
+    keyword: 'listcrush',
+    scopes: [BotCommandScope.private],
+    textActivators: [],
+  },
+  {
+    admin: false,
     key: BotCommands.private_message,
     keyword: '',
     scopes: [BotCommandScope.private],

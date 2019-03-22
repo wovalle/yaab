@@ -2,7 +2,7 @@ import { Handler, ICommandHandler } from 'tsmediator';
 import Container from 'typedi';
 
 import TelegramService from '../services/telegram/TelegramService';
-import { BotCommands, getUserChatFromMember } from '../selectors';
+import { BotCommands } from '../selectors';
 import I18nProvider from '../I18nProvider';
 import { ITelegramHandlerPayload } from '../types';
 import { CrushRelationshipRepositoryToken } from '..';

@@ -72,6 +72,7 @@ import { HelpHandler } from './Commands/HelpHandler';
 import { AddCrushHandler } from './Commands/AddCrushHandler';
 import { PrivateMessageHandler } from './Commands/PrivateMessageHandler';
 import { BlockCrushHandler } from './Commands/BlockCrushHandler';
+import { ListCrushHandler } from './Commands/ListCrushHandler';
 
 ListProtectedHandler.name;
 ListInactiveHandler.name;
@@ -84,6 +85,7 @@ ChatMemberRepository.name;
 AddCrushHandler.name;
 PrivateMessageHandler.name;
 BlockCrushHandler.name;
+ListCrushHandler.name;
 
 export const importUsersInternalFn = functions.https.onRequest(
   async (req, res) => {
