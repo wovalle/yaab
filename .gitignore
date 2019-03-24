@@ -67,6 +67,7 @@ node_modules/
 dist
 
 .runtimeconfig.json
+firebase.creds.json
 
 users.json
 session.session

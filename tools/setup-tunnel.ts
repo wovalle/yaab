@@ -13,9 +13,10 @@ async function init() {
   await axios.post(hookUrl, {
     url: `${url}/yaab-88ea8/us-central1/onTelegramUpdateFn`,
     max_connections: 5,
+    allowed_updates: ['message', 'callback_query'],
   });
 
   console.log('Tunnel ready! url:', url);
 }
 
-init();
+init().catch(e => console.log('FATAL:', e));

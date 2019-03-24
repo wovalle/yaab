@@ -1,8 +1,6 @@
-import { Db } from '../db';
 import { Update } from 'telegram-typings';
 import {
   getPlainMessage,
-  getUpdateWithType,
   getBotCommand,
   getUserChatFromMember,
   BotCommandScope,
@@ -12,84 +10,94 @@ import I18nProvider from '../I18nProvider';
 import { ITelegramService } from '../services/telegram';
 import { Mediator } from 'tsmediator';
 import { UserRole } from '../types';
+import PermanentStore from '../services/PermanentStore';
+import { ChatRepository } from '../Repositories';
 
 export default async (
-  db: Db,
   update: Update,
   service: ITelegramService,
   i18n: I18nProvider,
-  currentDate: Date
+  currentDate: Date,
+  store: PermanentStore,
+  chatRepository: ChatRepository
 ): Promise<void> => {
-  // TODO: get rid of typedUpdate
   // TODO: Add mediator middleware: scopes
   // TODO: Add mediator middleware: permissions
-
-  const typedUpdate = getUpdateWithType(update);
-  const pm = getPlainMessage(typedUpdate);
   const mediator = new Mediator();
+  const pm = getPlainMessage(update);
+  const command = getBotCommand(pm);
 
-  const user = await db.getUserFromGroup(pm.chat_id, pm.from_id);
+  // console.log(JSON.stringify(command, null, 2));
+  // console.log(JSON.stringify(pm, null, 2));
 
-  if (!user) {
-    const tgUser = await service.getChatMember(pm.from_id, pm.chat_id);
-    await db.saveChatUser(
-      pm.chat_id,
-      getUserChatFromMember(tgUser),
-      currentDate
-    );
+  let chat = await chatRepository.findById(pm.chat_id);
+
+  if (!chat) {
+    await chatRepository.create({ id: pm.chat_id });
+    chat = await chatRepository.findById(pm.chat_id);
   }
 
-  await db.saveChatStat(pm, user, currentDate);
+  let messageFrom = await chat.users.findById(pm.from_id);
 
-  if (pm.entity_should_process) {
-    const command = getBotCommand(pm);
+  if (!messageFrom) {
+    const tgUser = await service.getChatMember(pm.from_id, pm.chat_id);
+    messageFrom = getUserChatFromMember(tgUser);
+    await chat.users.create(messageFrom);
+  }
+
+  if (!command.isValid && command.type === 'bot_command') {
+    const errorId = 'commands.errors.invalid';
+    await service.sendReply(pm.chat_id, pm.message_id, i18n.t(errorId));
+  }
+
+  if (command.isValid) {
     const commandScope = pm.chat_type as BotCommandScope;
 
-    if (!command) {
-      const errorId = 'commands.errors.invalid';
-      await service.sendChat(pm.chat_id, i18n.t(errorId), {
-        reply_to_message_id: pm.message_id,
-      });
-
-      return;
-    } else if (!command.scopes.includes(commandScope)) {
+    if (!command.details.scopes.includes(commandScope)) {
       const errorId = 'commands.errors.wrong_scope';
 
-      const scopes = command.scopes
+      const scopes = command.details.scopes
         .map(s => i18n.t(`enums.scopes.${s}`))
         .join(', ');
 
-      await service.sendChat(
+      await service.sendReply(
         pm.chat_id,
-        i18n.t(errorId, { scopes, command: command.keyword }),
-        {
-          reply_to_message_id: pm.message_id,
-        }
+        pm.message_id,
+        i18n.t(errorId, { scopes, command: command.details.keyword })
       );
       return;
-    } else if (command.admin && user.role !== UserRole.admin) {
+    } else if (command.details.admin && messageFrom.role !== UserRole.admin) {
       const errorId = 'commands.errors.forbidden';
-      await service.sendChat(
+      await service.sendReply(
         pm.chat_id,
-        i18n.t(errorId, { cmd: command.key }),
-        {
-          reply_to_message_id: pm.message_id,
-        }
+        pm.message_id,
+        i18n.t(errorId, { cmd: command.details.key })
       );
       return;
     } else {
       try {
-        await mediator.Send(command.key, {
+        await mediator.Send(command.details.key, {
           plainMessage: pm,
           command,
+          chat,
+          messageFrom,
         });
       } catch (error) {
-        console.error('Error on Telegram Update', error);
+        console.log(error);
+        console.error(
+          'Error on Telegram Update',
+          JSON.stringify(error, null, 2)
+        );
 
-        await service.sendChat(pm.chat_id, i18n.t('commands.errors.internal'), {
-          reply_to_message_id: pm.message_id,
-        });
+        await service.sendReply(
+          pm.chat_id,
+          pm.message_id,
+          i18n.t('commands.errors.internal')
+        );
       }
     }
   }
+  // TODO: implement Promise.every and do in parallel mediator.send, updateStat and storing
+  await chat.users.updateStat(messageFrom, currentDate);
+  await Promise.all([store.processMessage(pm), store.processUpdate(update)]);
 };

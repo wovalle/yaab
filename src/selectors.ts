@@ -1,4 +1,4 @@
-import { Update, ChatMember } from 'telegram-typings';
+import { Update, ChatMember, Message } from 'telegram-typings';
 import {
   TypedUpdate,
   PlainMedia,
@@ -8,6 +8,7 @@ import {
   UserRole,
 } from './types';
 import { PlainMessage, ChatMember as ModelChatMember } from './models';
+const emojiStrip = require('emoji-strip');
 
 export const getUpdateWithType = (update: Update): TypedUpdate => {
   let type: UpdateType;
@@ -47,8 +48,7 @@ export const getUpdateWithType = (update: Update): TypedUpdate => {
   return { type, id, ...update };
 };
 
-export const getPlainMediaType = (update: TypedUpdate): PlainMedia => {
-  const msg = update.message;
+export const getPlainMediaType = (msg: Message): PlainMedia => {
   const is_audio = msg.audio && msg.audio.file_id !== '';
   const is_document = msg.document && msg.document.file_id !== '';
   const is_animation = msg.animation && msg.animation.file_id !== '';
@@ -81,113 +81,124 @@ export const getPlainMediaType = (update: TypedUpdate): PlainMedia => {
 
 export const getUpdateEvent = (
   // tslint:disable-next-line:no-shadowed-variable
-  update: TypedUpdate
+  message: Message
 ): { type: EventType; data: EventData } => {
   let type: EventType = null;
   let data: EventData = null;
 
-  if (update.message.new_chat_members) {
+  if (message.new_chat_members) {
     type = EventType.new_chat_members;
-    data = update.message.new_chat_members;
-  } else if (update.message.left_chat_member) {
+    data = message.new_chat_members;
+  } else if (message.left_chat_member) {
     type = EventType.left_chat_member;
-    data = update.message.left_chat_member;
-  } else if (update.message.new_chat_title) {
+    data = message.left_chat_member;
+  } else if (message.new_chat_title) {
     type = EventType.new_chat_title;
-    data = update.message.new_chat_title;
-  } else if (update.message.new_chat_photo) {
+    data = message.new_chat_title;
+  } else if (message.new_chat_photo) {
     type = EventType.new_chat_photo;
-    data = update.message.new_chat_photo;
-  } else if (update.message.delete_chat_photo) {
+    data = message.new_chat_photo;
+  } else if (message.delete_chat_photo) {
     type = EventType.delete_chat_photo;
-    data = update.message.delete_chat_photo;
-  } else if (update.message.supergroup_chat_created) {
+    data = message.delete_chat_photo;
+  } else if (message.supergroup_chat_created) {
     type = EventType.supergroup_chat_created;
-    data = update.message.supergroup_chat_created;
-  } else if (update.message.channel_chat_created) {
+    data = message.supergroup_chat_created;
+  } else if (message.channel_chat_created) {
     type = EventType.channel_chat_created;
-    data = update.message.channel_chat_created;
-  } else if (update.message.migrate_to_chat_id) {
+    data = message.channel_chat_created;
+  } else if (message.migrate_to_chat_id) {
     type = EventType.migrate_to_chat_id;
-    data = update.message.migrate_to_chat_id;
-  } else if (update.message.migrate_from_chat_id) {
+    data = message.migrate_to_chat_id;
+  } else if (message.migrate_from_chat_id) {
     type = EventType.migrate_from_chat_id;
-    data = update.message.migrate_from_chat_id;
-  } else if (update.message.pinned_message) {
+    data = message.migrate_from_chat_id;
+  } else if (message.pinned_message) {
     type = EventType.pinned_message;
-    data = update.message.pinned_message;
-  } else if (update.message.successful_payment) {
+    data = message.pinned_message;
+  } else if (message.successful_payment) {
     type = EventType.successful_payment;
-    data = update.message.successful_payment;
+    data = message.successful_payment;
   }
 
   return { type, data };
 };
 
+const supportedTypes = [UpdateType.message, UpdateType.callback_query];
+
 // TODO: extract class and add convenient methods like isGroup, isCommand
-export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
-  const msg = update.message;
-  const is_entity = !!msg.entities && msg.entities.length > 0;
-  const entity_type = is_entity ? msg.entities[0].type : null;
-  const is_forward = msg.forward_from && msg.forward_from.id > 0;
-  const forward_message_id = is_forward ? msg.forward_from_message_id : null;
-  const forward_from_id = is_forward ? msg.forward_from.id : null;
-  const forward_from_is_bot = is_forward ? msg.forward_from.is_bot : null;
+export const getPlainMessage = (baseUpdate: Update): PlainMessage => {
+  const update = getUpdateWithType(baseUpdate);
+
+  if (!supportedTypes.includes(update.type)) {
+    throw new Error(`Update (${update.type}) is not currently supported`);
+  }
+
+  let root: Message = null;
+  let callback_data: string = null;
+
+  if (update.type === UpdateType.callback_query) {
+    root = update.callback_query.message;
+    root.from = update.callback_query.from;
+    callback_data = update.callback_query.data;
+  } else {
+    root = update.message;
+  }
+
+  const is_entity = !!root.entities && root.entities.length > 0;
+  const entity_type = is_entity ? root.entities[0].type : null;
+  const is_forward = root.forward_from && root.forward_from.id > 0;
+  const forward_message_id = is_forward ? root.forward_from_message_id : null;
+  const forward_from_id = is_forward ? root.forward_from.id : null;
+  const forward_from_is_bot = is_forward ? root.forward_from.is_bot : null;
   const forward_from_first_name = is_forward
-    ? msg.forward_from.first_name
+    ? root.forward_from.first_name
     : null;
-  const forward_from_last_name = is_forward ? msg.forward_from.last_name : null;
-  const forward_from_username = is_forward ? msg.forward_from.username : null;
-  const is_reply = msg.reply_to_message && msg.reply_to_message.message_id > 0;
-  const reply_message_id = is_reply ? msg.reply_to_message.message_id : null;
-  const reply_text = is_reply ? msg.reply_to_message.text : null;
-  const reply_from_id = is_reply ? msg.reply_to_message.from.id : null;
-  const reply_from_is_bot = is_reply ? msg.reply_to_message.from.is_bot : null;
+  const forward_from_last_name = is_forward
+    ? root.forward_from.last_name
+    : null;
+  const forward_from_username = is_forward ? root.forward_from.username : null;
+  const is_reply =
+    root.reply_to_message && root.reply_to_message.message_id > 0;
+  const reply_message_id = is_reply ? root.reply_to_message.message_id : null;
+  const reply_text = is_reply ? root.reply_to_message.text : null;
+  const reply_from_id = is_reply ? root.reply_to_message.from.id : null;
+  const reply_from_is_bot = is_reply ? root.reply_to_message.from.is_bot : null;
   const reply_from_first_name = is_reply
-    ? msg.reply_to_message.from.first_name
+    ? root.reply_to_message.from.first_name
     : null;
   const reply_from_last_name = is_reply
-    ? msg.reply_to_message.from.last_name
+    ? root.reply_to_message.from.last_name
     : null;
   const reply_from_username = is_reply
-    ? msg.reply_to_message.from.username
+    ? root.reply_to_message.from.username
     : null;
 
-  const plain_media_type = getPlainMediaType(update);
+  const plain_media_type = getPlainMediaType(root);
   const is_plain_media = plain_media_type !== null;
 
-  const update_event = getUpdateEvent(update);
+  const update_event = getUpdateEvent(root);
   const event_type = update_event.type;
   const is_event = update_event !== null;
   const event_data = update_event.data;
 
-  const group_types = ['group', 'supergroup', 'channels'];
-
-  const command_directed_to_bot = group_types.includes(update.message.chat.type)
-    ? /bendito(beta)?bot/i.test(msg.text)
-    : true;
-
-  const entity_should_process =
-    entity_type === 'bot_command' && command_directed_to_bot;
-
   return {
     id: `${update.id}`,
     update_id: `${update.update_id}`,
-    message_id: `${msg.message_id}`,
-    date: new Date(msg.date * 1000),
-    text: msg.text,
-    from_id: `${msg.from.id}`,
-    from_is_bot: msg.from.is_bot,
-    from_first_name: msg.from.first_name,
-    from_last_name: msg.from.last_name,
-    from_username: msg.from.username,
-    chat_id: `${msg.chat.id}`,
-    chat_type: msg.chat.type,
-    chat_title: msg.chat.title,
+    message_id: `${root.message_id}`,
+    date: new Date(root.date * 1000),
+    text: root.text,
+    from_id: `${root.from.id}`,
+    from_is_bot: root.from.is_bot,
+    from_first_name: root.from.first_name,
+    from_last_name: root.from.last_name,
+    from_username: root.from.username,
+    chat_id: `${root.chat.id}`,
+    chat_type: root.chat.type,
+    chat_title: root.chat.title,
     is_entity,
     entity_type,
-    entity_should_process,
-    entities: msg.entities,
+    entities: root.entities,
     is_forward,
     forward_message_id: `${forward_message_id}`,
     forward_from_id: `${forward_from_id}`,
@@ -208,6 +219,7 @@ export const getPlainMessage = (update: TypedUpdate): PlainMessage => {
     is_event,
     event_type,
     event_data,
+    callback_data,
   };
 };
 
@@ -218,8 +230,10 @@ export enum BotCommands {
   list_protected = 'list_protected',
   remove_protected = 'remove_protected',
   enable_crush_mode = 'enable_crush_mode',
+  add_crush = 'add_crush',
   start = 'start',
   help = 'help',
+  private_message = 'private_message',
 }
 
 export enum BotCommandScope {
@@ -229,87 +243,241 @@ export enum BotCommandScope {
   channel = 'channel',
 }
 
-export interface IDetailedBotCommand {
+export interface IBotCommandDetail {
   admin: boolean;
   key: BotCommands;
   keyword: string;
   scopes: Array<BotCommandScope>;
+  textActivators: Array<string>;
 }
 
-const BotCommandsDetails: IDetailedBotCommand[] = [
+const BotCommandsDetails: IBotCommandDetail[] = [
   {
     admin: true,
     key: BotCommands.list_inactives,
     keyword: 'lobrechadore',
     scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+    textActivators: [],
   },
   {
     admin: true,
     key: BotCommands.remove_inactives,
     keyword: 'thanos',
     scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+    textActivators: [],
   },
   {
     admin: true,
     key: BotCommands.protect_user,
     keyword: 'delomio',
     scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+    textActivators: [],
   },
   {
     admin: true,
     key: BotCommands.remove_protected,
     keyword: 'baraja',
     scopes: [BotCommandScope.group, BotCommandScope.supergroup],
+    textActivators: [],
   },
   {
     admin: true,
     key: BotCommands.list_protected,
     keyword: 'lodichoso',
     scopes: [BotCommandScope.group, BotCommandScope.supergroup],
-  },
-  {
-    admin: false,
-    key: BotCommands.enable_crush_mode,
-    keyword: 'benditocrush',
-    scopes: [
-      BotCommandScope.group,
-      BotCommandScope.supergroup,
-      BotCommandScope.private,
-    ],
+    textActivators: [],
   },
   {
     admin: false,
     key: BotCommands.start,
     keyword: 'start',
     scopes: [BotCommandScope.private],
+    textActivators: [],
   },
   {
     admin: false,
     key: BotCommands.help,
     keyword: 'help',
     scopes: [BotCommandScope.private],
+    textActivators: [],
+  },
+  {
+    admin: false,
+    key: BotCommands.add_crush,
+    keyword: 'addcrush',
+    scopes: [
+      BotCommandScope.private,
+      BotCommandScope.group,
+      BotCommandScope.supergroup,
+    ],
+    textActivators: ['crush_search', 'crush_found', 'cancel'],
+  },
+  {
+    admin: false,
+    key: BotCommands.private_message,
+    keyword: '',
+    scopes: [BotCommandScope.private],
+    textActivators: ['pick_user', 'rtc', 'rfc'],
   },
 ];
 
-export const getBotCommand = (pm: PlainMessage) => {
-  const command = pm.text
-    .slice(pm.entities[0].offset + 1, pm.entities[0].length)
-    .replace(/@bendito(beta)?bot/i, '') //TODO: generalize
-    .trim();
+type CommandType = 'bot_command' | 'text_command';
 
-  return BotCommandsDetails.find(c => c.keyword === command) || null;
+export type BotCommand = {
+  args: string[];
+  type: CommandType;
+  isValid: boolean;
+  details: IBotCommandDetail;
+  activator: string;
+  callback_data: string;
+};
+
+// TODO: make constants
+const botRegex = /bendito(beta)?bot/i;
+
+export const getBotCommand = (message: PlainMessage): BotCommand => {
+  const {
+    chat_type,
+    text,
+    reply_from_is_bot,
+    reply_text,
+    reply_from_username,
+    entity_type,
+    callback_data,
+    entities,
+  } = message;
+
+  const groupScopes = [BotCommandScope.group, BotCommandScope.supergroup];
+  // callback queries store info in text
+  const replyText = callback_data ? text : reply_text || '';
+  const chatScope = chat_type as BotCommandScope;
+
+  const isBotCommandDirectedToBot = groupScopes.includes(chatScope)
+    ? botRegex.test(text)
+    : true;
+
+  const shouldProcessBotCommand =
+    entity_type === 'bot_command' &&
+    entities[0].offset === 0 &&
+    isBotCommandDirectedToBot;
+
+  if (shouldProcessBotCommand) {
+    const splittedText = text.trim().split(' ');
+    const [commandKeyword] = splittedText[0].split('@');
+
+    const details =
+      BotCommandsDetails.find(c => c.keyword === commandKeyword.slice(1)) ||
+      null;
+
+    return {
+      args: splittedText.slice(1),
+      details,
+      isValid: !!details,
+      type: 'bot_command',
+      activator: null,
+      callback_data,
+    };
+  }
+
+  const [replyActivator] = replyText.split(' ');
+
+  // replyActivators will always start with # and end with :
+  const replyActivatorStd = replyActivator.slice(1, -1);
+
+  const textActivatorCommand =
+    BotCommandsDetails.find(b =>
+      b.textActivators.some(activator => replyActivatorStd === activator)
+    ) || null;
+
+  const isReplyFromBot =
+    reply_from_is_bot && botRegex.test(reply_from_username);
+
+  const shouldProcessTextCommand =
+    textActivatorCommand && replyText && (!!callback_data || isReplyFromBot);
+
+  if (shouldProcessTextCommand) {
+    return {
+      args: [text],
+      details: textActivatorCommand,
+      isValid: true,
+      type: 'text_command',
+      activator: textActivatorCommand ? replyActivatorStd : null,
+      callback_data,
+    };
+  }
+
+  if (chatScope === BotCommandScope.private) {
+    const details = BotCommandsDetails.find(
+      c => c.key === BotCommands.private_message
+    );
+
+    return {
+      args: [],
+      details,
+      isValid: true,
+      type: 'text_command',
+      activator: null,
+      callback_data,
+    };
+  }
+
+  return {
+    args: [],
+    details: null,
+    isValid: false,
+    type: null,
+    activator: null,
+    callback_data,
+  };
+};
+
+export const getUserSearchKeywords = (
+  firstName: string,
+  lastName: string,
+  username: string
+): string[] => {
+  let keywords = [];
+
+  const getVariations = (key: string): string[] => {
+    const lowerKey = key.toLocaleLowerCase();
+    return lowerKey
+      .split('')
+      .reduce((acc, _, i) => acc.concat(lowerKey.slice(0, i + 1)), []);
+  };
+
+  keywords = firstName ? keywords.concat(getVariations(firstName)) : keywords;
+  keywords = lastName ? keywords.concat(getVariations(lastName)) : keywords;
+  keywords = username ? keywords.concat(getVariations(username)) : keywords;
+
+  return Array.from(new Set(keywords));
+};
+
+export const getUserChat = ({
+  id,
+  is_bot,
+  status,
+  first_name,
+  last_name = '',
+  username: uname = '',
+}): ModelChatMember => {
+  const firstName = emojiStrip(first_name);
+  const lastName = emojiStrip(last_name || '') || null;
+  const username = emojiStrip(uname || '') || null;
+  return {
+    id: `${id}`,
+    first_name: firstName,
+    last_name: lastName,
+    is_bot: is_bot,
+    protected: false,
+    role: status === 'administrator' ? UserRole.admin : UserRole.user,
+    last_message: null,
+    username: username,
+    status: status,
+    crush_status: 'disabled',
+    search_keywords: getUserSearchKeywords(firstName, lastName, username),
+  };
 };
 
 export const getUserChatFromMember = (u: ChatMember): ModelChatMember => {
-  return {
-    id: `${u.user.id}`,
-    first_name: u.user.first_name,
-    last_name: u.user.last_name,
-    is_bot: u.user.is_bot,
-    protected: false,
-    role: u.status === 'administrator' ? UserRole.admin : UserRole.user,
-    last_message: null,
-    username: u.user.username,
-    status: u.status,
-  };
+  return getUserChat({ ...u.user, status: u.status });
 };
