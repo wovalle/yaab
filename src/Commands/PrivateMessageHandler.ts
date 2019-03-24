@@ -66,6 +66,7 @@ export class PrivateMessageHandler
       return this.telegramService
         .buildMessage(this.i18n.t('commands.anon_message.non_active'))
         .to(pm.from_id)
+        .replyTo(pm.reply_message_id)
         .send();
     }
 
@@ -108,6 +109,7 @@ export class PrivateMessageHandler
       return this.telegramService
         .buildMessage(this.i18n.t('commands.anon_message.non_active'))
         .to(pm.from_id)
+        .replyTo(pm.reply_message_id)
         .send();
     }
 

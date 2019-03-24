@@ -41,7 +41,7 @@ export class ListCrushHandler
       .map(e => {
         const rel = myCrushes.find(c => c.crush_id === `${e.user.id}`);
         const extra = rel.crush_status === 'blocked' ? ' [blocked]' : '';
-        return `${e.user.first_name} ${e.user.last_name} (${
+        return `${e.user.first_name} ${e.user.last_name || ''} (${
           rel.user_nickname
         }) ${extra}`;
       })

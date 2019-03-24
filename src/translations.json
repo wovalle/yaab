@@ -37,7 +37,7 @@
       "pick_user": "A quién e' que le tengo que escribir?🤔",
       "media_not_supported": "Error: Sorry manin, todavía no soporto mandar media (vns, fotos, videos). Quéjate con un ADM pa' que le pongan eso.",
       "crush_not_enabled": "Error: no manin, para poder mandar mensajes debes tener el crush activado (/enablecrush)",
-      "non_active": "Error: O te bloquearon o el usuario al que le estás escribiendo deshabilitó el bot :) Intenta más tarde."
+      "non_active": "Error: O te bloquearon o el usuario al que le estás escribiendo deshabilitó el bot :). No pude enviar este mensaje, intenta más tarde."
     },
     "errors": {
       "invalid": "Error: manito, qué jodio comando fue ese",
