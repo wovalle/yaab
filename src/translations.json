@@ -4,9 +4,6 @@
       "successful": "tAmo en vivo!\nSi quieres saber todos los comandos que yo soporto escribe /help",
       "user_not_found": "tAmo en vivo!\nActualmente no estás en ningún grupo donde @benditobot esté participando. Si luego te entran a un grupo tendrás que darle a /start de nuevo.\nSi quieres saber todos los comandos que yo soporto escribe /help"
     },
-    "help": {
-      "successful": "oh pero ayúdame tu a mi"
-    },
     "protect_user": {
       "successful": "ufff, ya no le voy a da mocha a {{mention}}"
     },
@@ -14,7 +11,7 @@
       "successful": "ya si me puedo llevar a {{mention}}"
     },
     "list_inactive": {
-      "wrong_command": "billy boy, ecribe el comando bien",
+      "wrong_command": "Error: billy boy, ecribe el comando bien",
       "empty": "en velda nadie vegetó en las últimas {{hours}} horas",
       "successful": "señore tAmo en vivo y eta gente lleva {{hours}} horas brechando sin habla: {{mentions}}"
     },
@@ -25,32 +22,31 @@
       "successful": "señore tAmo en vivo pero eta gente ya no: {{mentions}}"
     },
     "add_crush": {
-      "successful": "Crush agregado! Tu nickname es: {{nickname}}",
-      "new_crush": "Tienes un crush nuevo!❤️ Su nickname es: {{nickname}}, Qué le quieres decir? 😉",
+      "successful": "Crush agregado! Tu nickname es: {{nickname}}.\n\nSi no sabes como interactuar con tu crush escribe /help",
+      "new_crush": "Tienes un crush nuevo!❤️ Su nickname es: {{nickname}}, Qué le quieres decir? 😉 Si no sabes como interactuar con tu crush escribe /help",
       "search": "Dame el nombre de tu crush pa' buscarlo 😏",
-      "not_found": "Tu ta segur@ que hay un '{{name}}' en el grupo? Porque yo no encontré a nadie que se llame así. Intenta de nuevo:",
+      "not_found": "Error: Tu ta segur@ que hay un '{{name}}' en el grupo? Porque yo no encontré a nadie que se llame así. Intenta de nuevo:",
       "users_found": "Estos fueron los que encontré (dale click al nombre de tu crush para agregarlo o dale a cancelar): ",
-      "crush_disabled_single": "{{mention}} no le ha dado /start al bot o deshabilitó el #crushmode. No se pudo agregar el crush.",
-      "crush_disabled_group": "klk {{mention}}, alguien te ta' tratando de agregar como crush y no me has dado /start por privado, me tiene dema e'?",
-      "duplicated": "deja la baye que eso e malo, ya tu l@ tienes como crush y el nick es {{nick}}"
+      "crush_disabled_single": "Error: {{mention}} no le ha dado /start al bot o deshabilitó el #crushmode. No se pudo agregar el crush.",
+      "crush_disabled_group": "klk {{mention}}, alguien te ta' tratando de agregar como crush y no te puedo hablar. Escribeme en privado y dale /start para poder enviarte mensajes.",
+      "duplicated": "Error: deja la baye que eso e malo, ya tu l@ tienes como crush y el nick es {{nick}}"
     },
     "anon_message": {
       "user_says": "{{user}}: ",
       "crush_says": "{{{nick}}}({{name}}): ",
       "pick_user": "A quién e' que le tengo que escribir?🤔",
-      "media_not_supported": "Sorry manin, todavía no soporto mandar media (vns, fotos, videos). Quéjate con un ADM pa' que le pongan eso.",
-      "crush_not_enabled": "no manin, para poder mandar mensajes debes tener el crush activado (/enablecrush)"
+      "media_not_supported": "Error: Sorry manin, todavía no soporto mandar media (vns, fotos, videos). Quéjate con un ADM pa' que le pongan eso.",
+      "crush_not_enabled": "Error: no manin, para poder mandar mensajes debes tener el crush activado (/enablecrush)",
+      "non_active": "Error: O te bloquearon o el usuario al que le estás escribiendo deshabilitó el bot :) Intenta más tarde."
     },
     "errors": {
-      "invalid": "manito, qué jodio comando fue ese",
-      "internal": "bi toy chipiando, tirale a un adm",
-      "wrong_scope": "el comando `{{command}}` solo se puede usar en: {{scopes}}",
-      "forbidden": "kien diablo tu ere, tu no puede ejecuta `{{cmd}}`",
-      "user_not_found": "bi, ete usuario no existe",
-      "pm_not_implemented": "solo funciono en grupos por ahora ;)",
-      "not_implemented": "tamo trabajando en eso bi",
-      "nothing_to_do": "ok, gracia",
-      "zero_crushes": "No se qué hacer con este mensaje 😞. Para agregar un crush usa /addcrush. Cualquier duda usa /help."
+      "invalid": "Error: manito, qué jodio comando fue ese",
+      "internal": "Error: bi toy chipiando, tirale a un adm",
+      "wrong_scope": "Error: el comando `{{command}}` solo se puede usar en: {{scopes}}",
+      "forbidden": "Error: kien diablo tu ere, tu no puede ejecuta `{{cmd}}`",
+      "user_not_found": "Error: bi, ete usuario no existe",
+      "nothing_to_do": "Error: ok, gracia",
+      "zero_crushes": "Error: No se qué hacer con este mensaje 😞. Para agregar un crush usa /addcrush. Cualquier duda usa /help."
     },
     "block_crush": {
       "done": "tato, tamo ready con el bloqueo",
