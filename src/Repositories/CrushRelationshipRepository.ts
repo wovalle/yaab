@@ -5,12 +5,26 @@ import { CrushRelationship } from '../models';
 class CrushRelationshipRepository extends BaseFirestoreRepository<
   CrushRelationship
 > {
-  async getMyCrushes(userId: string) {
-    return this.whereEqualTo('user_id', userId).find();
+  async getByNick(nick: string) {
+    return this.whereEqualTo('user_nickname', nick)
+      .find()
+      .then(r => r[0]);
   }
 
-  async getCrushesOfMine(userId: string) {
-    return this.whereEqualTo('crush_id', userId).find();
+  async getMyCrushes(userId: string, status?: string) {
+    let query = this.whereEqualTo('user_id', userId);
+    if (status) {
+      query = query.whereEqualTo('crush_status', status);
+    }
+    return query.find();
+  }
+
+  async getCrushesOfMine(userId: string, status?: string) {
+    let query = this.whereEqualTo('crush_id', userId);
+    if (status) {
+      query = query.whereEqualTo('crush_status', status);
+    }
+    return query.find();
   }
 }
 

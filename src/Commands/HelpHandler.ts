@@ -4,7 +4,6 @@ import Container from 'typedi';
 import TelegramService from '../services/telegram/TelegramService';
 import { BotCommands } from '../selectors';
 import I18nProvider from '../I18nProvider';
-import { ParseMode } from '../services/telegram';
 import { ITelegramHandlerPayload } from '../types';
 
 @Handler(BotCommands.help)
@@ -39,7 +38,7 @@ export class HelpHandler
       p('No tienes. Si le das reply a cualquier mensaje que te envíen, yo se lo reenvío de forma anónima.') +
       p() +
       p('- Si agrego a alguien como crush, el puede ver quien yo soy?') +
-      p('Nopity nop.') +
+      p('Nopity nop. Solo tú ves que tu crush te habla, el no ve quién le escribe (más que el nick anónimo de la conversación)') +
       p() +
       p('- Cómo mando un nude?') +
       p('No puedes por el momento 🥺, tamo trabajando pa eso') +

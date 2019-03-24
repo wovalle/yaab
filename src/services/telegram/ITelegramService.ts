@@ -40,7 +40,7 @@ export interface ITelegramService {
     message: string,
     opts?: ISendMessageOpts
   ): Promise<Message>;
-  kickUser(userId: string, chatId: string, until: Date): Promise<void>;
+  kickUser(userId: string, chatId: string, until?: Date): Promise<void>;
   getChatMember(userId: string, chatId: string): Promise<ChatMember>;
   getMentionFromId(id: string, name: string, lastName?: string): string;
   sendRawMessage(props: MessageBuilderProps): Promise<Message>;
