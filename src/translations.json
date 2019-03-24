@@ -31,13 +31,15 @@
       "not_found": "Tu ta segur@ que hay un '{{name}}' en el grupo? Porque yo no encontré a nadie que se llame así. Intenta de nuevo:",
       "users_found": "Estos fueron los que encontré (dale click al nombre de tu crush para agregarlo o dale a cancelar): ",
       "crush_disabled_single": "{{mention}} no le ha dado /start al bot o deshabilitó el #crushmode. No se pudo agregar el crush.",
-      "crush_disabled_group": "klk {{mention}}, alguien te ta' tratando de agregar como crush y no me has dado /start por privado, me tiene dema e'?"
+      "crush_disabled_group": "klk {{mention}}, alguien te ta' tratando de agregar como crush y no me has dado /start por privado, me tiene dema e'?",
+      "duplicated": "deja la baye que eso e malo, ya tu l@ tienes como crush y el nick es {{nick}}"
     },
     "anon_message": {
       "user_says": "{{user}}: ",
       "crush_says": "{{{nick}}}({{name}}): ",
       "pick_user": "A quién e' que le tengo que escribir?🤔",
-      "media_not_supported": "Sorry manin, todavía no soporto mandar media (vns, fotos, videos). Quéjate con un ADM pa' que le pongan eso.r"
+      "media_not_supported": "Sorry manin, todavía no soporto mandar media (vns, fotos, videos). Quéjate con un ADM pa' que le pongan eso.",
+      "crush_not_enabled": "no manin, para poder mandar mensajes debes tener el crush activado (/enablecrush)"
     },
     "errors": {
       "invalid": "manito, qué jodio comando fue ese",

@@ -131,8 +131,9 @@ export class AddCrushHandler
         .find();
 
       if (existingCrushRelationship.length) {
+        const { user_nickname: nick } = existingCrushRelationship[0];
         return this.telegramService
-          .buildMessage(this.i18n.t('commands.add_crush.duplicated'))
+          .buildMessage(this.i18n.t('commands.add_crush.duplicated', { nick }))
           .to(payload.plainMessage.chat_id)
           .send();
       }

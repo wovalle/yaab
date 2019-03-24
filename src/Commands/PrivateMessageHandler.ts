@@ -8,6 +8,8 @@ import { ITelegramHandlerPayload } from '../types';
 import { CrushRelationshipRepository } from '../Repositories';
 import { CrushRelationshipRepositoryToken } from '..';
 import { PlainMessage } from '../models';
+import { ChatRepository } from '../Repositories';
+import { ChatRepositoryToken } from '..';
 
 interface ICallbackExtraData {
   id: string;
@@ -20,6 +22,8 @@ export class PrivateMessageHandler
   private telegramService: TelegramService;
   private i18n: I18nProvider;
   private crushRelationshipRepository: CrushRelationshipRepository;
+  private chatRepository: ChatRepository;
+  private crushGroupId: string;
 
   private activators = {
     pickUser: 'pick_user',
@@ -33,6 +37,8 @@ export class PrivateMessageHandler
     this.crushRelationshipRepository = Container.get(
       CrushRelationshipRepositoryToken
     );
+    this.chatRepository = Container.get(ChatRepositoryToken);
+    this.crushGroupId = Container.get('fixedCrushGroup');
   }
 
   async handleToCrush(pm: PlainMessage, callbackData?: ICallbackExtraData) {
@@ -145,7 +151,7 @@ export class PrivateMessageHandler
   }
 
   async Handle(payload: ITelegramHandlerPayload) {
-    const { plainMessage: pm, command } = payload;
+    const { plainMessage: pm, command, messageFrom } = payload;
 
     let callbackExtraData = null;
     let activator = command.activator;
@@ -166,6 +172,20 @@ export class PrivateMessageHandler
       activator = cbActivator;
       await this.telegramService.deleteMessage(pm.chat_id, pm.message_id);
     }
+
+    const fixedChat = await this.chatRepository.findById(this.crushGroupId);
+    const user = await fixedChat.users.findById(messageFrom.id);
+
+    if (user.crush_status !== 'enabled') {
+      await this.telegramService
+        .buildMessage(this.i18n.t('commands.anon_message.crush_not_enabled'))
+        .to(pm.from_id)
+        .replyTo(pm.message_id)
+        .send();
+      return Promise.resolve();
+    }
+
+    // TODO: when user or crush have crush disabled it should throw errorx
 
     if (activator === this.activators.fromCrush) {
       return this.handleFromCrush(pm, callbackExtraData);
