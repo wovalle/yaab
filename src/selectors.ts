@@ -309,11 +309,7 @@ const BotCommandsDetails: IBotCommandDetail[] = [
     admin: false,
     key: BotCommands.add_crush,
     keyword: 'addcrush',
-    scopes: [
-      BotCommandScope.private,
-      BotCommandScope.group,
-      BotCommandScope.supergroup,
-    ],
+    scopes: [BotCommandScope.private],
     textActivators: ['crush_search', 'crush_found', 'cancel'],
   },
   {
