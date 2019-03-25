@@ -69,37 +69,18 @@ export class BlockCrushHandler
     const status =
       commandKey === BotCommands.block_crush ? 'active' : 'blocked';
 
-    const [myCrushes, crushesOfMine] = await Promise.all([
-      this.crushRelationshipRepository.getMyCrushes(pm.from_id, status),
-      this.crushRelationshipRepository.getCrushesOfMine(pm.from_id, status),
-    ]);
-
-    const myCrushesDetails = await Promise.all(
-      myCrushes.map(c =>
-        this.telegramService.getChatMember(c.crush_id, c.chat_id)
-      )
+    const crushers = await this.crushRelationshipRepository.getCrushesOfMine(
+      pm.from_id,
+      status
     );
 
-    const myCrushesKeyboard = myCrushesDetails.map(({ user: u }) => {
-      let text = u.first_name;
-      text = u.username ? `${text} (${u.username})` : text;
-
-      const crush = myCrushes.find(c => c.crush_id === `${u.id}`);
-      const callback_data = `${crush.user_nickname}|${crush.crush_id}`;
-
-      return { text, callback_data };
-    });
-
-    const crushesOfMineKeyboard = crushesOfMine.map(u => {
+    const crushesOfMineKeyboard = crushers.map(u => {
       const text = u.user_nickname;
       const callback_data = `${text}|${u.user_id}`;
       return { text, callback_data };
     });
 
-    const usersKeyboard = [
-      ...myCrushesKeyboard,
-      ...crushesOfMineKeyboard,
-    ].concat({
+    const usersKeyboard = [...crushesOfMineKeyboard].concat({
       text: this.i18n.t('literals.cancel'),
       callback_data: 'cancel',
     });
