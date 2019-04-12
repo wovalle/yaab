@@ -147,7 +147,7 @@ export const getPlainMessage = (baseUpdate: Update): PlainMessage => {
 
   const is_entity = !!root.entities && root.entities.length > 0;
   const entity_type = is_entity ? root.entities[0].type : null;
-  const is_forward = root.forward_from && root.forward_from.id > 0;
+  const is_forward = !!root.forward_from;
   const forward_message_id = is_forward ? root.forward_from_message_id : null;
   const forward_from_id = is_forward ? root.forward_from.id : null;
   const forward_from_is_bot = is_forward ? root.forward_from.is_bot : null;
@@ -158,8 +158,7 @@ export const getPlainMessage = (baseUpdate: Update): PlainMessage => {
     ? root.forward_from.last_name
     : null;
   const forward_from_username = is_forward ? root.forward_from.username : null;
-  const is_reply =
-    root.reply_to_message && root.reply_to_message.message_id > 0;
+  const is_reply = !!root.reply_to_message;
   const reply_message_id = is_reply ? root.reply_to_message.message_id : null;
   const reply_text = is_reply ? root.reply_to_message.text : null;
   const reply_from_id = is_reply ? root.reply_to_message.from.id : null;
@@ -195,7 +194,7 @@ export const getPlainMessage = (baseUpdate: Update): PlainMessage => {
     from_username: root.from.username,
     chat_id: `${root.chat.id}`,
     chat_type: root.chat.type,
-    chat_title: root.chat.title,
+    chat_title: root.chat.title || 'private',
     is_entity,
     entity_type,
     entities: root.entities,
@@ -498,19 +497,19 @@ export const getUserChat = ({
   const firstName = emojiStrip(first_name);
   const lastName = emojiStrip(last_name || '') || null;
   const username = emojiStrip(uname || '') || null;
-  return {
-    id: `${id}`,
-    first_name: firstName,
-    last_name: lastName,
-    is_bot: is_bot,
-    protected: false,
-    role: status === 'administrator' ? UserRole.admin : UserRole.user,
-    last_message: null,
-    username: username,
-    status: status,
-    crush_status: 'disabled',
-    search_keywords: getUserSearchKeywords(firstName, lastName, username),
-  };
+
+  const member = new ModelChatMember();
+  member.id = id;
+  member.first_name = firstName;
+  member.last_name = lastName;
+  member.is_bot = is_bot;
+  member.protected = false;
+  member.role = status === 'administrator' ? UserRole.admin : UserRole.user;
+  member.last_message = null;
+  member.username = username;
+  member.crush_status = 'disabled';
+  member.search_keywords = getUserSearchKeywords(firstName, lastName, username);
+  return member;
 };
 
 export const getUserChatFromMember = (u: ChatMember): ModelChatMember => {

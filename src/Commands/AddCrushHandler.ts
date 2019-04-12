@@ -60,12 +60,10 @@ export class AddCrushHandler
       }
 
       const usersKeyboard = users
-        .map(u => {
-          let text = u.first_name;
-          text = u.last_name ? `${text} ${u.last_name}` : text;
-          text = u.username ? `${text} (${u.username})` : text;
-          return { text, callback_data: u.id };
-        })
+        .map(u => ({
+          text: u.getFullNameWithUser(),
+          callback_data: u.id,
+        }))
         .concat({
           text: this.i18n.t('literals.cancel'),
           callback_data: 'cancel',

@@ -12,4 +12,16 @@ export class ChatMember {
   protected: boolean;
   crush_status: 'enabled' | 'disabled' | 'blocked';
   search_keywords: string[];
+
+  getFullName() {
+    return this.last_name
+      ? `${this.first_name} ${this.last_name}`
+      : this.first_name;
+  }
+
+  getFullNameWithUser() {
+    return this.username
+      ? `${this.getFullName()} (${this.username})`
+      : this.getFullName();
+  }
 }
