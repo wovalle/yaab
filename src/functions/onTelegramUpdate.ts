@@ -10,7 +10,7 @@ import I18nProvider from '../I18nProvider';
 import { ITelegramService } from '../services/telegram';
 import { Mediator } from 'tsmediator';
 import { UserRole } from '../types';
-import PermanentStore from '../services/PermanentStore';
+import Analytics from '../services/Analytics';
 import { ChatRepository } from '../Repositories';
 
 export default async (
@@ -18,7 +18,7 @@ export default async (
   service: ITelegramService,
   i18n: I18nProvider,
   currentDate: Date,
-  store: PermanentStore,
+  analytics: Analytics,
   chatRepository: ChatRepository
 ): Promise<void> => {
   // TODO: Add mediator middleware: scopes
@@ -97,7 +97,10 @@ export default async (
       }
     }
   }
-  // TODO: implement Promise.every and do in parallel mediator.send, updateStat and storing
-  await chat.users.updateStat(messageFrom, currentDate);
-  await Promise.all([store.processMessage(pm), store.processUpdate(update)]);
+
+  await Promise.all([
+    chat.users.updateStat(messageFrom, currentDate),
+    analytics.processMessage(pm),
+    analytics.processUpdate(update),
+  ]);
 };

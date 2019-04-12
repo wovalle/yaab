@@ -18,23 +18,18 @@ import I18nProvider from './I18nProvider';
 import * as translations from './translations.json';
 import { Update } from 'telegram-typings';
 import { Container, Token } from 'typedi';
-import PermanentStore from './services/PermanentStore';
+import Analytics from './services/Analytics';
 
 const logger = console;
 const db = DbSingleton.getInstance();
 const telegramKey = functions.config().telegram.key;
-const storageOpts = functions.config().permanent_store;
 const fixedCrushGroup = functions.config().telegram.crush_group;
+const mixpanelKey = '11473025b50e40c8f92b0429dd0a3613'; //functions.config().mixpanel.key;
 const http = new Http();
 const i18n = new I18nProvider(translations);
 const telegramService = new TelegramService(telegramKey, http);
 
-const permanentStore = new PermanentStore(
-  http,
-  storageOpts.url,
-  storageOpts.user,
-  storageOpts.pass
-);
+const analytics = new Analytics(mixpanelKey);
 
 const getDate = () => new Date();
 
@@ -58,7 +53,7 @@ Container.set(Db, db);
 Container.set(I18nProvider, i18n);
 Container.set(ChatRepositoryToken, chatRepository);
 Container.set(CrushRelationshipRepositoryToken, crushRelationshipRepository);
-Container.set(PermanentStore, permanentStore);
+Container.set(Analytics, analytics);
 Container.set('getCurrentDate', getDate);
 Container.set('fixedCrushGroup', fixedCrushGroup);
 
@@ -184,7 +179,7 @@ export const onTelegramUpdateFn = functions.https.onRequest(
         telegramService,
         i18n,
         getDate(),
-        permanentStore,
+        analytics,
         chatRepository
       );
 
