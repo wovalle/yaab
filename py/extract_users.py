@@ -37,7 +37,7 @@ print('Participants #:', len(all_participants))
 
 def map_user(u):
   return {
-      'id': u.id,
+      'id': str(u.id),
       'is_bot': u.bot,
       'first_name': u.first_name,
       'last_name': u.last_name,

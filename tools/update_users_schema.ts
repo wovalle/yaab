@@ -6,7 +6,7 @@ import TelegramService from '../src/services/telegram';
 import Http from '../src/Http';
 import { telegram } from '../.runtimeconfig.json';
 import { getUserSearchKeywords } from '../src/selectors';
-const emojiStrip = require('emoji-strip');
+const emojiStrip = (str = '') => str.replace(/[^\x00-\xFF]/g, '');
 
 const serviceAccount = require('../firebase.creds.json');
 admin.initializeApp({

@@ -39,13 +39,18 @@ export default async (
         ...userToImport,
       });
 
-      await group.users.create(fullUser);
-      console.log(
-        `User ${userToImport.id}: ${userToImport.first_name} ${
-          userToImport.last_name
-        } imported`
-      );
-      importedUsers.push(userToImport);
+      try {
+        await group.users.create(fullUser);
+        console.log(
+          `User ${userToImport.id}: ${userToImport.first_name} ${
+            userToImport.last_name
+          } imported`
+        );
+        importedUsers.push(userToImport);
+      } catch (err) {
+        console.error('ERROR CREATING USER', fullUser);
+        console.error(err);
+      }
     }
   }
 

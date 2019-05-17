@@ -8,7 +8,8 @@ import {
   UserRole,
 } from './types';
 import { PlainMessage, ChatMember as ModelChatMember } from './models';
-const emojiStrip = require('emoji-strip');
+
+const emojiStrip = (str = '') => str.replace(/[^\x00-\xFF]/g, '');
 
 export const getUpdateWithType = (update: Update): TypedUpdate => {
   let type: UpdateType;
@@ -499,7 +500,7 @@ export const getUserChat = ({
   const username = emojiStrip(uname || '') || null;
 
   const member = new ModelChatMember();
-  member.id = id;
+  member.id = `${id}`;
   member.first_name = firstName;
   member.last_name = lastName;
   member.is_bot = is_bot;
