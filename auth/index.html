@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>BenditoBot Authentication</title>
+    <link
+      href="https://fonts.googleapis.com/css?family=Heebo:400|IBM+Plex+Sans:600"
+      rel="stylesheet"
+    />
+
+    <style>
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        clear: both;
+        color: #182538;
+        font-family: 'IBM Plex Sans', sans-serif;
+        font-weight: 600;
+      }
+
+      .container {
+        padding-left: 24px;
+        padding-right: 24px;
+      }
+
+      html {
+        font-family: 'Heebo', sans-serif;
+      }
+
+      body {
+        margin: 0;
+        color: #6b7a90;
+        font-size: 1rem;
+
+        display: flex;
+        min-height: 100vh;
+        flex-direction: column;
+      }
+
+      header {
+        margin-top: 10vh;
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 2em;
+        margin: 0.67em 0;
+      }
+
+      main {
+        flex: 1;
+        padding-top: 5vh;
+      }
+
+      main {
+        display: flex;
+        justify-content: center;
+      }
+
+      footer {
+        background: #182538;
+        color: #6b7a90;
+
+        padding-top: 30px;
+        padding-bottom: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="container">
+      <h1>BenditoBot Auth Gateway</h1>
+      <p class="sub">
+        Login with telegram to access BenditoBot features
+      </p>
+    </header>
+    <main>
+      <section class="widget container">
+        <script
+          async
+          src="https://telegram.org/js/telegram-widget.js?5"
+          data-telegram-login="benditobot"
+          data-size="large"
+          data-onauth="onTelegramAuth(user)"
+          data-request-access="write"
+        ></script>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container">
+        <span class="footer-copyright">
+          &copy; 2019 Willy Ovalle, all rights reserved
+        </span>
+      </div>
+    </footer>
+
+    <script type="text/javascript">
+      function onTelegramAuth(user) {
+        const data = `${user.id}|${user.hash}`;
+        const url =
+          'https://docs.google.com/forms/d/e/1FAIpQLSeaSn9W15vd6XzBiixYGoWjj6EDhodTAbhH13104YvN1lkkug/viewform?usp=pp_url&entry.613134550=';
+
+        location.replace(url + data);
+      }
+    </script>
+  </body>
+</html>
