@@ -2,5 +2,9 @@
   "functions": {
     "predeploy": ["npm run lint", "npm run build", "npm run copy-statics"],
     "source": "dist"
+  },
+  "hosting": {
+    "source": "auth",
+    "public": "auth"
   }
 }
