@@ -83,7 +83,6 @@ export default async (
           messageFrom,
         });
       } catch (error) {
-        console.log(error);
         console.error(
           'Error on Telegram Update',
           JSON.stringify(error, null, 2)

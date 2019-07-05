@@ -3,8 +3,6 @@ import 'reflect-metadata';
 
 import * as functions from 'firebase-functions';
 import importUsers from './functions/importUsers';
-import updateLastMessageBetweenDates from './functions/updateLastMessageBetweenDates';
-import fetchInactiveUsersWithinTimeframe from './functions/fetchInactiveUsersWithinTimeframe';
 import onTelegramUpdate from './functions/onTelegramUpdate';
 import TelegramService from './services/telegram';
 import {
@@ -12,32 +10,32 @@ import {
   ChatMemberRepository,
   CrushRelationshipRepository,
 } from './Repositories';
-import DbSingleton, { Db } from './db';
 import Http from './Http';
 import I18nProvider from './I18nProvider';
 import * as translations from './translations.json';
 import { Update } from 'telegram-typings';
 import { Container, Token } from 'typedi';
 import Analytics from './services/Analytics';
+import * as admin from 'firebase-admin';
 
 const logger = console;
-const db = DbSingleton.getInstance();
 const telegramKey = functions.config().telegram.key;
 const fixedCrushGroup = functions.config().telegram.crush_group;
-const mixpanelKey = '11473025b50e40c8f92b0429dd0a3613'; //functions.config().mixpanel.key;
+const mixpanelKey = functions.config().mixpanel.key;
 const http = new Http();
 const i18n = new I18nProvider(translations);
 const telegramService = new TelegramService(telegramKey, http);
 
+admin.initializeApp();
+const firestore = admin.firestore();
 const analytics = new Analytics(mixpanelKey);
-
 const getDate = () => new Date();
 
 // Section: fireorm
 import { Chat } from './models/Chat';
 import { CrushRelationship } from './models/CrushRelationship';
 import { GetRepository, Initialize } from 'fireorm';
-Initialize(db._db);
+Initialize(firestore);
 
 const chatRepository = GetRepository(Chat);
 const crushRelationshipRepository = GetRepository(CrushRelationship);
@@ -49,7 +47,6 @@ export const CrushRelationshipRepositoryToken = new Token<
 
 // Section: initialize ioc
 Container.set(TelegramService, telegramService);
-Container.set(Db, db);
 Container.set(I18nProvider, i18n);
 Container.set(ChatRepositoryToken, chatRepository);
 Container.set(CrushRelationshipRepositoryToken, crushRelationshipRepository);
@@ -105,64 +102,6 @@ export const importUsersInternalFn = functions.https.onRequest(
   }
 );
 
-export const updateLastMessageBetweenDatesFn = functions.https.onRequest(
-  async (req, res) => {
-    const { groupId, from, to } = req.body;
-
-    if (!groupId) {
-      return res.status(400).send('`groupId` parameter is required');
-    }
-
-    if (!from) {
-      return res.status(400).send('invalid parameter `from`');
-    }
-
-    if (!to) {
-      return res.status(400).send('invalid parameter `to`');
-    }
-
-    try {
-      const payload = await updateLastMessageBetweenDates(
-        db,
-        telegramService,
-        groupId,
-        new Date(from),
-        new Date(to)
-      );
-      return res.send({ ok: true, payload });
-    } catch (error) {
-      logger.error(error);
-      return res.status(500).send({ ok: false });
-    }
-  }
-);
-
-export const fetchInactiveUsersWithinTimeframeFn = functions.https.onRequest(
-  async (req, res) => {
-    const { groupId, hours } = req.body;
-
-    if (!groupId) {
-      return res.status(400).send('`groupId` parameter is required');
-    }
-
-    if (!hours) {
-      return res.status(400).send('invalid parameter `hours`');
-    }
-    try {
-      const payload = await fetchInactiveUsersWithinTimeframe(
-        db,
-        groupId,
-        hours,
-        getDate()
-      );
-      return res.send({ ok: true, payload });
-    } catch (error) {
-      logger.error(error);
-      return res.status(500).send({ ok: false });
-    }
-  }
-);
-
 export const onTelegramUpdateFn = functions.https.onRequest(
   async (req, res) => {
     const update: Update = req.body;
@@ -186,7 +125,7 @@ export const onTelegramUpdateFn = functions.https.onRequest(
       return res.send({ ok: true });
     } catch (error) {
       logger.error(error);
-      // logger.error(JSON.stringify(update, null, 2));
+      logger.error(JSON.stringify(update, null, 2));
       return res.status(200).send({ ok: false });
     }
   }

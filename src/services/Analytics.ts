@@ -11,7 +11,6 @@ export default class Analytics {
 
   process = async (collection: string, distinct_id: string, data: any) => {
     this.mixpanel.track(collection, { distinct_id, ...data });
-    console.log(data);
   };
 
   processMessage = async (message: PlainMessage) =>

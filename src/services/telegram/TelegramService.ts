@@ -89,8 +89,13 @@ export default class TelegramService implements ITelegramService {
       user_id: userId,
     };
 
-    const response = await this.http.post(url, payload);
-    return response.result as ChatMember;
+    try {
+      const response = await this.http.post(url, payload);
+      return response.result as ChatMember;
+    } catch (error) {
+      console.error('user error', payload);
+      throw { inner: error, payload };
+    }
   }
 
   getMentionFromId(id: string, name: string, lastName?: string) {
