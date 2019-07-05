@@ -106,7 +106,7 @@ export const onTelegramUpdateFn = functions.https.onRequest(
   async (req, res) => {
     const update: Update = req.body;
 
-    logger.log('Update:', JSON.stringify(update, null, 2));
+    logger.log('Update:', JSON.stringify(update));
 
     if (!update) {
       return res.status(400).send('`message` parameter is required');
@@ -125,7 +125,7 @@ export const onTelegramUpdateFn = functions.https.onRequest(
       return res.send({ ok: true });
     } catch (error) {
       logger.error(error);
-      logger.error(JSON.stringify(update, null, 2));
+      logger.error(JSON.stringify(update));
       return res.status(200).send({ ok: false });
     }
   }

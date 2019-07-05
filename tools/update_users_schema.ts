@@ -60,7 +60,7 @@ async function init() {
 
   console.log('--- FINISH ---');
   console.log(`Users: ${users.length}, Errors: ${errors.length}`);
-  console.log(JSON.stringify(errors, null, 2));
+  console.log(JSON.stringify(errors));
 }
 
 init().catch(e => {

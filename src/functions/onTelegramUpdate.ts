@@ -83,10 +83,7 @@ export default async (
           messageFrom,
         });
       } catch (error) {
-        console.error(
-          'Error on Telegram Update',
-          JSON.stringify(error, null, 2)
-        );
+        console.error('Error on Telegram Update', JSON.stringify(error));
 
         await service.sendReply(
           pm.chat_id,
