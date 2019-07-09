@@ -40,10 +40,10 @@
       "non_active": "Error: O te bloquearon o el usuario al que le estás escribiendo deshabilitó el bot :). No pude enviar este mensaje, intenta más tarde."
     },
     "errors": {
-      "invalid": "Error: manito, qué jodio comando fue ese",
-      "internal": "Error: bi toy chipiando, tirale a un adm",
-      "wrong_scope": "Error: el comando `{{command}}` solo se puede usar en: {{scopes}}",
-      "forbidden": "Error: kien diablo tu ere, tu no puede ejecuta `{{cmd}}`",
+      "invalid": "Error: tu ta en droga e?",
+      "internal": "Error: me cayó mal el perico, tirale a un adm",
+      "wrong_scope": "Error: manit@ el comando `{{command}}` solo se puede usar en: {{scopes}}",
+      "forbidden": "Error: JAJAJA MIREN A ET@ SUCI@ TRATANDO DE EJECUTAR `{{cmd}}`",
       "user_not_found": "Error: bi, ete usuario no existe",
       "nothing_to_do": "Error: ok, gracia",
       "zero_crushes": "Error: No se qué hacer con este mensaje 😞. Para agregar un crush usa /addcrush. Cualquier duda usa /help."
