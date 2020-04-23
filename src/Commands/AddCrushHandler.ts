@@ -60,7 +60,7 @@ export class AddCrushHandler
       }
 
       const usersKeyboard = users
-        .map(u => ({
+        .map((u) => ({
           text: u.getFullNameWithUser(),
           callback_data: u.id,
         }))

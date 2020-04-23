@@ -34,8 +34,8 @@ const getDate = () => new Date();
 // Section: fireorm
 import { Chat } from './models/Chat';
 import { CrushRelationship } from './models/CrushRelationship';
-import { GetRepository, Initialize } from 'fireorm';
-Initialize(firestore);
+import { GetRepository, initialize } from 'fireorm';
+initialize(firestore);
 
 const chatRepository = GetRepository(Chat);
 const crushRelationshipRepository = GetRepository(CrushRelationship);

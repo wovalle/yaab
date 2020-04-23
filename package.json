@@ -7,9 +7,9 @@
     "axios": "^0.18.1",
     "date-fns": "^1.30.1",
     "faker": "^4.1.0",
-    "firebase-admin": "^7.0.0",
-    "firebase-functions": "^2.2.0",
-    "fireorm": "^0.5.2",
+    "firebase-admin": "^8.11.0",
+    "firebase-functions": "^3.6.0",
+    "fireorm": "^0.13.3",
     "lodash": "^4.17.11",
     "mixpanel": "^0.10.2",
     "pluralize": "^7.0.0",
@@ -27,7 +27,7 @@
     "chai": "^4.2.0",
     "concurrently": "^4.1.1",
     "firebase-functions-test": "^0.1.6",
-    "firebase-tools": "^6.12.0",
+    "firebase-tools": "^8.1.1",
     "mocha": "^6.1.4",
     "mock-cloud-firestore": "^0.9.2",
     "ngrok": "^3.2.1",
@@ -42,9 +42,9 @@
     "build:watch": "tsc -w --incremental",
     "serve:firebase": "firebase serve --only functions",
     "serve:auth": "firebase serve --only hosting",
-    "serve": "concurrently \"npm:build:watch\" \"npm run serve:firebase\"",
-    "shell": "npm run build && firebase functions:shell",
-    "start": "npm run shell",
+    "serve": "concurrently \"npm:build:watch\" \"yarn serve:firebase\"",
+    "shell": "yarn build && firebase functions:shell",
+    "start": "yarn shell",
     "deploy": "firebase deploy --only functions",
     "deploy:auth": "firebase deploy --only hosting",
     "logs": "firebase functions:log",
@@ -54,7 +54,7 @@
     "tunnel": "ts-node tools/setup-tunnel.ts"
   },
   "engines": {
-    "node": ">10"
+    "node": "10"
   },
   "author": "Willy Ovalle <willyovalle16@gmail.com>",
   "license": "ISC"
