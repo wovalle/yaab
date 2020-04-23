@@ -54,7 +54,7 @@
     "tunnel": "ts-node tools/setup-tunnel.ts"
   },
   "engines": {
-    "node": "10"
+    "node": ">10"
   },
   "author": "Willy Ovalle <willyovalle16@gmail.com>",
   "license": "ISC"
