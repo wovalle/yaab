@@ -1,17 +1,17 @@
-import { Update } from 'telegram-typings';
+import { Update } from "telegram-typings";
 import {
   getPlainMessage,
   getBotCommand,
   getUserChatFromMember,
   BotCommandScope,
-} from '../selectors';
+} from "../selectors";
 
-import I18nProvider from '../I18nProvider';
-import { ITelegramService } from '../services/telegram';
-import { Mediator } from 'tsmediator';
-import { UserRole } from '../types';
-import Analytics from '../services/Analytics';
-import { ChatRepository } from '../Repositories';
+import I18nProvider from "../I18nProvider";
+import { ITelegramService } from "../services/telegram";
+import { Mediator } from "tsmediator";
+import { UserRole } from "../types";
+import Analytics from "../services/Analytics";
+import { ChatRepository } from "../Repositories";
 
 export default async (
   update: Update,
@@ -45,8 +45,8 @@ export default async (
     await chat.users.create(messageFrom);
   }
 
-  if (!command.isValid && command.type === 'bot_command') {
-    const errorId = 'commands.errors.invalid';
+  if (!command.isValid && command.type === "bot_command") {
+    const errorId = "commands.errors.invalid";
     await service.sendReply(pm.chat_id, pm.message_id, i18n.t(errorId));
   }
 
@@ -54,11 +54,11 @@ export default async (
     const commandScope = pm.chat_type as BotCommandScope;
 
     if (!command.details.scopes.includes(commandScope)) {
-      const errorId = 'commands.errors.wrong_scope';
+      const errorId = "commands.errors.wrong_scope";
 
       const scopes = command.details.scopes
-        .map(s => i18n.t(`enums.scopes.${s}`))
-        .join(', ');
+        .map((s) => i18n.t(`enums.scopes.${s}`))
+        .join(", ");
 
       await service.sendReply(
         pm.chat_id,
@@ -67,7 +67,7 @@ export default async (
       );
       return;
     } else if (command.details.admin && messageFrom.role !== UserRole.admin) {
-      const errorId = 'commands.errors.forbidden';
+      const errorId = "commands.errors.forbidden";
       await service.sendReply(
         pm.chat_id,
         pm.message_id,
@@ -83,12 +83,12 @@ export default async (
           messageFrom,
         });
       } catch (error) {
-        console.error('Error on Telegram Update', JSON.stringify(error));
+        console.error("Error on Telegram Update", JSON.stringify(error));
 
         await service.sendReply(
           pm.chat_id,
           pm.message_id,
-          i18n.t('commands.errors.internal')
+          i18n.t("commands.errors.internal")
         );
       }
     }

@@ -1,11 +1,11 @@
-import { Handler, ICommandHandler } from 'tsmediator';
-import Container from 'typedi';
+import { Handler, ICommandHandler } from "tsmediator";
+import Container from "typedi";
 
-import TelegramService from '../services/telegram/TelegramService';
-import { BotCommands } from '../selectors';
-import I18nProvider from '../I18nProvider';
-import { addHours } from 'date-fns';
-import { ITelegramHandlerPayload } from '../types';
+import TelegramService from "../services/telegram/TelegramService";
+import { BotCommands } from "../selectors";
+import I18nProvider from "../I18nProvider";
+import { addHours } from "date-fns";
+import { ITelegramHandlerPayload } from "../types";
 
 // TODO: send pm summary with users tagged, bots and protected
 @Handler(BotCommands.list_inactives)
@@ -18,7 +18,7 @@ export class ListInactiveHandler
   constructor() {
     this.telegramService = Container.get(TelegramService);
     this.i18n = Container.get(I18nProvider);
-    this.getCurrentDate = Container.get('getCurrentDate');
+    this.getCurrentDate = Container.get("getCurrentDate");
   }
 
   async Handle(payload: ITelegramHandlerPayload) {
@@ -27,7 +27,7 @@ export class ListInactiveHandler
     const isHoursANumber = Number.isInteger(hours);
 
     if (command.args.length && !isHoursANumber) {
-      const errorId = 'commands.errors.invalid';
+      const errorId = "commands.errors.invalid";
       return this.telegramService.sendReply(
         pm.chat_id,
         pm.message_id,
@@ -41,7 +41,7 @@ export class ListInactiveHandler
     const users = await chat.users.getInactive(inactiveSince);
 
     if (!users.length) {
-      const errorId = 'commands.list_inactive.empty';
+      const errorId = "commands.list_inactive.empty";
       return this.telegramService
         .buildMessage(this.i18n.t(errorId, { hours }))
         .to(pm.chat_id)
@@ -51,12 +51,12 @@ export class ListInactiveHandler
     }
 
     const mentions = users
-      .map(u => this.telegramService.getMentionFromId(u.id, u.first_name))
-      .join(', ');
+      .map((u) => this.telegramService.getMentionFromId(u.id, u.first_name))
+      .join(", ");
 
     await this.telegramService
       .buildMessage(
-        this.i18n.t('commands.list_inactive.successful', { hours, mentions })
+        this.i18n.t("commands.list_inactive.successful", { hours, mentions })
       )
       .to(pm.chat_id)
       .asMarkDown()

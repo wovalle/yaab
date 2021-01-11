@@ -4,11 +4,10 @@ import {
   ParseMode,
   IReplyKeyboardOptions,
   MessageBuilderProps,
-} from './ITelegramService';
-import { Message, ChatMember } from 'telegram-typings';
-import { getUnixTimeFromDate } from '../../utils';
-import { IHttp } from '../../Http';
-import MessageBuilder from '../../MessageBuilder';
+} from "./ITelegramService";
+import { Message, ChatMember } from "telegram-typings";
+import { IHttp } from "../../Http";
+import MessageBuilder from "../../MessageBuilder";
 
 type ReplyMarkup = {
   force_reply?: boolean;
@@ -58,7 +57,7 @@ export default class TelegramService implements ITelegramService {
   }
 
   async kickUser(userId: string, chatId: string, until?: Date): Promise<void> {
-    const url = this.buildUrl('kickChatMember');
+    const url = this.buildUrl("kickChatMember");
     const payload = {
       chat_id: chatId,
       user_id: userId,
@@ -73,7 +72,7 @@ export default class TelegramService implements ITelegramService {
   }
 
   async deleteMessage(chat_id: string, message_id: string): Promise<void> {
-    const url = this.buildUrl('deleteMessage');
+    const url = this.buildUrl("deleteMessage");
     const payload = {
       chat_id,
       message_id,
@@ -83,7 +82,7 @@ export default class TelegramService implements ITelegramService {
   }
 
   async getChatMember(userId: string, chatId: string): Promise<ChatMember> {
-    const url = this.buildUrl('getChatMember');
+    const url = this.buildUrl("getChatMember");
     const payload = {
       chat_id: chatId,
       user_id: userId,
@@ -93,7 +92,7 @@ export default class TelegramService implements ITelegramService {
       const response = await this.http.post(url, payload);
       return response.result as ChatMember;
     } catch (error) {
-      console.error('user error', payload);
+      console.error("user error", payload);
       throw { inner: error, payload };
     }
   }
@@ -120,7 +119,7 @@ export default class TelegramService implements ITelegramService {
   }
 
   async sendRawMessage(props: MessageBuilderProps): Promise<Message> {
-    const url = this.buildUrl('sendMessage');
+    const url = this.buildUrl("sendMessage");
     const payload: TelegramHttpPayload = {
       chat_id: props.chatId,
       text: props.text,
@@ -132,7 +131,9 @@ export default class TelegramService implements ITelegramService {
     }
 
     if (props.replyKeyboard) {
-      payload.reply_markup.inline_keyboard = props.replyKeyboard.map(k => [k]);
+      payload.reply_markup.inline_keyboard = props.replyKeyboard.map((k) => [
+        k,
+      ]);
     }
 
     if (props.forceReply) {
