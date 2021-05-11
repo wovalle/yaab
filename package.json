@@ -10,7 +10,7 @@
     "firebase-admin": "^9.4.2",
     "firebase-functions": "^3.13.0",
     "fireorm": "^0.18.0",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.21",
     "mixpanel": "^0.13.0",
     "pluralize": "^8.0.0",
     "reflect-metadata": "^0.1.13",
